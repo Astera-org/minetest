@@ -428,7 +428,7 @@ bool ClientLauncher::launch_game(std::string &error_message,
 			return false;
 		}
 
-		int newport = stoi(menudata.port);
+		int newport = mystoi(menudata.port);
 		if (newport != 0)
 			start_data.socket_port = newport;
 
