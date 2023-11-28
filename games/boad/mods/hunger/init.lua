@@ -4,14 +4,10 @@ The hunger or thirst will increase till the player eats or drinks
 ]]--
 
 function damagePlayer(player,amount)
-   
-    local current_health = player:get_hp()  -- Get the current health
-    local new_health = current_health - amount  -- Calculate new health
+    local new_health = player:get_hp() - amount  
 
-    -- Ensure new health is not less than zero
     if new_health < 0 then
         new_health = 0
-        --print("should die")
     end
 
     player:set_hp(new_health)
@@ -20,21 +16,15 @@ end
 
 minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
-        -- Your code here. For example, you can check the player's position
-        -- or health and perform some action.
-        -- print(dtime)
         local health = player:get_hp()
-        if health > 0
+        if health > 0 then
             local player_meta = player:get_meta()
-            local hstr=player_meta:get_string("hunger")
-            print("Global" .. hstr)
-            local h=tonumber( hstr )
+            local h=tonumber( player_meta:get_string("hunger") )
             local t=tonumber(player_meta:get_string("thirst"))
-            print(h .. " " .. t)
+           
         --ensureNutrient(player,"thirst")
             h = h-dtime*20
             t= t-dtime*30
-            print(h .. " " .. t)
             if h<0 then
                 h=0
                 damagePlayer(player,dtime)
@@ -63,14 +53,15 @@ minetest.register_on_joinplayer(function(player)
     end 
 end)
 
-minetest.register_on_dieplayer(function(player)
-    print("resetting meta values")
+minetest.register_on_respawnplayer(function(player)
+    --print("resetting meta values: " .. player:get_player_name())
     local player_meta = player:get_meta()
     player_meta:set_string("hunger",1000)
     player_meta:set_string("thirst",1000)
 
     local meta2=player:get_meta()
-    print("After reset:" .. meta2:get_string("hunger"))
+    --print("After reset:" .. meta2:get_string("hunger"))
+    return false
 end)
 
 

@@ -4,6 +4,19 @@
 
 -- ESSENTIAL node aliases
 -- Basic nodes
+minetest.register_on_mapgen_init(function(mgparams)
+    minetest.set_mapgen_setting("mg_name", "flat", true)
+	local flags = minetest.get_mapgen_setting("mg_flags")
+
+    if flags then
+        local new_flags = flags:gsub("caves", "nocaves")
+        minetest.set_mapgen_setting("mg_flags", new_flags, true)
+    end
+
+end)
+
+
+
 minetest.register_alias("mapgen_stone", "basenodes:stone")
 minetest.register_alias("mapgen_water_source", "basenodes:water_source")
 minetest.register_alias("mapgen_river_water_source", "basenodes:river_water_source")
