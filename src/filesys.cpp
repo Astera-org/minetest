@@ -20,11 +20,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "util/string.h"
 #include <iostream>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <filesystem>
 #include <fstream>
+#include <sstream>
 #include "log.h"
 #include "config.h"
 #include "porting.h"
@@ -733,50 +736,55 @@ const char *GetFilenameFromPath(const char *path)
 
 bool safeWriteToFile(const std::string &path, const std::string &content)
 {
-	std::string tmp_file = path + ".~mt";
+	// Append timestamp to try to avoid name collisions.
+	std::stringstream ss;
+	ss << std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	std::string timestamp = ss.str();
 
-	// Write to a tmp file
-	std::ofstream os(tmp_file.c_str(), std::ios::binary);
-	if (!os.good())
-		return false;
-	os << content;
-	os.flush();
-	os.close();
-	if (os.fail()) {
-		// Remove the temporary file because writing it failed and it's useless.
-		remove(tmp_file.c_str());
+	std::filesystem::path tmp_path =
+			std::filesystem::temp_directory_path() /
+			(std::filesystem::path(path).filename().string() + "." + timestamp);
+
+	// Write to tmp file
+	std::ofstream tmp_os(tmp_path.c_str(), std::ios::binary);
+	if (!tmp_os.good()) {
+		warningstream << "Failed to create temp file: " << tmp_path.c_str() << std::endl;
 		return false;
 	}
 
-	bool rename_success = false;
+	{ // scope for the unique_ptr
+		// Attempt to remove the temporary file on exit, but don't worry about checking
+		// success since the OS should clean it up anyway.
+		auto deleter = [&tmp_path](std::ofstream *os) { std::remove(tmp_path.c_str()); };
+		std::unique_ptr<std::ofstream, decltype(deleter)> tmp_os_ptr(&tmp_os, deleter);
+		tmp_os << content;
+		tmp_os.flush();
+		tmp_os.close();
+		if (tmp_os.fail()) {
+			warningstream << "Failed to write to temp file: " << tmp_path.c_str()
+						  << std::endl;
+			return false;
+		}
 
-	// Move the finished temporary file over the real file
+		bool write_succeeded = false;
 #ifdef _WIN32
-	// When creating the file, it can cause Windows Search indexer, virus scanners and
-	// other apps to query the file. This can make the move file call below fail. We retry
-	// up to 5 times, with a 1ms sleep between, before we consider the whole operation
-	// failed
-	int number_attempts = 0;
-	while (number_attempts < 5) {
-		rename_success = MoveFileEx(tmp_file.c_str(), path.c_str(),
-				MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
-		if (rename_success)
-			break;
-		sleep_ms(1);
-		++number_attempts;
-	}
+		// On Windows we've observed that the newly created temp file is often
+		// being read by other processes and Windows does not allow renaming
+		// of a file while it is being read, so we copy the contents
+		// and then best-effort delete the temp file on exit.
+		write_succeeded = CopyFile(tmp_path.c_str(), path.c_str(), false);
 #else
-	// On POSIX compliant systems rename() is specified to be able to swap the
-	// file in place of the destination file, making this a truly error-proof
-	// transaction.
-	rename_success = rename(tmp_file.c_str(), path.c_str()) == 0;
+		// On POSIX rename() is able to swap the file in place of the destination file,
+		// even if it's being read.
+		write_succeeded = (std::rename(tmp_path.c_str(), path.c_str()) == 0);
+		if (write_succeeded) {
+			tmp_os_ptr.release(); // Deletion no longer needed.
+		}
 #endif
-	if (!rename_success) {
-		warningstream << "Failed to write to file: " << path.c_str() << std::endl;
-		// Remove the temporary file because moving it over the target file
-		// failed.
-		remove(tmp_file.c_str());
-		return false;
+		if (!write_succeeded) {
+			warningstream << "Failed to write to file: " << path.c_str() << std::endl;
+			return false;
+		}
 	}
 
 	return true;
