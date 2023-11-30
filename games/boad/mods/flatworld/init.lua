@@ -1,8 +1,8 @@
 
 MAP_SIZE=15
 
--- minetest.settings:set("mapgen_limit", MAP_SIZE)
---[[
+minetest.settings:set("mapgen_limit", MAP_SIZE)
+
 minetest.register_on_mapgen_init(function(mgparams)
     
     minetest.set_mapgen_setting("mg_name", "flat", true)
@@ -17,6 +17,7 @@ end)
 
 
 minetest.register_on_generated(function(minp, maxp, blockseed)
+	print("here" .. MAP_SIZE)
     -- Define the wall height
     local wall_height = 3
 
@@ -39,7 +40,6 @@ minetest.register_on_generated(function(minp, maxp, blockseed)
         end
     end
 end)
-]]--
 
 
 
