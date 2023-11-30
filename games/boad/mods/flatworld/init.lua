@@ -1,6 +1,8 @@
 
-minetest.settings:set("mapgen_limit", 15)
+MAP_SIZE=15
 
+-- minetest.settings:set("mapgen_limit", MAP_SIZE)
+--[[
 minetest.register_on_mapgen_init(function(mgparams)
     
     minetest.set_mapgen_setting("mg_name", "flat", true)
@@ -13,6 +15,31 @@ minetest.register_on_mapgen_init(function(mgparams)
 
 end)
 
+
+minetest.register_on_generated(function(minp, maxp, blockseed)
+    -- Define the wall height
+    local wall_height = 3
+
+    -- Check if the generated chunk is near the border
+    if minp.x <= -MAP_SIZE or maxp.x >= MAP_SIZE or
+       minp.z <= -MAP_SIZE or maxp.z >= MAP_SIZE then
+
+        -- Loop through the positions where the wall should be placed
+        for x = minp.x, maxp.x do
+            for z = minp.z, maxp.z do
+                if x == -MAP_SIZE or x == MAP_SIZE or
+                   z == -MAP_SIZE or z == MAP_SIZE then
+                    for y = minp.y, minp.y + wall_height - 1 do
+                        local pos = {x = x, y = y, z = z}
+                        -- Place the wall block
+                        minetest.set_node(pos, {name = "basenodes:dirt"})
+                    end
+                end
+            end
+        end
+    end
+end)
+]]--
 
 
 
