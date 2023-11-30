@@ -361,7 +361,7 @@ void ParsedText::globalTag(const AttrsList &attrs)
 		// Only page level style
 		if (attr.first == "margin") {
 			if (check_integer(attr.second))
-				margin = stoi(attr.second.c_str());
+				margin = mystoi(attr.second.c_str());
 
 		} else if (attr.first == "valign") {
 			if (attr.second == "top")

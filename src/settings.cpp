@@ -508,13 +508,13 @@ bool Settings::getBool(const std::string &name) const
 
 u16 Settings::getU16(const std::string &name) const
 {
-	return stoi(get(name), 0, 65535);
+	return mystoi(get(name), 0, 65535);
 }
 
 
 s16 Settings::getS16(const std::string &name) const
 {
-	return stoi(get(name), -32768, 32767);
+	return mystoi(get(name), -32768, 32767);
 }
 
 

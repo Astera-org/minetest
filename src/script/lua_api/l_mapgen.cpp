@@ -752,11 +752,11 @@ int ModApiMapgen::l_get_mapgen_params(lua_State *L)
 	lua_setfield(L, -2, "seed");
 
 	settingsmgr->getMapSetting("water_level", &value);
-	lua_pushinteger(L, stoi(value, -32768, 32767));
+	lua_pushinteger(L, mystoi(value, -32768, 32767));
 	lua_setfield(L, -2, "water_level");
 
 	settingsmgr->getMapSetting("chunksize", &value);
-	lua_pushinteger(L, stoi(value, -32768, 32767));
+	lua_pushinteger(L, mystoi(value, -32768, 32767));
 	lua_setfield(L, -2, "chunksize");
 
 	settingsmgr->getMapSetting("mg_flags", &value);
@@ -831,7 +831,7 @@ int ModApiMapgen::l_get_mapgen_edges(lua_State *L)
 	} else {
 		std::string chunksize_str;
 		settingsmgr->getMapSetting("chunksize", &chunksize_str);
-		chunksize = stoi(chunksize_str, -32768, 32767);
+		chunksize = mystoi(chunksize_str, -32768, 32767);
 	}
 
 	std::pair<s16, s16> edges = get_mapgen_edges(mapgen_limit, chunksize);

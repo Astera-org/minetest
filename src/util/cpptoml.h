@@ -3671,4 +3671,7 @@ namespace cpptoml
         return stream;
     }
 } // namespace cpptoml
+
+#define stoi mystoi
+
 #endif // CPPTOML_H
