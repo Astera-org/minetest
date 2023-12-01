@@ -1,6 +1,6 @@
-
-MAP_SIZE=15
-
+-- won't allow you to go below 64. World goes gray
+MAP_SIZE=64
+-- sets this for the NEXT map that is generated. very lame
 minetest.settings:set("mapgen_limit", MAP_SIZE)
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -15,25 +15,51 @@ minetest.register_on_mapgen_init(function(mgparams)
 
 end)
 
-
 minetest.register_on_generated(function(minp, maxp, blockseed)
-	print("here" .. MAP_SIZE)
-    -- Define the wall height
-    local wall_height = 3
+    
+		-- food
+		for n=0,10 do
+			local x= math.random(-31, 46)
+			local z=math.random(-31, 46)
+			local pos = {x = x, y = 9, z = z}
+            minetest.set_node(pos, {name = "basenodes:apple"})
+		end
+		-- water
+		for n=0,10 do
+			local x= math.random(-31, 46)
+			local z=math.random(-31, 46)
+			local pos = {x = x, y = 9, z = z}
+            minetest.set_node(pos, {name = "basenodes:snowblock"})
+		end
+		-- walls
+		for n=0,20 do
+			local x= math.random(-31, 46)
+			local z=math.random(-31, 46)
+			local len=math.random(1,4)
+			if math.random(0,1) then			
+				for i=0,len do
+					for y = 9, 12 do
+						local pos = {x = x+i, y = y, z = z}
+						minetest.set_node(pos, {name = "basenodes:stone"})
+					end
+				end
+			else
+				for i =0,len do
+					for y = 9, 12 do
+						local pos = {x = x, y = y, z = z+i}
+						minetest.set_node(pos, {name = "basenodes:stone"})
+					end
+				end
+		end
 
-    -- Check if the generated chunk is near the border
-    if minp.x <= -MAP_SIZE or maxp.x >= MAP_SIZE or
-       minp.z <= -MAP_SIZE or maxp.z >= MAP_SIZE then
-
-        -- Loop through the positions where the wall should be placed
+        -- Place barrier nodes at the edges of the world
         for x = minp.x, maxp.x do
             for z = minp.z, maxp.z do
-                if x == -MAP_SIZE or x == MAP_SIZE or
-                   z == -MAP_SIZE or z == MAP_SIZE then
-                    for y = minp.y, minp.y + wall_height - 1 do
+                if x == -32 or x == 47 or  -- TODO why these numbers?
+                   z == -32 or z == 47 then
+                    for y = 8, 15 do
                         local pos = {x = x, y = y, z = z}
-                        -- Place the wall block
-                        minetest.set_node(pos, {name = "basenodes:dirt"})
+                        minetest.set_node(pos, {name = "basenodes:stone"})
                     end
                 end
             end

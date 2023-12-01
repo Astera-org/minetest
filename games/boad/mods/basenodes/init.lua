@@ -21,6 +21,12 @@ minetest.register_node("basenodes:dirt", {
 	groups = {crumbly=3, soil=1},
 })
 
+minetest.register_node("basenodes:stone", {
+	description = "Stone",
+	tiles = {"default_stone.png"},
+	groups = {cracky=3},
+})
+
 minetest.register_node("basenodes:water_source", {
 	description = "Water Source".."\n"..
 		"Swimmable, spreading, renewable liquid".."\n"..

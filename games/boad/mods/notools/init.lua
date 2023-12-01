@@ -6,5 +6,27 @@ minetest.register_item(":", {
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
-	}
+	},
+
+	on_use = function(itemstack, user, pointed_thing)		
+		if pointed_thing.type == "node" then
+			local pos = pointed_thing.under
+			local node = minetest.get_node(pos)
+	
+			if node.name == "basenodes:apple" then
+				addNutrient(user,"hunger",100)
+				if math.random(0,99) < 25 then
+					local pos = pointed_thing.under
+					minetest.remove_node(pos)
+				end
+			elseif node.name == "basenodes:snowblock" then
+				addNutrient(user,"thirst",100)
+				if math.random(0,99) < 25 then
+					local pos = pointed_thing.under
+					minetest.remove_node(pos)
+				end
+			end
+		end
+	end,
+	
 })
