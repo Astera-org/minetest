@@ -3,6 +3,9 @@ Implements the players needing certain nutrients.
 The hunger or thirst will increase till the player eats or drinks
 ]]--
 
+gNumApples=NUM_APPLE
+gNumSnow=NUM_SNOW
+
 function damagePlayer(player,amount)
     local new_health = player:get_hp() - amount  
 
@@ -76,8 +79,8 @@ minetest.register_globalstep(function(dtime)
             local h=tonumber( player_meta:get_string("hunger") )
             local t=tonumber(player_meta:get_string("thirst"))
            
-            h = h-dtime*20 
-            t= t-dtime*30
+            h = h-dtime*STARVE_1_MUL 
+            t= t-dtime*STARVE_2_MUL
             if h<0 then
                 h=0
                 damagePlayer(player,dtime)
