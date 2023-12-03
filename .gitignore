@@ -126,3 +126,6 @@ lib/irrlichtmt
 # Generated mod storage database
 client/mod_storage.sqlite
 run
+/games/globo/baloo.log
+/games/globo/history.md
+/games/globo/toc.md

@@ -1,3 +1,9 @@
+
+- Make the screen dark when you sleep 
+- Don't let you move when you are sleeping
+
+
+
 Add the concept of "Energy". Each player has an certain amount of energy. Their energy goes down if the player runs, jumps. Walking, running, jumping use energy. Your energy recovers if you rest. If too low energy you can’t run. There are two values. Emax (this goes down the longer you are awake) ECur (this goes down as you run) ECur slowly goes back up to Emax if you rest.
 
 Glow stone: emits a small amount of light and heat

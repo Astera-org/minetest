@@ -297,7 +297,7 @@ local creature_definitions = {
 }
 
 for name, def in pairs(creature_definitions) do
-    minetest.register_entity("creatures:" .. name, def)
+    minetest.register_entity("main:" .. name, def)
 end
 
 
