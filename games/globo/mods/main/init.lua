@@ -4,7 +4,7 @@
 -- Values that need to be moved into a config file
 
 -- won't allow you to go below 64. World goes gray
-MAP_SIZE=64
+MAP_SIZE=30000
 
 MIN_COORD=-32 -- TODO why these numbers?
 MAX_COORD=47

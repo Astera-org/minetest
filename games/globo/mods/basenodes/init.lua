@@ -50,6 +50,15 @@ minetest.register_node("basenodes:bones", {
 	end,
 })
 
+minetest.register_node("basenodes:glow_stone", {
+	description = "Glow Stone",
+	drawtype = "normal",
+	tiles = {"glow_stone.png"},
+	light_source = 7, 
+	groups = {cracky = 3},
+})
+
+
 minetest.register_node("basenodes:fire", {
     description = "Fire",
     drawtype = "firelike",
@@ -130,6 +139,17 @@ minetest.register_abm({
 
 minetest.register_node("basenodes:dirt_with_grass", {
 	description = "Dirt with Grass",
+	tiles = {
+		"default_grass.png", -- Top texture
+		"default_dirt.png",  -- Bottom texture
+		"default_dirt.png^default_grass_side.png" -- Side textures
+	},
+	groups = {crumbly=3, soil=1},
+})
+
+--[[
+minetest.register_node("basenodes:dirt_with_grass", {
+	description = "Dirt with Grass",
 	tiles ={"default_grass.png",
 		-- a little dot on the bottom to distinguish it from dirt
 		"default_dirt.png^basenodes_dirt_with_grass_bottom.png",
@@ -137,7 +157,7 @@ minetest.register_node("basenodes:dirt_with_grass", {
 		tileable_vertical = false}},
 	groups = {crumbly=3, soil=1},
 })
-
+]]--
 
 minetest.register_node("basenodes:dirt", {
 	description = "Dirt",
