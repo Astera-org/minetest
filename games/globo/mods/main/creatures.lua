@@ -296,6 +296,68 @@ local creature_definitions = {
     -- Add more creature definitions here...
 }
 
+local pulse_blossom_definition = {
+    physical = false,
+    visual = "sprite",
+    visual_size = {x = 1.0, y = 1.0},
+    textures = {"basenodes_pulse_blossom.png"},
+    collisionbox = {0,0,0,0,0,0},
+    on_activate = function(self, staticdata)
+        self.object:set_armor_groups({immortal = 1})
+        minetest.get_node_timer(self.object:get_pos()):start(10)
+    end,
+    on_timer = function(self, elapsed)
+        minetest.add_particle({
+            pos = self.object:get_pos(),
+            expirationtime = 2.0,
+            texture = "basenodes_pulse_blossom_glow.png",
+            size = 8,
+            glow = 14 
+        })
+        minetest.after(2, function(pos)
+            local objs = minetest.get_objects_inside_radius(pos, 2) -- 2 is the radius
+            for _, obj in ipairs(objs) do
+                if obj:is_player() or obj:get_luaentity() then 
+                    obj:punch(obj, 1.0, {
+                        full_punch_interval = 1.0,
+                        damage_groups = {fleshy = 2}, -- might adjust the damage
+                    })
+                end
+            end
+            minetest.get_node_timer(pos):start(10)
+        end, self.object:get_pos())
+
+        return true
+    end,
+}
+
+minetest.register_entity("main:pulse_blossom",{on_step = function(self, dtime)
+    self.timer = self.timer or 0
+    self.timer = self.timer + dtime
+    if self.timer >= 10 then
+        self.timer = 0
+        -- Start glow
+        self.object:settexturemod("^[brighten")
+        -- Create the damage timer
+        minetest.after(2, function(self)
+            if self.object then
+                -- Damage entities
+                local pos = self.object:get_pos()
+                local objects = minetest.get_objects_inside_radius(pos, 1) -- 1 is the damage radius
+                for _, obj in ipairs(objects) do
+                    local entity = obj:get_luaentity()
+                    if entity and entity.name ~= "__builtin:item" and entity.name ~= "main:pulse_blossom" or obj:is_player() then
+                        local damage = 2 -- damage value
+                        obj:set_hp(obj:get_hp() - damage)
+                    end
+                end
+                -- End glow
+                self.object:settexturemod("")
+            end
+        end, self)
+    end
+end})
+
 for name, def in pairs(creature_definitions) do
     minetest.register_entity("main:" .. name, def)
 end

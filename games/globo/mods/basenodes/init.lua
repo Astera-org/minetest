@@ -6,58 +6,6 @@ local WATER_VISC = 1
 local LAVA_VISC = 7
 
 
-minetest.register_node("basenodes:corpse", {
-	description = "Corpse".."\n"..
-		"Punch: Eat (+5)",
-	drawtype = "plantlike",
-	tiles = {"basenodes_corpse.png"},
-	inventory_image = "basenodes_corpse.png",
-	wield_image = "basenodes_corpse.png",
-	paramtype = "light",
-	is_ground_content = false,
-	sunlight_propagates = true,
-	walkable = false,
-	groups = {dig_immediate=3},
-	on_timer = function(pos, elapsed)
-		minetest.set_node(pos, {name = "basenodes:bones"})
-	end,
-	on_construct = function(pos)
-		local timer = minetest.get_node_timer(pos)
-		timer:start(180) -- time in seconds until the corpse turns into bones
-	end,
-	-- Eating the Corpse will reduce hunger
-	on_use = function(itemstack, user, pointed_thing)
-		addNutrient(user,"hunger",200) -- hunger reduction value may be changed as needed.
-		itemstack:take_item()
-		return itemstack
-	end,
-})
-
-minetest.register_node("basenodes:bones", {
-	description = "Bones",
-	drawtype = "plantlike",
-	tiles = {"basenodes_bones.png"},
-	inventory_image = "basenodes_bones.png",
-	wield_image = "basenodes_bones.png",
-	paramtype = "light",
-	is_ground_content = false,
-	sunlight_propagates = true,
-	walkable = false,
-	groups = {dig_immediate=3},
-	on_punch = function(pos, node, player)
-		minetest.remove_node(pos)
-		player:get_inventory():add_item('main', 'basenodes:tool_bones')
-	end,
-})
-
-minetest.register_node("basenodes:glow_stone", {
-	description = "Glow Stone",
-	drawtype = "normal",
-	tiles = {"glow_stone.png"},
-	light_source = 7, 
-	groups = {cracky = 3},
-})
-
 
 minetest.register_node("basenodes:fire", {
     description = "Fire",
@@ -375,26 +323,5 @@ minetest.register_node("basenodes:pine_needles", {
 })
 
 
-minetest.register_node("basenodes:apple", {
-	description = "Apple".."\n"..
-		"Punch: Eat (+2)",
-	drawtype = "plantlike",
-	tiles ={"default_apple.png"},
-	inventory_image = "default_apple.png",
-	paramtype = "light",
-	is_ground_content = false,
-	sunlight_propagates = true,
-	walkable = false,
-	groups = {dig_immediate=3},
-
-	-- Make eatable because why not?
-	on_use = minetest.item_eat(2),
-})
-
-minetest.register_node("basenodes:snowblock", {
-	description = "Snow Block",
-	tiles ={"default_snow.png"},
-	groups = {crumbly=3},
-})
 
 

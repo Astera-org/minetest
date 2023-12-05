@@ -4,13 +4,10 @@
 -- Values that need to be moved into a config file
 
 -- won't allow you to go below 64. World goes gray
-MAP_SIZE=30000
+MAP_SIZE=256
 
-MIN_COORD=-32 -- TODO why these numbers?
-MAX_COORD=47
-
-STARVE_1_MUL=15
-STARVE_2_MUL=10
+STARVE_1_MUL=7
+STARVE_2_MUL=5
 
 APPLE_CHANCE_DIE=25
 SNOW_CHANCE_DIE=25
@@ -48,3 +45,5 @@ TIRED_RATE=0.5
 local default_path = minetest.get_modpath("main")
 dofile(default_path.."/player.lua")
 dofile(default_path.."/creatures.lua")
+dofile(default_path.."/nodes.lua")
+dofile(default_path.."/decorations.lua")
