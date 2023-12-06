@@ -47,6 +47,7 @@ private:
 	void speed_tests();
 
 	bool skip_main_menu = false;
+	bool remote_input = false;
 	bool random_input = false;
 	RenderingEngine *m_rendering_engine = nullptr;
 	InputHandler *input = nullptr;

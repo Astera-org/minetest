@@ -248,10 +248,8 @@ public:
 
 	virtual ~InputHandler() = default;
 
-	virtual bool isRandom() const
-	{
-		return false;
-	}
+	virtual bool isRandom() const { return false; }
+	virtual bool isRemote() const { return false; }
 
 	virtual bool isKeyDown(GameKeyType k) = 0;
 	virtual bool wasKeyDown(GameKeyType k) = 0;
@@ -458,6 +456,125 @@ private:
 	KeyList keydown;
 	v2s32 mousepos;
 	v2s32 mousespeed;
+	float movementSpeed;
+	float movementDirection;
+};
+
+class RemoteInputHandler : public InputHandler
+{
+public:
+	RemoteInputHandler(){
+		infostream << "RemoteInputHandler created" << std::endl;
+	}
+	bool isRemote() const override { return true; }
+
+	virtual bool isKeyDown(GameKeyType k) override { return keyIsDown[keycache.key[k]]; }
+	virtual bool wasKeyDown(GameKeyType k) override
+	{
+		bool b = keyWasDown[keycache.key[k]];
+		if (b)
+			keyWasDown.unset(keycache.key[k]);
+		return b;
+	}
+	virtual bool wasKeyPressed(GameKeyType k) override
+	{
+		return keyWasPressed[keycache.key[k]];
+	}
+	virtual bool wasKeyReleased(GameKeyType k) override
+	{
+		return keyWasReleased[keycache.key[k]];
+	}
+	virtual bool cancelPressed() override
+	{
+		return keyWasDown[keycache.key[KeyType::ESC]];
+	}
+	virtual float getMovementSpeed() override
+	{
+		bool f = keyIsDown[keycache.key[KeyType::FORWARD]],
+			 b = keyIsDown[keycache.key[KeyType::BACKWARD]],
+			 l = keyIsDown[keycache.key[KeyType::LEFT]],
+			 r = keyIsDown[keycache.key[KeyType::RIGHT]];
+		if (f || b || l || r) {
+			// if contradictory keys pressed, stay still
+			if (f && b && l && r)
+				return 0.0f;
+			else if (f && b && !l && !r)
+				return 0.0f;
+			else if (!f && !b && l && r)
+				return 0.0f;
+			return 1.0f; // If there is a keyboard event, assume maximum speed
+		}
+		return 0.0f;
+	}
+	virtual float getMovementDirection() override
+	{
+		float x = 0, z = 0;
+
+		/* Check keyboard for input */
+		if (keyIsDown[keycache.key[KeyType::FORWARD]])
+			z += 1;
+		if (keyIsDown[keycache.key[KeyType::BACKWARD]])
+			z -= 1;
+		if (keyIsDown[keycache.key[KeyType::RIGHT]])
+			x += 1;
+		if (keyIsDown[keycache.key[KeyType::LEFT]])
+			x -= 1;
+
+		if (x != 0 || z != 0) /* If there is a keyboard event, it takes priority */
+			return atan2(x, z);
+		return movementDirection;
+	}
+	virtual v2s32 getMousePos() override { return mousepos; }
+	virtual void setMousePos(s32 x, s32 y) override { mousepos = v2s32(x, y); }
+
+	virtual s32 getMouseWheel() override
+	{
+		s32 a = mouse_wheel;
+		mouse_wheel = 0;
+		return a;
+	}
+
+	virtual void clearWasKeyPressed() override { keyWasPressed.clear(); }
+	virtual void clearWasKeyReleased() override { keyWasReleased.clear(); }
+	void clearInput()
+	{
+		keyIsDown.clear();
+		keyWasDown.clear();
+		keyWasPressed.clear();
+		keyWasReleased.clear();
+
+		mouse_wheel = 0;
+	}
+
+	virtual void step(float dtime) override;
+
+private:
+	// Event receiver to simulate events
+	MyEventReceiver *m_receiver = nullptr;
+
+	// Whether a GUI (inventory/menu) was open
+	bool wasGuiOpen = false;
+
+	// The state of the mouse wheel
+	s32 mouse_wheel = 0;
+
+	// The current state of keys
+	KeyList keyIsDown;
+
+	// Like keyIsDown but only reset when that key is read
+	KeyList keyWasDown;
+
+	// Whether a key has just been pressed
+	KeyList keyWasPressed;
+
+	// Whether a key has just been released
+	KeyList keyWasReleased;
+
+	// Mouse observables
+	v2s32 mousepos;
+	v2s32 mousespeed;
+
+	// Player observables
 	float movementSpeed;
 	float movementDirection;
 };

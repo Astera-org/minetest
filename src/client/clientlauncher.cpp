@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "client/inputhandler.h"
 #include "gui/mainmenumanager.h"
 #include "clouds.h"
 #include "server.h"
@@ -330,6 +331,8 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	random_input = g_settings->getBool("random_input")
 			|| cmd_args.getFlag("random-input");
+	remote_input = g_settings->getBool("remote_input")
+			|| cmd_args.getFlag("remote-input");
 }
 
 bool ClientLauncher::init_engine()
@@ -343,6 +346,8 @@ void ClientLauncher::init_input()
 {
 	if (random_input)
 		input = new RandomInputHandler();
+	else if (remote_input)
+		input = new RemoteInputHandler();
 	else
 		input = new RealInputHandler(receiver);
 

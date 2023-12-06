@@ -276,3 +276,13 @@ void RandomInputHandler::step(float dtime)
 		}
 	}
 }
+
+void RemoteInputHandler::step(float dtime)
+{
+	auto keyCode = keycache.key[KeyType::FORWARD];
+	if (!keyIsDown[keyCode]) {
+		keyWasPressed.set(keyCode);
+	}
+	keyIsDown.set(keyCode);
+	keyWasDown.set(keyCode);
+};
