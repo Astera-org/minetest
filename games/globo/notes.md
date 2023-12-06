@@ -1,6 +1,4 @@
 TODO:
-
-- Textures for all the new nodes
 - Each block type has a chance of becoming an item or just disappearing when you break it.
 - Trees
 - Temperature
@@ -11,6 +9,7 @@ TODO:
     Your core temp goes toward this temperature over time
 
 What can we take from existing mods?
+mobs from Exile?
 
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 Pine Tree:

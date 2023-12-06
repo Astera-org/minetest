@@ -84,6 +84,7 @@ minetest.register_node("main:brambles", {
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 3},
+    damage_per_second = 1,
 })
 
 minetest.register_node("main:thorns", {
@@ -97,14 +98,15 @@ minetest.register_node("main:thorns", {
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 1},
+    damage_per_second = 1,
 })
 
 minetest.register_node("main:potatoes", {
 	description = "Potatoes",
 	drawtype = "plantlike",
-	tiles = {"potatoes.png"},
-	inventory_image = "potatoes.png",
-	wield_image = "potatoes.png",
+	tiles = {"potato_plant.png"},
+	inventory_image = "potato_plant.png",
+	wield_image = "potato_plant.png",
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
