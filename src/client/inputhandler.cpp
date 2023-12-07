@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "client/keys.h"
 #include "util/numeric.h"
 #include "inputhandler.h"
 #include "gui/mainmenumanager.h"
@@ -279,10 +280,35 @@ void RandomInputHandler::step(float dtime)
 
 void RemoteInputHandler::step(float dtime)
 {
-	auto keyCode = keycache.key[KeyType::FORWARD];
-	if (!keyIsDown[keyCode]) {
-		keyWasPressed.set(keyCode);
+	// receive the message
+    zmqpp::message message;
+    // decompose the message 
+    m_socket.receive(message);
+    std::string text;
+    message >> text;
+
+	clearInput();
+
+	KeyPress newKeyCode;
+	if (text == "W"){
+		newKeyCode = keycache.key[KeyType::FORWARD];
+	} else if (text == "S"){
+		newKeyCode = keycache.key[KeyType::BACKWARD];
+	} else if (text == "A"){
+		newKeyCode = keycache.key[KeyType::LEFT];
+	} else if (text == "D"){
+		newKeyCode = keycache.key[KeyType::RIGHT];
+	} else if (text == " "){
+		newKeyCode = keycache.key[KeyType::JUMP];
 	}
-	keyIsDown.set(keyCode);
-	keyWasDown.set(keyCode);
+	if (!keyIsDown[newKeyCode]) {
+		keyWasPressed.set(newKeyCode);
+	}
+	keyIsDown.set(newKeyCode);
+	keyWasDown.set(newKeyCode);
+
+	infostream << text;
+
+	infostream << "Received Hello";
+    m_socket.send("World");
 };

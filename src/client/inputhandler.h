@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
 #include <list>
+#include <zmqpp/zmqpp.hpp>
 #include "keycode.h"
 #include "renderingengine.h"
 
@@ -463,9 +464,10 @@ private:
 class RemoteInputHandler : public InputHandler
 {
 public:
-	RemoteInputHandler(){
-		infostream << "RemoteInputHandler created" << std::endl;
+	RemoteInputHandler(const std::string& endpoint): m_context(), m_socket(m_context, zmqpp::socket_type::reply){
+		m_socket.bind(endpoint);
 	}
+
 	bool isRemote() const override { return true; }
 
 	virtual bool isKeyDown(GameKeyType k) override { return keyIsDown[keycache.key[k]]; }
@@ -494,6 +496,7 @@ public:
 			 b = keyIsDown[keycache.key[KeyType::BACKWARD]],
 			 l = keyIsDown[keycache.key[KeyType::LEFT]],
 			 r = keyIsDown[keycache.key[KeyType::RIGHT]];
+		infostream << "f: " << f << " b: " << b << " l: " << l << " r: " << r << std::endl;
 		if (f || b || l || r) {
 			// if contradictory keys pressed, stay still
 			if (f && b && l && r)
@@ -549,6 +552,10 @@ public:
 	virtual void step(float dtime) override;
 
 private:
+    // zmq state
+	zmqpp::context m_context;
+	zmqpp::socket m_socket;
+
 	// Event receiver to simulate events
 	MyEventReceiver *m_receiver = nullptr;
 
