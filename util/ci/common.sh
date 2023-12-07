@@ -31,7 +31,7 @@ install_linux_deps() {
 install_macos_deps() {
 	local pkgs=(
 		cmake gettext freetype gmp jpeg-turbo jsoncpp leveldb
-		libogg libpng libvorbis luajit zstd
+		libogg libpng libvorbis luajit zstd zmqpp
 	)
 	export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 	export HOMEBREW_NO_INSTALL_CLEANUP=1
