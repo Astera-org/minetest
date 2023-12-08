@@ -280,21 +280,16 @@ void RandomInputHandler::step(float dtime)
 
 void RemoteInputHandler::step(float dtime)
 {
+	// send current observation
 	irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
-	irr::video::IImage* const raw_image = driver->createScreenShot();
-	irr::video::IImage* const image =
-			driver->createImage(video::ECF_R8G8B8, raw_image->getDimension());
-	raw_image->copyTo(image);
-	std::string imageData = std::string((char*)image->getData(), image->getImageDataSizeInBytes());
+	irr::video::IImage* const image = driver->createScreenShot(video::ECF_R8G8B8);
 	zmqpp::message image_msg;
 	image_msg.add_raw(image->getData(), image->getImageDataSizeInBytes());
     m_socket.send(image_msg);
 	image->drop();
-	raw_image->drop();
 	
-	// receive the message
+	// receive next key
     zmqpp::message message;
-    // decompose the message 
     m_socket.receive(message);
     std::string text;
     message >> text;
