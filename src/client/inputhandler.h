@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <list>
 #include <zmqpp/zmqpp.hpp>
 #include "keycode.h"
+#include "log.h"
 #include "renderingengine.h"
 
 #ifdef HAVE_TOUCHSCREENGUI
@@ -464,8 +465,16 @@ private:
 class RemoteInputHandler : public InputHandler
 {
 public:
-	RemoteInputHandler(const std::string& endpoint): m_context(), m_socket(m_context, zmqpp::socket_type::reply){
+	RemoteInputHandler(const std::string& endpoint, RenderingEngine* rendering_engine): m_rendering_engine(rendering_engine), m_context(), m_socket(m_context, zmqpp::socket_type::reply){
 		m_socket.bind(endpoint);
+		// wait for client
+		zmqpp::message message;
+		m_socket.receive(message);
+		std::string text;
+ 	    message >> text;
+		if (text != "START_MINETEST") {
+			throw std::runtime_error("Invalid handshake, expected START_MINETEST");
+		}
 	}
 
 	bool isRemote() const override { return true; }
@@ -552,6 +561,8 @@ public:
 	virtual void step(float dtime) override;
 
 private:
+	RenderingEngine* m_rendering_engine;
+
     // zmq state
 	zmqpp::context m_context;
 	zmqpp::socket m_socket;

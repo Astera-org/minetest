@@ -347,7 +347,7 @@ void ClientLauncher::init_input()
 	if (random_input)
 		input = new RandomInputHandler();
 	else if (remote_input)
-		input = new RemoteInputHandler("tcp://*:5555");
+		input = new RemoteInputHandler("tcp://*:5555", m_rendering_engine);
 	else
 		input = new RealInputHandler(receiver);
 
