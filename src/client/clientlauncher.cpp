@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "client/inputhandler.h"
+#include "client/remoteinputhandler.h"
 #include "gui/mainmenumanager.h"
 #include "clouds.h"
 #include "server.h"
@@ -347,7 +348,7 @@ void ClientLauncher::init_input()
 	if (random_input)
 		input = new RandomInputHandler();
 	else if (remote_input)
-		input = new RemoteInputHandler("tcp://*:5555", m_rendering_engine);
+		input = new RemoteInputHandler("tcp://*:5555", m_rendering_engine, receiver);
 	else
 		input = new RealInputHandler(receiver);
 
