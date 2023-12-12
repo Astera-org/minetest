@@ -112,17 +112,17 @@ def display_image():
 
 
 def send_key(event):
-    key = event.char.upper()
+    key = event.keysym.upper()
 
     # Ensure that only the keys we want are sent
-    if key in ["Q", "W", "A", "S", "D", " "]:
+    if key in ["Q", "W", "A", "S", "D", "SPACE", "UP", "DOWN", "LEFT", "RIGHT"]:
         # Send the message to the server
         socket.send_string(key)
 
     elif key == "Q":
         window.quit()
     else:
-        raise NotImplementedError()
+        raise NotImplementedError(f"Key {key} not implemented")
 
     display_image()
 

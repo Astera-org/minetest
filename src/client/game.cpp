@@ -2567,7 +2567,7 @@ void Game::updateCameraDirection(CameraOrientation *cam, float dtime)
 #endif
 
 	if ((device->isWindowActive() && device->isWindowFocused()
-			&& !isMenuActive()) || input->isRandom()) {
+			&& !isMenuActive()) || input->isRandom() || input->isRemote()) {
 
 #ifndef __ANDROID__
 		if (!input->isRandom()) {
