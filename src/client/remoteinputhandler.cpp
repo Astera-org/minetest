@@ -20,8 +20,6 @@ void RemoteInputHandler::step(float dtime)
 
 	clearInput();
 
-
-
 	KeyPress newKeyCode;
 	if (text == "W") {
 		newKeyCode = keycache.key[KeyType::FORWARD];

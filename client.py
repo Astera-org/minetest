@@ -132,7 +132,8 @@ context = zmq.Context()
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:5555")
 
-socket.send_string("START_MINETEST")
+# to get first observation as a reply, we need to send a message
+socket.send_string("SPACE")
 
 # Create a new Tkinter window
 window = tk.Tk()
