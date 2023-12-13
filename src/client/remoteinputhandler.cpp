@@ -11,8 +11,18 @@ void RemoteInputHandler::step(float dtime)
 	// send current observation
 	irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
 	irr::video::IImage *const image = driver->createScreenShot(video::ECF_R8G8B8);
+
+	::capnp::MallocMessageBuilder image_proto;
+	Image::Builder image_builder = image_proto.initRoot<Image>();
+	image_builder.setWidth(image->getDimension().Width);
+	image_builder.setHeight(image->getDimension().Height);
+	image_builder.setData(
+			capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()),
+					image->getImageDataSizeInBytes()));
+
+	auto capnData = capnp::messageToFlatArray(image_proto);
 	zmqpp::message image_msg;
-	image_msg.add_raw(image->getData(), image->getImageDataSizeInBytes());
+	image_msg.add_raw(capnData.begin(), capnData.size() * sizeof(capnp::word));
 	m_socket.send(image_msg);
 	image->drop();
 

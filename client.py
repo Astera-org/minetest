@@ -3,21 +3,21 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import numpy as np
 import capnp
+
 capnp.remove_import_hook()
-remoteclient_capnp = capnp.load('src/network/proto/remoteclient.capnp')
+remoteclient_capnp = capnp.load("src/network/proto/remoteclient.capnp")
 
 
 def display_image():
     # Wait for the response from the server
     response = socket.recv()
 
-    # Convert the response to a numpy array
-    img_data = np.frombuffer(response, dtype=np.uint8)
+    with remoteclient_capnp.Image.from_bytes(response) as img_capnp:
+        # Convert the response to a numpy array
+        img_data = np.frombuffer(img_capnp.data, dtype=np.uint8)
 
     # Reshape the numpy array to the correct dimensions
-    img_data = img_data.reshape(
-        (1051, 1728, 3)
-    )  # replace height and width with the actual values
+    img_data = img_data.reshape((img_capnp.height, img_capnp.width, 3))
 
     # Convert the numpy array to a PIL Image
     img = Image.fromarray(img_data)
