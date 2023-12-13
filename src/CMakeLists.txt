@@ -195,6 +195,37 @@ endif(ENABLE_REDIS)
 find_package(SQLite3 REQUIRED)
 
 
+OPTION(ENABLE_PROTOBUF "Enable protocol buffers" TRUE)
+set(USE_PROTOBUF FALSE)
+if(ENABLE_PROTOBUF)
+	# TODO error handling
+	message(STATUS "Protocol buffers enabled.")
+	set(USE_PROTOBUF true)
+	find_package(Protobuf CONFIG REQUIRED) 
+	# find_package(absl REQUIRED)
+	message(STATUS "Protobuf include dir: ${Protobuf_INCLUDE_DIRS}")
+	# message(STATUS "Abseil lib dir: ${absl_LIBRARIES}")
+	include_directories(${Protobuf_INCLUDE_DIRS})
+	get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
+	file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.proto)
+	foreach(file ${PROTO_FILES})
+		get_filename_component(basename ${file} NAME_WLE)
+		get_filename_component(directory ${file} DIRECTORY)
+		get_filename_component(truename ${directory}/${basename} ABSOLUTE)
+		file(RELATIVE_PATH relname ${PROTO_PARENT}/src/network/proto ${truename})
+		set(outnames ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.h ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.cc)
+		add_custom_command(OUTPUT ${outnames}
+						COMMAND protobuf::protoc
+						ARGS --cpp_out=. --proto_path ${PROTO_PARENT}/src/network/proto ${file}
+						DEPENDS ${file}
+						COMMENT protobuf ${file})
+		set(proto_targets ${proto_targets} ${outnames})
+		# add_executable(${truename}.pb.cc)
+	endforeach()
+	add_custom_target(protobufs ALL DEPENDS ${proto_targets})
+endif(ENABLE_PROTOBUF)
+
+
 OPTION(ENABLE_PROMETHEUS "Enable prometheus client support" FALSE)
 set(USE_PROMETHEUS FALSE)
 
@@ -466,6 +497,7 @@ set(client_SRCS
 	${client_network_SRCS}
 	${client_irrlicht_changes_SRCS}
 	${client_SCRIPT_SRCS}
+	${proto_targets}
 )
 
 if(BUILD_UNITTESTS)
@@ -486,10 +518,11 @@ list(SORT server_SRCS)
 
 # Avoid source_group on broken CMake version.
 # see issue #7074 #7075
-if (CMAKE_VERSION VERSION_GREATER 3.8.1)
-	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${client_SRCS})
-	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
-endif()
+# if (CMAKE_VERSION VERSION_GREATER 3.8.1)
+# 	# source_group(TREE ${CMAKE_CURRENT_BINARY_DIR} PREFIX "ProtoBuf Source Files" FILES ${proto_targets})
+# 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${client_SRCS})
+# 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
+# endif()
 
 include_directories(
 	${PROJECT_BINARY_DIR}
@@ -553,6 +586,9 @@ if(BUILD_CLIENT)
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 	)
+	if (USE_PROTOBUF)
+		target_link_libraries(${PROJECT_NAME} ${Protobuf_LIBRARIES} ${absl_LIBRARIES})
+	endif()
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
 			# This is necessary for dynamic Lua modules

@@ -1,92 +1,8 @@
+import gen.src.network.proto.remoteclient_pb2 as remoteclient_pb2
 import zmq
 import tkinter as tk
 from PIL import Image, ImageTk
 import numpy as np
-
-commands = [
-    "FORWARD",
-    "BACKWARD",
-    "LEFT",
-    "RIGHT",
-    "JUMP",
-    "AUX1",
-    "SNEAK",
-    "AUTOFORWARD",
-    "DIG",
-    "PLACE",
-    "ESC",
-    # Other
-    "DROP",
-    "INVENTORY",
-    "CHAT",
-    "CMD",
-    "CMD_LOCAL",
-    "CONSOLE",
-    "MINIMAP",
-    "FREEMOVE",
-    "PITCHMOVE",
-    "FASTMOVE",
-    "NOCLIP",
-    "HOTBAR_PREV",
-    "HOTBAR_NEXT",
-    "MUTE",
-    "INC_VOLUME",
-    "DEC_VOLUME",
-    "CINEMATIC",
-    "SCREENSHOT",
-    "TOGGLE_BLOCK_BOUNDS",
-    "TOGGLE_HUD",
-    "TOGGLE_CHAT",
-    "TOGGLE_FOG",
-    "TOGGLE_UPDATE_CAMERA",
-    "TOGGLE_DEBUG",
-    "TOGGLE_PROFILER",
-    "CAMERA_MODE",
-    "INCREASE_VIEWING_RANGE",
-    "DECREASE_VIEWING_RANGE",
-    "RANGESELECT",
-    "ZOOM",
-    "QUICKTUNE_NEXT",
-    "QUICKTUNE_PREV",
-    "QUICKTUNE_INC",
-    "QUICKTUNE_DEC",
-    # hotbar
-    "SLOT_1",
-    "SLOT_2",
-    "SLOT_3",
-    "SLOT_4",
-    "SLOT_5",
-    "SLOT_6",
-    "SLOT_7",
-    "SLOT_8",
-    "SLOT_9",
-    "SLOT_10",
-    "SLOT_11",
-    "SLOT_12",
-    "SLOT_13",
-    "SLOT_14",
-    "SLOT_15",
-    "SLOT_16",
-    "SLOT_17",
-    "SLOT_18",
-    "SLOT_19",
-    "SLOT_20",
-    "SLOT_21",
-    "SLOT_22",
-    "SLOT_23",
-    "SLOT_24",
-    "SLOT_25",
-    "SLOT_26",
-    "SLOT_27",
-    "SLOT_28",
-    "SLOT_29",
-    "SLOT_30",
-    "SLOT_31",
-    "SLOT_32",
-    # Fake keycode for array size and internal checks
-    "INTERNAL_ENUM_COUNT",
-]
-
 
 def display_image():
     # Wait for the response from the server
@@ -111,15 +27,41 @@ def display_image():
     label.image = photo  # keep a reference to the image
 
 
+key_to_keytype = {
+    "W": remoteclient_pb2.KeyType.FORWARD,
+    "A": remoteclient_pb2.KeyType.LEFT,
+    "S": remoteclient_pb2.KeyType.BACKWARD,
+    "D": remoteclient_pb2.KeyType.RIGHT,
+    "SPACE": remoteclient_pb2.KeyType.JUMP,
+}
+
+arrow_keys_to_mouse_direction = {
+    "UP": (0, -20),
+    "DOWN": (0, 20),
+    "LEFT": (-20, 0),
+    "RIGHT": (20, 0),
+}
+
+
 def send_key(event):
     key = event.keysym.upper()
 
     # Ensure that only the keys we want are sent
-    if key in ["Q", "W", "A", "S", "D", "SPACE", "UP", "DOWN", "LEFT", "RIGHT"]:
-        # Send the message to the server
-        socket.send_string(key)
+    action = remoteclient_pb2.Action()
+    if key in key_to_keytype:
+        event = remoteclient_pb2.KeyboardEvent()
+        # Create a new KeyboardEvent
+        event.key = key_to_keytype[key]
+        event.eventType = remoteclient_pb2.EventType.PRESS
+        action.keyEvents.append(event)
+    if key in arrow_keys_to_mouse_direction:
+        action.mouseDx, action.mouseDy = arrow_keys_to_mouse_direction[key]
 
-    elif key == "Q":
+    # Send the event to the server
+    print(f"Sending action: {action}")
+    socket.send(action)
+
+    if key == "Q":
         window.quit()
     else:
         raise NotImplementedError(f"Key {key} not implemented")
@@ -133,7 +75,10 @@ socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:5555")
 
 # to get first observation as a reply, we need to send a message
-socket.send_string("SPACE")
+initial_event = remoteclient_pb2.KeyboardEvent()
+initial_event.key = remoteclient_pb2.KeyType.SPACE
+initial_event.eventType = remoteclient_pb2.EventType.PRESS
+socket.send(initial_event.SerializeToString())
 
 # Create a new Tkinter window
 window = tk.Tk()
@@ -146,8 +91,3 @@ display_image()
 
 # Set the event listener for key press event
 window.bind("<KeyPress>", send_key)
-
-# Run the application, the script will pause here until the window is closed
-window.mainloop()
-
-context.destroy()
