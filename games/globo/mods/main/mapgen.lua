@@ -3,22 +3,27 @@
 -- sets this for the NEXT map that is generated. very lame
 minetest.settings:set("mapgen_limit", MAP_SIZE)
 
+local gGribDecoID
+minetest.register_on_mods_loaded(function()
+	gGribDecoID = minetest.get_decoration_id("grib_weed_deco")
+	print("did: " .. gGribDecoID)
+	minetest.set_gen_notify("decoration", {gGribDecoID})
+end)
 
 minetest.register_on_generated(function(minp, maxp, blockseed)
-	minetest.log("action", "Generating map chunk, minp=" .. minetest.pos_to_string(minp) .. ", maxp=" .. minetest.pos_to_string(maxp))
-    local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
-    local gen_notify = minetest.get_mapgen_object("gennotify")
-    local your_nodes = gen_notify["main:grib_weed"]
+	local gen_notify = minetest.get_mapgen_object("gennotify")
+	local your_nodes = gen_notify["decoration#".. gGribDecoID]
 
-    if your_nodes then
-        for _, pos in ipairs(your_nodes) do
-            -- call on_construct on this node
-			minetest.log("action", "on_construct grib")
-			local node = minetest.get_node(pos)
-			node.on_construct(pos)
-        end
-    end
+	-- minetest.log("action", "gen_notify contents: " .. dump(gen_notify))
+
+	if your_nodes then
+		for _, pos in ipairs(your_nodes) do
+			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
+			grib_start_timer(p)
+		end
+	end
 end)
+
 
 
 

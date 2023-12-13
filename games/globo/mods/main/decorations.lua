@@ -66,13 +66,14 @@ function registerDecorations()
     })
 
     minetest.register_decoration({
+        name = "grib_weed_deco",
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
         sidelen = 16,
         fill_ratio = 0.001,
         biomes = {"mapgen:grassland"},
         decoration = "main:grib_weed",
-        flags = {gen_notify = true},
+        flags = {node_dust = "main:grib_weed", gen_notify = true},
     })
 
     minetest.register_decoration({

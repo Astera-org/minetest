@@ -151,7 +151,6 @@ minetest.register_node("main:coffee", {
 	groups = {snappy = 3, flammable = 2, flora=1},
 })
 
-print("register grib")
 minetest.register_node("main:grib_weed", {
 	description = "Grib Weed",
 	drawtype = "plantlike",
@@ -163,40 +162,32 @@ minetest.register_node("main:grib_weed", {
 	walkable = false,
 	groups = {snappy = 3, flammable = 2, flora = 1}, 
     on_timer = function(pos, elapsed)
-        spread_grib_weed(pos)
+        grib_spread(pos)
         return true -- Continue the cycle
     end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
 		print("place grib")
-        local timer = minetest.get_node_timer(pos)
-        timer:start(1) 
+        grib_start_timer(pos) 
     end,
     on_construct = function(pos)
 		minetest.log("action", "on_construct grib")
-        local timer = minetest.get_node_timer(pos)
-        timer:start(1) 
-    end,
-
-	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-		print("click grip")
-		local timer = minetest.get_node_timer(pos)
-        timer:start(1) 
-    end,
-
-	on_punch = function(pos, node, puncher, pointed_thing)
-		print("punch grip")
-		local timer = minetest.get_node_timer(pos)
-        timer:start(1) 
+        grib_start_timer(pos) 
     end,
 })
 
-function kill_grib_weed(pos)
+function grib_start_timer(pos)
+	-- Starts a timer for grib weed's life cycle
+	local timer = minetest.get_node_timer(pos)
+	timer:start(20) 
+end
+
+function grib_kill(pos)
     -- Replaces grib weed with air, effectively "killing" it
     minetest.set_node(pos, {name = "air"})
 end
 
-function spread_grib_weed(pos)
-	print("spread grib")
+function grib_spread(pos)
+	minetest.log("action", "spread_grib_weed")
     -- Chance of spreading grib weed to adjacent positions
     local positions = minetest.find_nodes_in_area(
         {x = pos.x - 1, y = pos.y-1, z = pos.z - 1},

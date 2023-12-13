@@ -32,3 +32,5 @@ Every 10 seconds Pulse Blossom starts to glow for 2 seconds at the end of the gl
 
 
 Also grib weed should spread to ground spaces with no flora.
+
+We are trying to use gen_notify to do something when grib weed is created. The grib weed shows up in the world but the gen_notify isn't working. What could be wrong?
