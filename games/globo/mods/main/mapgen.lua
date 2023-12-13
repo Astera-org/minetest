@@ -3,6 +3,25 @@
 -- sets this for the NEXT map that is generated. very lame
 minetest.settings:set("mapgen_limit", MAP_SIZE)
 
+
+minetest.register_on_generated(function(minp, maxp, blockseed)
+	minetest.log("action", "Generating map chunk, minp=" .. minetest.pos_to_string(minp) .. ", maxp=" .. minetest.pos_to_string(maxp))
+    local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+    local gen_notify = minetest.get_mapgen_object("gennotify")
+    local your_nodes = gen_notify["main:grib_weed"]
+
+    if your_nodes then
+        for _, pos in ipairs(your_nodes) do
+            -- call on_construct on this node
+			minetest.log("action", "on_construct grib")
+			local node = minetest.get_node(pos)
+			node.on_construct(pos)
+        end
+    end
+end)
+
+
+
 minetest.register_on_mapgen_init(function(mgparams)
     
     minetest.set_mapgen_setting("mg_name", "v7", true)

@@ -13,7 +13,6 @@ mobs from Exile?
 
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 Pine Tree:
-I )Brambles: Hurts you if pushed into. Burns.
 I )Thorns: Hurts you if pushed into. Burns. Produces berries over time.
 I )Potatoes: Grow and spread in the right conditions. Needs water nearby
 I )Sumac: Poison berries hurts player if eaten
@@ -30,3 +29,6 @@ Conveyor belt: Placed on terrain. Any item on it is conveyed along to the end of
 -   Corpse: provides food. Turns to bones
 
 Every 10 seconds Pulse Blossom starts to glow for 2 seconds at the end of the glow it damages any players or mobs around it.
+
+
+Also grib weed should spread to ground spaces with no flora.
