@@ -12,12 +12,13 @@ def display_image():
     # Wait for the response from the server
     response = socket.recv()
 
-    with remoteclient_capnp.Image.from_bytes(response) as img_capnp:
+    with remoteclient_capnp.Observation.from_bytes(response) as obs_proto:
         # Convert the response to a numpy array
-        img_data = np.frombuffer(img_capnp.data, dtype=np.uint8)
-
-    # Reshape the numpy array to the correct dimensions
-    img_data = img_data.reshape((img_capnp.height, img_capnp.width, 3))
+        img = obs_proto.image
+        img_data = np.frombuffer(img.data, dtype=np.uint8)
+        # Reshape the numpy array to the correct dimensions
+        img_data = img_data.reshape((img.height, img.width, 3))
+        reward = obs_proto.reward
 
     # Convert the numpy array to a PIL Image
     img = Image.fromarray(img_data)
@@ -59,7 +60,6 @@ def send_key(event):
         action.mouseDx, action.mouseDy = arrow_keys_to_mouse_direction[key]
 
     # Send the event to the server
-    print(f"Sending action: {action}")
     socket.send(action.to_bytes())
 
     if key == "Q":

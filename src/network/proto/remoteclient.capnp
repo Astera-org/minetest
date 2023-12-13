@@ -104,6 +104,4 @@ struct Image {
 struct Observation {
   image @0 :Image;
   reward @1 :Float32;
-  action @2 :Action;
-  info @3 :Text;
 }
