@@ -83,7 +83,7 @@ minetest.register_node("main:brambles", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3},
+	groups = {snappy = 3, flora=1},
     damage_per_second = 1,
 })
 
@@ -110,7 +110,7 @@ minetest.register_node("main:potatoes", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora=1},
 	on_use = minetest.item_eat(1),  -- Assuming it's eatable
 })
 
@@ -123,7 +123,7 @@ minetest.register_node("main:sumac", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora=1},
 })
 
 minetest.register_node("main:sun_berry", {
@@ -135,7 +135,7 @@ minetest.register_node("main:sun_berry", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora=1},
 	on_use = minetest.item_eat(2),  -- Assuming it's eatable
 })
 
@@ -148,9 +148,10 @@ minetest.register_node("main:coffee", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora=1},
 })
 
+print("register grib")
 minetest.register_node("main:grib_weed", {
 	description = "Grib Weed",
 	drawtype = "plantlike",
@@ -160,8 +161,78 @@ minetest.register_node("main:grib_weed", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora = 1}, 
+    on_timer = function(pos, elapsed)
+        spread_grib_weed(pos)
+        return true -- Continue the cycle
+    end,
+	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		print("place grib")
+        local timer = minetest.get_node_timer(pos)
+        timer:start(1) 
+    end,
+    on_construct = function(pos)
+		minetest.log("action", "on_construct grib")
+        local timer = minetest.get_node_timer(pos)
+        timer:start(1) 
+    end,
+
+	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+		print("click grip")
+		local timer = minetest.get_node_timer(pos)
+        timer:start(1) 
+    end,
+
+	on_punch = function(pos, node, puncher, pointed_thing)
+		print("punch grip")
+		local timer = minetest.get_node_timer(pos)
+        timer:start(1) 
+    end,
 })
+
+function kill_grib_weed(pos)
+    -- Replaces grib weed with air, effectively "killing" it
+    minetest.set_node(pos, {name = "air"})
+end
+
+function spread_grib_weed(pos)
+	print("spread grib")
+    -- Chance of spreading grib weed to adjacent positions
+    local positions = minetest.find_nodes_in_area(
+        {x = pos.x - 1, y = pos.y-1, z = pos.z - 1},
+        {x = pos.x + 1, y = pos.y+1, z = pos.z + 1},
+        {"group:flora"}
+    )
+	for _, p in ipairs(positions) do
+		if math.random(1, 100) <= 10 then
+			if minetest.get_node(p).name ~= "main:grib_weed" then
+				minetest.set_node(p, {name = "main:grib_weed"})
+			end
+		end
+    end
+end
+--[[ 
+local function on_construct_grib_weed(pos)
+    -- Starts a timer for grib weed's life cycle
+    local timer = minetest.get_node_timer(pos)
+    timer:start(20) 
+end
+
+local function on_timer_grib_weed(pos, elapsed)
+	spread_grib_weed(pos)
+    return true -- Continue the cycle
+
+    Get temperature at position, and if it's below 0, kill grib weed
+    local temp = minetest.get_meta(pos):get_int("temperature")
+    if temp and temp < 0 then
+        kill_grib_weed(pos)
+    else
+        spread_grib_weed(pos)
+        return true -- Continue the cycle
+    end	
+end
+]]--
+
 
 minetest.register_node("main:corn", {
 	description = "Corn",
@@ -172,6 +243,6 @@ minetest.register_node("main:corn", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2},
+	groups = {snappy = 3, flammable = 2, flora=1},
 	on_use = minetest.item_eat(3),  
 })

@@ -1,5 +1,7 @@
 
 function registerDecorations()
+    print("register decorations")
+    
     minetest.register_decoration({
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
@@ -70,6 +72,7 @@ function registerDecorations()
         fill_ratio = 0.001,
         biomes = {"mapgen:grassland"},
         decoration = "main:grib_weed",
+        flags = {gen_notify = true},
     })
 
     minetest.register_decoration({
