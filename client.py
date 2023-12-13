@@ -1,8 +1,11 @@
-import gen.src.network.proto.remoteclient_pb2 as remoteclient_pb2
 import zmq
 import tkinter as tk
 from PIL import Image, ImageTk
 import numpy as np
+import capnp
+capnp.remove_import_hook()
+remoteclient_capnp = capnp.load('src/network/proto/remoteclient.capnp')
+
 
 def display_image():
     # Wait for the response from the server
@@ -28,11 +31,11 @@ def display_image():
 
 
 key_to_keytype = {
-    "W": remoteclient_pb2.KeyType.FORWARD,
-    "A": remoteclient_pb2.KeyType.LEFT,
-    "S": remoteclient_pb2.KeyType.BACKWARD,
-    "D": remoteclient_pb2.KeyType.RIGHT,
-    "SPACE": remoteclient_pb2.KeyType.JUMP,
+    "W": "forward",
+    "A": "left",
+    "S": "backward",
+    "D": "right",
+    "SPACE": "jump",
 }
 
 arrow_keys_to_mouse_direction = {
@@ -47,24 +50,20 @@ def send_key(event):
     key = event.keysym.upper()
 
     # Ensure that only the keys we want are sent
-    action = remoteclient_pb2.Action()
+    action = remoteclient_capnp.Action.new_message()
     if key in key_to_keytype:
-        event = remoteclient_pb2.KeyboardEvent()
+        keyEvents = action.init("keyEvents", 1)
+        keyEvents[0] = key_to_keytype[key]
         # Create a new KeyboardEvent
-        event.key = key_to_keytype[key]
-        event.eventType = remoteclient_pb2.EventType.PRESS
-        action.keyEvents.append(event)
     if key in arrow_keys_to_mouse_direction:
         action.mouseDx, action.mouseDy = arrow_keys_to_mouse_direction[key]
 
     # Send the event to the server
     print(f"Sending action: {action}")
-    socket.send(action)
+    socket.send(action.to_bytes())
 
     if key == "Q":
         window.quit()
-    else:
-        raise NotImplementedError(f"Key {key} not implemented")
 
     display_image()
 
@@ -75,10 +74,8 @@ socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:5555")
 
 # to get first observation as a reply, we need to send a message
-initial_event = remoteclient_pb2.KeyboardEvent()
-initial_event.key = remoteclient_pb2.KeyType.SPACE
-initial_event.eventType = remoteclient_pb2.EventType.PRESS
-socket.send(initial_event.SerializeToString())
+action = remoteclient_capnp.Action.new_message()
+socket.send(action.to_bytes())
 
 # Create a new Tkinter window
 window = tk.Tk()
@@ -91,3 +88,7 @@ display_image()
 
 # Set the event listener for key press event
 window.bind("<KeyPress>", send_key)
+# Run the application, the script will pause here until the window is closed
+window.mainloop()
+
+context.destroy()

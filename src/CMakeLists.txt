@@ -195,35 +195,24 @@ endif(ENABLE_REDIS)
 find_package(SQLite3 REQUIRED)
 
 
-OPTION(ENABLE_PROTOBUF "Enable protocol buffers" TRUE)
-set(USE_PROTOBUF FALSE)
-if(ENABLE_PROTOBUF)
-	# TODO error handling
-	message(STATUS "Protocol buffers enabled.")
-	set(USE_PROTOBUF true)
-	find_package(Protobuf CONFIG REQUIRED) 
-	# find_package(absl REQUIRED)
-	message(STATUS "Protobuf include dir: ${Protobuf_INCLUDE_DIRS}")
-	# message(STATUS "Abseil lib dir: ${absl_LIBRARIES}")
-	include_directories(${Protobuf_INCLUDE_DIRS})
-	get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
-	file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.proto)
-	foreach(file ${PROTO_FILES})
-		get_filename_component(basename ${file} NAME_WLE)
-		get_filename_component(directory ${file} DIRECTORY)
-		get_filename_component(truename ${directory}/${basename} ABSOLUTE)
-		file(RELATIVE_PATH relname ${PROTO_PARENT}/src/network/proto ${truename})
-		set(outnames ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.h ${CMAKE_CURRENT_BINARY_DIR}/${relname}.pb.cc)
-		add_custom_command(OUTPUT ${outnames}
-						COMMAND protobuf::protoc
-						ARGS --cpp_out=. --proto_path ${PROTO_PARENT}/src/network/proto ${file}
-						DEPENDS ${file}
-						COMMENT protobuf ${file})
-		set(proto_targets ${proto_targets} ${outnames})
-		# add_executable(${truename}.pb.cc)
-	endforeach()
-	add_custom_target(protobufs ALL DEPENDS ${proto_targets})
-endif(ENABLE_PROTOBUF)
+OPTION(ENABLE_CAPNPROTO "Enable Cap'n Proto" TRUE)
+set(USE_CAPNPROTO FALSE)
+if(ENABLE_CAPNPROTO)
+    # TODO error handling
+    message(STATUS "Cap'n Proto enabled.")
+    set(USE_CAPNPROTO true)
+    find_package(CapnProto CONFIG REQUIRED)
+    message(STATUS "Cap'n Proto include dir: ${CAPNP_INCLUDE_DIRS}")
+    include_directories(${CAPNP_INCLUDE_DIRS})
+    get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
+    file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.capnp)
+	# set(CAPNPC_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS ${PROTO_FILES})
+    add_custom_target(capnproto ALL DEPENDS ${CAPNP_SRCS} ${CAPNP_HDRS})
+	include_directories(${CMAKE_CURRENT_BINARY_DIR}/network/proto)
+	message("Adding ${CMAKE_CURRENT_BINARY_DIR}/network/proto to include directories")
+	message("Adding ${CAPNP_LIBRARIES} to target_link_libraries")
+endif(ENABLE_CAPNPROTO)
 
 
 OPTION(ENABLE_PROMETHEUS "Enable prometheus client support" FALSE)
@@ -497,7 +486,7 @@ set(client_SRCS
 	${client_network_SRCS}
 	${client_irrlicht_changes_SRCS}
 	${client_SCRIPT_SRCS}
-	${proto_targets}
+	${CAPNP_SRCS}
 )
 
 if(BUILD_UNITTESTS)
@@ -586,9 +575,10 @@ if(BUILD_CLIENT)
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 	)
-	if (USE_PROTOBUF)
-		target_link_libraries(${PROJECT_NAME} ${Protobuf_LIBRARIES} ${absl_LIBRARIES})
+	if (USE_CAPNPROTO)
+		target_link_libraries(${PROJECT_NAME} ${CAPNP_LIBRARIES})
 	endif()
+
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
 			# This is necessary for dynamic Lua modules

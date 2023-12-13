@@ -1,5 +1,8 @@
 #include "gui/mainmenumanager.h"
+#include "remoteclient.capnp.h"
 #include "inputhandler.h"
+#include <capnp/message.h>
+#include <capnp/serialize-packed.h>
 
 class RemoteInputHandler : public InputHandler
 {
@@ -14,10 +17,13 @@ public:
 		// wait for client
 		zmqpp::message message;
 		m_socket.receive(message);
-		std::string text;
-		message >> text;
-		if (text != "START_MINETEST") {
-			throw std::runtime_error("Invalid handshake, expected START_MINETEST");
+		std::string data;
+		message >> data;
+		kj::ArrayPtr<const capnp::word> words(reinterpret_cast<const capnp::word*>(data.data()), data.size() / sizeof(capnp::word));
+		capnp::FlatArrayMessageReader reader(words);
+		Action::Reader action = reader.getRoot<Action>();
+		if (action.hasKeyEvents()){
+			throw std::runtime_error("INVALID HANDSHAKE: Got key events in handshake");
 		}
 	}
 

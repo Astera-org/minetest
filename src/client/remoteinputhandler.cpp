@@ -1,6 +1,10 @@
 #include "remoteinputhandler.h"
 #include "IEventReceiver.h"
+#include "client/keycode.h"
+#include "client/keys.h"
+#include "clientiface.h"
 #include "irr_v2d.h"
+#include "remoteclient.capnp.h"
 
 void RemoteInputHandler::step(float dtime)
 {
@@ -15,41 +19,49 @@ void RemoteInputHandler::step(float dtime)
 	// receive next key
 	zmqpp::message message;
 	m_socket.receive(message);
-	std::string text;
-	message >> text;
+
+	std::string data;
+	message >> data;
+	kj::ArrayPtr<const capnp::word> words(
+			reinterpret_cast<const capnp::word *>(data.data()),
+			data.size() / sizeof(capnp::word));
+
+	capnp::FlatArrayMessageReader reader(words);
+	Action::Reader action = reader.getRoot<Action>();
+	infostream << "Action ASDF: " << action.toString().flatten().cStr() << std::endl;
 
 	clearInput();
 
 	KeyPress newKeyCode;
-	if (text == "W") {
-		newKeyCode = keycache.key[KeyType::FORWARD];
-	} else if (text == "S") {
-		newKeyCode = keycache.key[KeyType::BACKWARD];
-	} else if (text == "A") {
-		newKeyCode = keycache.key[KeyType::LEFT];
-	} else if (text == "D") {
-		newKeyCode = keycache.key[KeyType::RIGHT];
-	} else if (text == "SPACE") {
-		newKeyCode = keycache.key[KeyType::JUMP];
-	}
 
-	mousespeed = v2s32(0, 0);
-	if (text == "UP") {
-		mousespeed.Y = -20;
-	} else if (text == "DOWN") {
-		mousespeed.Y = 20;
-	} else if (text == "LEFT") {
-		mousespeed.X = -20;
-	} else if (text == "RIGHT") {
-		mousespeed.X = 20;
+	for (auto keyEvent : action.getKeyEvents()) {
+		switch (keyEvent) {
+		case KeyPressType::Key::FORWARD:
+			newKeyCode = keycache.key[KeyType::FORWARD];
+			break;
+		case KeyPressType::Key::BACKWARD:
+			newKeyCode = keycache.key[KeyType::BACKWARD];
+			break;
+		case KeyPressType::Key::LEFT:
+			newKeyCode = keycache.key[KeyType::LEFT];
+			break;
+		case KeyPressType::Key::RIGHT:
+			newKeyCode = keycache.key[KeyType::RIGHT];
+			break;
+		case KeyPressType::Key::JUMP:
+			newKeyCode = keycache.key[KeyType::JUMP];
+			break;
+		default:
+			break;
+		}
+		if (!keyIsDown[newKeyCode]) {
+			keyWasPressed.set(newKeyCode);
+		}
+		keyIsDown.set(newKeyCode);
+		keyWasDown.set(newKeyCode);
 	}
+	mousespeed = v2s32(action.getMouseDx(), action.getMouseDy());
 	// mousepos is reset to (WIDTH/2, HEIGHT/2) after every iteration of main game loop
 	// unit is (scaled) pixels
 	mousepos += mousespeed;
-
-	if (!keyIsDown[newKeyCode]) {
-		keyWasPressed.set(newKeyCode);
-	}
-	keyIsDown.set(newKeyCode);
-	keyWasDown.set(newKeyCode);
 };
