@@ -1,0 +1,15 @@
+name: minetest
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - numpy
+  - pyzmq
+  # for dummy client only
+  - pillow
+  - tk
+  # more requirements
+  - pip
+  - pip:
+    - pycapnp # not available on conda-forge for M1 macs
