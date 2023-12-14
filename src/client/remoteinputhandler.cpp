@@ -43,6 +43,8 @@ void RemoteInputHandler::step(float dtime)
 	Action::Reader action = reader.getRoot<Action>();
 
 	// we don't model key release events, keys need to be re-pressed every step
+	// there's only one place in the engine were keyRelease events are used, and 
+	// it doesn't seem important.
 	clearInput();
 
 	KeyPress newKeyCode;
@@ -57,6 +59,16 @@ void RemoteInputHandler::step(float dtime)
 	}
 	mousespeed = v2s32(action.getMouseDx(), action.getMouseDy());
 	// mousepos is reset to (WIDTH/2, HEIGHT/2) after every iteration of main game loop
-	// unit is (scaled) pixels
+	// unit is pixels, origin is top left corner, bounds is (0,0) to (WIDTH, HEIGHT)
 	mousepos += mousespeed;
 };
+
+void RemoteInputHandler::clearInput()
+{
+	keyIsDown.clear();
+	// keyWasDown.clear();
+	keyWasPressed.clear();
+	// keyWasReleased.clear();
+
+	mouse_wheel = 0;
+}

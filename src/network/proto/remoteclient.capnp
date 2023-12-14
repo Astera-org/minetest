@@ -16,6 +16,10 @@ struct KeyPressType {
     place @9;
     esc @10;
     drop @11;
+    # Currently, using the inventory key will open the inventory, but pressing it again
+    # will not close it. There another key handling pipeline for forms / formspec that we'd
+    # need to deal with. The minetest game inventory is implemented in minetest_game/inventory.lua.
+    # keyHandling is probably in guiFormspecMenu.cpp.
     inventory @12;
     chat @13;
     cmd @14;

@@ -99,15 +99,7 @@ public:
 
 	virtual void clearWasKeyPressed() override { keyWasPressed.clear(); }
 	virtual void clearWasKeyReleased() override { keyWasReleased.clear(); }
-	void clearInput()
-	{
-		keyIsDown.clear();
-		keyWasDown.clear();
-		keyWasPressed.clear();
-		keyWasReleased.clear();
-
-		mouse_wheel = 0;
-	}
+	void clearInput();
 
 	virtual void step(float dtime) override;
 	void simulateEvent(const SEvent &event)

@@ -41,6 +41,8 @@ key_to_keytype = {
     "SHIFT_L": "sneak",
     "J": "dig",
     "K": "place",
+    "C": "cameraMode",
+    "ESCAPE": "esc",
 }
 
 arrow_keys_to_mouse_direction = {
