@@ -30,31 +30,15 @@ class Minetest(gym.Env):
     def __init__(
         self,
         env_port: int = 5555,
-        server_port: int = 30000,
         minetest_root: Optional[os.PathLike] = None,
-        artefact_dir: Optional[os.PathLike] = None,
         world_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
-        display_size: Tuple[int, int] = default_display_size,
-        fov: int = 72,
-        base_seed: int = 0,
-        world_seed: Optional[int] = None,
         start_minetest: bool = True,
         game_id: str = "minetest",
         client_name: str = "minetester",
-        clientmods: List[str] = [],
-        servermods: List[str] = [],
         config_dict: Dict[str, Any] = {},
-        sync_port: Optional[int] = None,
-        sync_dtime: Optional[float] = None,
-        headless: bool = False,
-        start_xvfb: bool = False,
-        x_display: Optional[int] = None,
     ):
         self.unique_env_id = str(uuid.uuid4())
-
-        # Graphics settings
-        self._set_graphics(headless, display_size, fov)
 
         # Define action and observation space
         self._configure_spaces()
@@ -142,19 +126,17 @@ class Minetest(gym.Env):
 
     def _configure_spaces(self):
         # Define action and observation space
-        self.max_mouse_move_x = self.display_size[0]
-        self.max_mouse_move_y = self.display_size[1]
+        self.max_mouse_move_x = self.display_size[0] // 2
+        self.max_mouse_move_y = self.display_size[1] // 2
         self.action_space = gym.spaces.Dict(
             {
-                **{key: gym.spaces.Discrete(2) for key in KEY_MAP.keys()},
-                **{
-                    "MOUSE": gym.spaces.Box(
-                        np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
-                        np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
-                        shape=(2,),
-                        dtype=int,
-                    ),
-                },
+                "KEYS": gym.spaces.MultiBinary(len(KEY_MAP)),
+                "MOUSE": gym.spaces.Box(
+                    np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
+                    np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
+                    shape=(2,),
+                    dtype=int,
+                ),
             },
         )
         self.observation_space = gym.spaces.Box(

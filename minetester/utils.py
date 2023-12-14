@@ -15,7 +15,6 @@ KEY_MAP = {
     "JUMP": KeyType.JUMP,
     "SNEAK": KeyType.SNEAK,  # shift key in menus
     "DIG": KeyType.DIG,  # left mouse button
-    "MIDDLE": KeyType.MIDDLE,  # middle mouse button
     "PLACE": KeyType.PLACE,  # right mouse button
     "DROP": KeyType.DROP,
     "HOTBAR_NEXT": KeyType.HOTBAR_NEXT,  # mouse wheel up
@@ -28,9 +27,8 @@ KEY_MAP = {
     "SLOT_6": KeyType.SLOT_6,
     "SLOT_7": KeyType.SLOT_7,
     "SLOT_8": KeyType.SLOT_8,
-    "INVENTORY": KeyType.INVENTORY,
 }
-INV_KEY_MAP = {value: key for key, value in KEY_MAP.items()}
+INVERSE_KEY_MAP = {value: key for key, value in KEY_MAP.items()}
 
 # Define noop action
 NOOP_ACTION = {key: 0 for key in KEY_MAP.keys()}
@@ -56,8 +54,10 @@ def unpack_pb_action(pb_action: pb_objects.Action):
     action = dict(NOOP_ACTION)
     action["MOUSE"] = [pb_action.mouseDx, pb_action.mouseDy]
     for key_event in pb_action.keyEvents:
-        if key_event.key in INV_KEY_MAP and key_event.eventType == pb_objects.PRESS:
-            key_name = INV_KEY_MAP[key_event.key]
+        if key_event.key in INVERSE_KEY_MAP
+     and key_event.eventType == pb_objects.PRESS:
+            key_name = INVERSE_KEY_MAP
+        [key_event.key]
             action[key_name] = 1
     return action
 
