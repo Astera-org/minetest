@@ -38,6 +38,9 @@ key_to_keytype = {
     "S": "backward",
     "D": "right",
     "SPACE": "jump",
+    "SHIFT_L": "sneak",
+    "J": "dig",
+    "K": "place",
 }
 
 arrow_keys_to_mouse_direction = {

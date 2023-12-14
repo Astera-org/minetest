@@ -48,25 +48,7 @@ void RemoteInputHandler::step(float dtime)
 	KeyPress newKeyCode;
 
 	for (auto keyEvent : action.getKeyEvents()) {
-		switch (keyEvent) {
-		case KeyPressType::Key::FORWARD:
-			newKeyCode = keycache.key[KeyType::FORWARD];
-			break;
-		case KeyPressType::Key::BACKWARD:
-			newKeyCode = keycache.key[KeyType::BACKWARD];
-			break;
-		case KeyPressType::Key::LEFT:
-			newKeyCode = keycache.key[KeyType::LEFT];
-			break;
-		case KeyPressType::Key::RIGHT:
-			newKeyCode = keycache.key[KeyType::RIGHT];
-			break;
-		case KeyPressType::Key::JUMP:
-			newKeyCode = keycache.key[KeyType::JUMP];
-			break;
-		default:
-			break;
-		}
+		newKeyCode = keycache.key[static_cast<int>(keyEvent)];
 		if (!keyIsDown[newKeyCode]) {
 			keyWasPressed.set(newKeyCode);
 		}

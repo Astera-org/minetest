@@ -2,6 +2,7 @@
 @0xa7829f89062090f7;
 
 struct KeyPressType {
+  # this enum should equal the KeyType enum in keys.h
   enum Key {
     forward @0;
     backward @1;
