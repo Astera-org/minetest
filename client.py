@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import zmq
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -47,23 +48,54 @@ arrow_keys_to_mouse_direction = {
 }
 
 
-def send_key(event):
+key_cache = set()
+
+
+@dataclass
+class Mouse:
+    dx: float
+    dy: float
+
+
+mouse = Mouse(0, 0)
+
+
+def key_down(event):
     key = event.keysym.upper()
 
-    # Ensure that only the keys we want are sent
-    action = remoteclient_capnp.Action.new_message()
     if key in key_to_keytype:
-        keyEvents = action.init("keyEvents", 1)
-        keyEvents[0] = key_to_keytype[key]
-        # Create a new KeyboardEvent
+        key_cache.add(key)
     if key in arrow_keys_to_mouse_direction:
-        action.mouseDx, action.mouseDy = arrow_keys_to_mouse_direction[key]
+        mouse.dx += arrow_keys_to_mouse_direction[key][0]
+        mouse.dy += arrow_keys_to_mouse_direction[key][1]
+
+    sendCurrent()
+
+
+def key_up(event):
+    key = event.keysym.upper()
+
+    if key in key_to_keytype and key in key_cache:
+        key_cache.remove(key)
+
+    if key in arrow_keys_to_mouse_direction:
+        mouse.dx -= arrow_keys_to_mouse_direction[key][0]
+        mouse.dy -= arrow_keys_to_mouse_direction[key][1]
+
+    sendCurrent()
+
+
+def sendCurrent():
+    action = remoteclient_capnp.Action.new_message()
+    keyEvents = action.init("keyEvents", len(key_cache))
+    for i, key in enumerate(key_cache):
+        keyEvents[i] = key_to_keytype[key]
+
+    action.mouseDx = mouse.dx
+    action.mouseDy = mouse.dy
 
     # Send the event to the server
     socket.send(action.to_bytes())
-
-    if key == "Q":
-        window.quit()
 
     display_image()
 
@@ -87,7 +119,8 @@ label.pack()
 display_image()
 
 # Set the event listener for key press event
-window.bind("<KeyPress>", send_key)
+window.bind("<KeyPress>", key_down)
+window.bind("<KeyRelease>", key_up)
 # Run the application, the script will pause here until the window is closed
 window.mainloop()
 
