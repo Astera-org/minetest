@@ -188,19 +188,22 @@ end
 
 function grib_spread(pos)
 	minetest.log("action", "spread_grib_weed")
-    -- Chance of spreading grib weed to adjacent positions
-    local positions = minetest.find_nodes_in_area(
-        {x = pos.x - 1, y = pos.y-1, z = pos.z - 1},
-        {x = pos.x + 1, y = pos.y+1, z = pos.z + 1},
-        {"group:flora"}
-    )
+	-- Chance of spreading grib weed to adjacent positions
+	local positions = minetest.find_nodes_in_area(
+		{x = pos.x - 1, y = pos.y - 1, z = pos.z - 1},
+		{x = pos.x + 1, y = pos.y + 1, z = pos.z + 1},
+		{"group:flora", "air"}
+	)
 	for _, p in ipairs(positions) do
 		if math.random(1, 100) <= 10 then
-			if minetest.get_node(p).name ~= "main:grib_weed" then
-				minetest.set_node(p, {name = "main:grib_weed"})
+			local node_under = minetest.get_node({x = p.x, y = p.y - 1, z = p.z})
+			if node_under.name == "default:dirt" or node_under.name == "default:dirt_with_grass" then
+				if minetest.get_node(p).name == "air" or minetest.get_node(p).name:find("group:flora") then
+					minetest.set_node(p, {name = "main:grib_weed"})
+				end
 			end
 		end
-    end
+	end
 end
 --[[ 
 local function on_construct_grib_weed(pos)
