@@ -32,6 +32,7 @@ KEY_MAP = [
     "sneak",
     "dig",
     "place",
+    "cameraMode",
 ]
 
 INVERSE_KEY_MAP = {name: idx for idx, name in enumerate(KEY_MAP)}

@@ -11,7 +11,7 @@ KEY_TO_KEYTYPE = {
     "S": "backward",
     "D": "right",
     "SPACE": "jump",
-    "SHIFT_L": "sneak",
+    "LEFT SHIFT": "sneak",
     "J": "dig",
     "K": "place",
     "C": "cameraMode",
