@@ -24,7 +24,7 @@ from minetester.utils import (
 DisplaySize = namedtuple("DisplaySize", ["width", "height"])
 
 
-class Minetest(gym.Env):
+class MinetestEnv(gym.Env):
     metadata = {"render.modes": ["rgb_array", "human"]}
 
     def __init__(
@@ -266,7 +266,7 @@ class Minetest(gym.Env):
             screen_h=self.display_size[1],
             fov=self.fov_y,
             # Adapt HUD size to display size
-            hud_scaling=self.display_size[0] / Minetest.default_display_size[0],
+            hud_scaling=self.display_size[0] / MinetestEnv.default_display_size[0],
             # Experimental settings to improve performance
             server_map_save_interval=1000000,
             profiler_print_interval=0,
