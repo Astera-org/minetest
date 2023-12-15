@@ -1,36 +1,8 @@
-from dataclasses import dataclass
-import zmq
-import tkinter as tk
-from PIL import Image, ImageTk
+import pygame
 import numpy as np
+import zmq
+from dataclasses import dataclass
 import capnp
-
-capnp.remove_import_hook()
-remoteclient_capnp = capnp.load("src/network/proto/remoteclient.capnp")
-
-
-def display_image():
-    # Wait for the response from the server
-    response = socket.recv()
-
-    with remoteclient_capnp.Observation.from_bytes(response) as obs_proto:
-        # Convert the response to a numpy array
-        img = obs_proto.image
-        img_data = np.frombuffer(img.data, dtype=np.uint8)
-        # Reshape the numpy array to the correct dimensions
-        img_data = img_data.reshape((img.height, img.width, 3))
-        reward = obs_proto.reward
-
-    # Convert the numpy array to a PIL Image
-    img = Image.fromarray(img_data)
-
-    # Convert the PIL Image to a Tkinter PhotoImage
-    photo = ImageTk.PhotoImage(img)
-
-    # Update the image displayed in the label
-    label.config(image=photo)
-    label.image = photo  # keep a reference to the image
-
 
 key_to_keytype = {
     "W": "forward",
@@ -42,16 +14,13 @@ key_to_keytype = {
     "J": "dig",
     "K": "place",
     "C": "cameraMode",
-    "ESCAPE": "esc",
 }
-
 arrow_keys_to_mouse_direction = {
     "UP": (0, -20),
     "DOWN": (0, 20),
     "LEFT": (-20, 0),
     "RIGHT": (20, 0),
 }
-
 
 key_cache = set()
 
@@ -64,30 +33,42 @@ class Mouse:
 
 mouse = Mouse(0, 0)
 
+# Pygame initialization
+pygame.init()
 
-def key_down(event):
-    key = event.keysym.upper()
+# Window settings
+screen_width = 1024  # You can adjust this
+screen_height = 600  # You can adjust this
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Continuous Input")
 
-    if key in key_to_keytype:
-        key_cache.add(key)
-    if key in arrow_keys_to_mouse_direction:
-        mouse.dx += arrow_keys_to_mouse_direction[key][0]
-        mouse.dy += arrow_keys_to_mouse_direction[key][1]
+# ZeroMQ and Cap'n Proto setup
+capnp.remove_import_hook()
+remoteclient_capnp = capnp.load("src/network/proto/remoteclient.capnp")
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://localhost:5555")
 
-    sendCurrent()
+# Send initial message to server to get the first observation
+action = remoteclient_capnp.Action.new_message()
+socket.send(action.to_bytes())
 
 
-def key_up(event):
-    key = event.keysym.upper()
+def display_image():
+    # Get the response from the server and display the image
+    response = socket.recv()
+    with remoteclient_capnp.Observation.from_bytes(response) as obs_proto:
+        img = obs_proto.image
+        img_data = np.frombuffer(img.data, dtype=np.uint8)
+        img_data = img_data.reshape((img.height, img.width, 3))
 
-    if key in key_to_keytype and key in key_cache:
-        key_cache.remove(key)
+    # for some reason pydata expects the transposed image
+    img_data = img_data.transpose((1, 0, 2))
 
-    if key in arrow_keys_to_mouse_direction:
-        mouse.dx -= arrow_keys_to_mouse_direction[key][0]
-        mouse.dy -= arrow_keys_to_mouse_direction[key][1]
-
-    sendCurrent()
+    # Convert the numpy array to a Pygame Surface and display it
+    img = pygame.surfarray.make_surface(img_data)
+    screen.blit(img, (0, 0))
+    pygame.display.update()
 
 
 def sendCurrent():
@@ -98,35 +79,43 @@ def sendCurrent():
 
     action.mouseDx = mouse.dx
     action.mouseDy = mouse.dy
-
-    # Send the event to the server
     socket.send(action.to_bytes())
 
     display_image()
 
 
-# Set up the ZeroMQ context and socket
-context = zmq.Context()
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:5555")
+def handle_key_event(event):
+    key = pygame.key.name(event.key).upper()
 
-# to get first observation as a reply, we need to send a message
-action = remoteclient_capnp.Action.new_message()
-socket.send(action.to_bytes())
+    if event.type == pygame.KEYDOWN:
+        if key in key_to_keytype:
+            key_cache.add(key)
+        if key in arrow_keys_to_mouse_direction:
+            mouse.dx += arrow_keys_to_mouse_direction[key][0]
+            mouse.dy += arrow_keys_to_mouse_direction[key][1]
+    elif event.type == pygame.KEYUP:
+        if key in key_to_keytype and key in key_cache:
+            key_cache.remove(key)
+        if key in arrow_keys_to_mouse_direction:
+            mouse.dx -= arrow_keys_to_mouse_direction[key][0]
+            mouse.dy -= arrow_keys_to_mouse_direction[key][1]
 
-# Create a new Tkinter window
-window = tk.Tk()
-window.title("Continuous Input")
 
-# Create a label to display the image
-label = tk.Label(window)
-label.pack()
+def game_loop():
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type in [pygame.KEYDOWN, pygame.KEYUP]:
+                handle_key_event(event)
+        sendCurrent()
+
+    pygame.quit()
+    context.destroy()
+
+
 display_image()
 
-# Set the event listener for key press event
-window.bind("<KeyPress>", key_down)
-window.bind("<KeyRelease>", key_up)
-# Run the application, the script will pause here until the window is closed
-window.mainloop()
-
-context.destroy()
+# Start the game loop
+game_loop()
