@@ -203,7 +203,7 @@ class MinetestEnv(gym.Env):
             self.minetest_executable,
             self.config_path,
             log_path,
-            self.env_port,
+            f"localhost:{self.env_port}",
         )
 
     def _perform_client_handshake(self):
@@ -394,7 +394,7 @@ def start_minetest_client(
     minetest_executable: str,
     config_path: str,
     log_path: str,
-    client_port: int,
+    client_socket: str,
     display: int = None,
 ):
     cmd = [
@@ -405,6 +405,7 @@ def start_minetest_client(
         "--config",
         config_path,
         "--remote-input",
+        client_socket,
         "--verbose",
     ]
 

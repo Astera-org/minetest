@@ -13,6 +13,7 @@ public:
             m_context(),
 			m_socket(m_context, zmqpp::socket_type::reply), m_receiver(receiver)
 	{
+		infostream << "RemoteInputHandler: Binding to " << endpoint << std::endl;
 		m_socket.bind(endpoint);
 		// wait for client
 		zmqpp::message message;

@@ -33,6 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gui/guiEngine.h"
 #include "fontengine.h"
 #include "clientlauncher.h"
+#include "settings.h"
 #include "version.h"
 #include "renderingengine.h"
 #include "network/networkexceptions.h"
@@ -332,8 +333,17 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	random_input = g_settings->getBool("random_input")
 			|| cmd_args.getFlag("random-input");
-	remote_input = g_settings->getBool("remote_input")
-			|| cmd_args.getFlag("remote-input");
+	if (!g_settings->get("remote_input").empty() || !cmd_args.get("remote-input").empty()){
+		// cmd args have priority over settings
+		if (!cmd_args.get("remote-input").empty())
+			remote_input_socket = cmd_args.get("remote-input");
+		else
+			remote_input_socket = g_settings->get("remote-input");
+		if (remote_input_socket.find(':') == std::string::npos) {
+			errorstream << "Invalid remote input socket: " << remote_input_socket << std::endl;
+			remote_input_socket.clear();
+		}
+	}
 }
 
 bool ClientLauncher::init_engine()
@@ -347,8 +357,8 @@ void ClientLauncher::init_input()
 {
 	if (random_input)
 		input = new RandomInputHandler();
-	else if (remote_input)
-		input = new RemoteInputHandler("tcp://*:5555", m_rendering_engine, receiver);
+	else if (!remote_input_socket.empty())
+		input = new RemoteInputHandler("tcp://" + remote_input_socket, m_rendering_engine, receiver);
 	else
 		input = new RealInputHandler(receiver);
 
