@@ -27,7 +27,7 @@ public:
 		}
 	}
 
-	bool isRemote() const override { return true; }
+	bool isDetached() const override { return true; }
 
 	virtual bool isKeyDown(GameKeyType k) override { return keyIsDown[keycache.key[k]]; }
 	virtual bool wasKeyDown(GameKeyType k) override

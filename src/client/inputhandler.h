@@ -250,8 +250,8 @@ public:
 
 	virtual ~InputHandler() = default;
 
-	virtual bool isRandom() const { return false; }
-	virtual bool isRemote() const { return false; }
+	// true if no physical keyboard is attached
+	virtual bool isDetached() const { return false; }
 
 	virtual bool isKeyDown(GameKeyType k) = 0;
 	virtual bool wasKeyDown(GameKeyType k) = 0;
@@ -433,24 +433,24 @@ class RandomInputHandler : public InputHandler
 public:
 	RandomInputHandler() = default;
 
-	bool isRandom() const
+	bool isDetached() const override
 	{
 		return true;
 	}
 
-	virtual bool isKeyDown(GameKeyType k) { return keydown[keycache.key[k]]; }
-	virtual bool wasKeyDown(GameKeyType k) { return false; }
-	virtual bool wasKeyPressed(GameKeyType k) { return false; }
-	virtual bool wasKeyReleased(GameKeyType k) { return false; }
-	virtual bool cancelPressed() { return false; }
-	virtual float getMovementSpeed() { return movementSpeed; }
-	virtual float getMovementDirection() { return movementDirection; }
-	virtual v2s32 getMousePos() { return mousepos; }
-	virtual void setMousePos(s32 x, s32 y) { mousepos = v2s32(x, y); }
+	virtual bool isKeyDown(GameKeyType k) override { return keydown[keycache.key[k]]; }
+		virtual bool wasKeyDown(GameKeyType k) override { return false; }
+		virtual bool wasKeyPressed(GameKeyType k) override { return false; }
+		virtual bool wasKeyReleased(GameKeyType k) override { return false; }
+		virtual bool cancelPressed() override { return false; }
+		virtual float getMovementSpeed() override { return movementSpeed; }
+		virtual float getMovementDirection() override { return movementDirection; }
+		virtual v2s32 getMousePos() override { return mousepos; }
+		virtual void setMousePos(s32 x, s32 y) override { mousepos = v2s32(x, y); }
 
-	virtual s32 getMouseWheel() { return 0; }
+		virtual s32 getMouseWheel() override { return 0; }
 
-	virtual void step(float dtime);
+		virtual void step(float dtime) override;
 
 	s32 Rand(s32 min, s32 max);
 
