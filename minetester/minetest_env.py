@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
 
 import gymnasium as gym
-import matplotlib.pyplot as plt
 import numpy as np
 import zmq
 from minetester.utils import (
@@ -110,10 +109,9 @@ class Minetest(gym.Env):
         self.action_space = gym.spaces.Dict(
             {
                 "KEYS": gym.spaces.MultiBinary(len(KEY_MAP)),
-                # TODO: check again if bounds are correct
                 "MOUSE": gym.spaces.Box(
-                    np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
-                    np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
+                    low=np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
+                    high=np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
                     shape=(2,),
                     dtype=int,
                 ),
@@ -310,7 +308,11 @@ class Minetest(gym.Env):
         # Receive initial observation
         logging.debug("Waiting for first obs...")
         byte_obs = self.socket.recv()
-        obs, _, _, = unpack_pb_obs(byte_obs)
+        (
+            obs,
+            _,
+            _,
+        ) = unpack_pb_obs(byte_obs)
         self.last_obs = obs
         logging.debug("Received first obs: {}".format(obs.shape))
         return obs, {}
