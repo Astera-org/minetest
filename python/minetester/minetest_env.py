@@ -3,27 +3,29 @@ import logging
 import os
 import shutil
 import uuid
-from typing import Any, Dict, List, Optional, Tuple
-from pathlib import Path
+from collections import namedtuple
+from typing import Any, Dict, Optional, Tuple
 
 import gymnasium as gym
 import numpy as np
+import pkg_resources
+import pygame
 import zmq
+
 from minetester.utils import (
     KEY_MAP,
     pack_pb_action,
-    start_minetest_client,
     read_config_file,
-    write_config_file,
+    start_minetest_client,
     unpack_pb_obs,
+    write_config_file,
 )
 
-import pkg_resources
+DisplaySize = namedtuple("DisplaySize", ["width", "height"])
 
 
 class Minetest(gym.Env):
     metadata = {"render.modes": ["rgb_array", "human"]}
-    default_display_size = (1728, 1051)
 
     def __init__(
         self,
@@ -32,18 +34,27 @@ class Minetest(gym.Env):
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
-        display_size: Tuple[int, int] = default_display_size,
+        display_size: Tuple[int, int] = (1728, 1051),
+        render_mode: str = "rgb_array",
         fov: int = 72,
         base_seed: int = 0,
         world_seed: Optional[int] = None,
         start_minetest: bool = True,
         game_id: str = "minetest",
         client_name: str = "minetester",
-        config_dict: Dict[str, Any] = {},
+        config_dict: Dict[str, Any] = None,
     ):
+        if config_dict is None:
+            config_dict = {}
         self.unique_env_id = str(uuid.uuid4())
 
-        self._set_graphics(display_size, fov)
+        self.display_size = DisplaySize(*display_size)
+        self.fov_y = fov
+        self.fov_x = self.fov_y * self.display_size.width / self.display_size.height
+        self.render_mode = render_mode
+
+        if render_mode == "human":
+            self._start_pygame()
 
         # Define action and observation space
         self._configure_spaces()
@@ -123,11 +134,6 @@ class Minetest(gym.Env):
             shape=(self.display_size[1], self.display_size[0], 3),
             dtype=np.uint8,
         )
-
-    def _set_graphics(self, display_size, fov):
-        self.display_size = display_size
-        self.fov_y = fov
-        self.fov_x = self.fov_y * self.display_size[0] / self.display_size[1]
 
     def _set_minetest_dirs(self, minetest_root):
         self.minetest_root = minetest_root
@@ -289,6 +295,22 @@ class Minetest(gym.Env):
         config.update(self.config_dict)
         write_config_file(self.config_path, config)
 
+    def _start_pygame(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode(
+            (self.display_size.width, self.display_size.height)
+        )
+        pygame.display.set_caption(f"Minetester - {self.unique_env_id}")
+
+    def _display_pygame(self):
+        # for some reason pydata expects the transposed image
+        img_data = self.last_obs.transpose((1, 0, 2))
+
+        # Convert the numpy array to a Pygame Surface and display it
+        img = pygame.surfarray.make_surface(img_data)
+        self.screen.blit(img, (0, 0))
+        pygame.display.update()
+
     def seed(self, seed: Optional[int] = None):
         self._np_random = np.random.RandomState(seed or 0)
 
@@ -314,15 +336,15 @@ class Minetest(gym.Env):
             _,
         ) = unpack_pb_obs(byte_obs)
         self.last_obs = obs
-        logging.debug("Received first obs: {}".format(obs.shape))
+        logging.debug(f"Received first obs: {obs.shape}")
         return obs, {}
 
     def step(self, action: Dict[str, Any]):
         # Send action
         if isinstance(action["MOUSE"], np.ndarray):
             action["MOUSE"] = action["MOUSE"].tolist()
-        logging.debug("Sending action: {}".format(action))
         pb_action = pack_pb_action(action)
+        logging.debug(f"Sending action: {pb_action}")
         self.socket.send(pb_action.to_bytes())
 
         # TODO more robust check for whether a server/client is alive while receiving observations
@@ -336,39 +358,19 @@ class Minetest(gym.Env):
 
         self.last_obs = next_obs
         logging.debug(f"Received obs - {next_obs.shape}; reward - {rew}")
+
+        if self.render_mode == "human":
+            self._display_pygame()
+
         return next_obs, rew, done, False, {}
 
-    def render(self, render_mode: str = "human"):
-        if render_mode == "human":
-            # TODO replace with pygame
-            if self.render_img is None:
-                # Setup figure
-                plt.rcParams["toolbar"] = "None"
-                plt.rcParams["figure.autolayout"] = True
-
-                self.render_fig = plt.figure(
-                    num="Minetest Env",
-                    figsize=(3 * self.display_size[0] / self.display_size[1], 3),
-                )
-                self.render_img = self.render_fig.gca().imshow(self.last_obs)
-                self.render_fig.gca().axis("off")
-                self.render_fig.gca().margins(0, 0)
-                self.render_fig.gca().autoscale_view()
-            else:
-                self.render_img.set_data(self.last_obs)
-            plt.draw(), plt.pause(1e-3)
-        elif render_mode == "rgb_array":
-            return self.last_obs
-        else:
-            raise NotImplementedError(
-                "You are calling 'render()' with an unsupported"
-                f" render mode: '{render_mode}'. "
-                f"Supported modes: {self.metadata['render.modes']}"
-            )
+    def render(self):
+        if self.render_mode == "human":
+            # rendering happens during step, as per gymnasium API
+            return None
+        return self.last_obs
 
     def close(self):
-        if self.render_fig is not None:
-            plt.close()
         if self.socket is not None:
             self.socket.close()
         # TODO improve process termination

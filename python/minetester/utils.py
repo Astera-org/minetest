@@ -1,12 +1,17 @@
 import os
 import subprocess
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
+
 import capnp
-
-capnp.remove_import_hook()
-remoteclient_capnp = capnp.load("src/network/proto/remoteclient.capnp")
-
 import numpy as np
+import pkg_resources
+
+remoteclient_capnp = capnp.load(
+    pkg_resources.resource_filename(
+        "minetester", "../../src/network/proto/remoteclient.capnp"
+    )
+)
+
 
 # Define default keys / buttons
 KEY_MAP = [
@@ -105,7 +110,7 @@ def start_minetest_client(
 
 def read_config_file(file_path):
     config = {}
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):

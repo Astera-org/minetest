@@ -6,6 +6,7 @@ dependencies:
   - python=3.11
   - numpy
   - pyzmq
+  - pre-commit
   - gymnasium
   # for dummy client only
   - pygame
