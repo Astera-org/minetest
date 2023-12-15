@@ -1,113 +1,54 @@
 import os
 import subprocess
 from typing import Any, Dict, Tuple
+import capnp
+
+capnp.remove_import_hook()
+remoteclient_capnp = capnp.load("src/network/proto/remoteclient.capnp")
 
 import numpy as np
-from minetester.proto import objects_pb2 as pb_objects
-from minetester.proto.objects_pb2 import KeyType
 
 # Define default keys / buttons
-KEY_MAP = {
-    "FORWARD": KeyType.FORWARD,
-    "BACKWARD": KeyType.BACKWARD,
-    "LEFT": KeyType.LEFT,
-    "RIGHT": KeyType.RIGHT,
-    "JUMP": KeyType.JUMP,
-    "SNEAK": KeyType.SNEAK,  # shift key in menus
-    "DIG": KeyType.DIG,  # left mouse button
-    "PLACE": KeyType.PLACE,  # right mouse button
-    "DROP": KeyType.DROP,
-    "HOTBAR_NEXT": KeyType.HOTBAR_NEXT,  # mouse wheel up
-    "HOTBAR_PREV": KeyType.HOTBAR_PREV,  # mouse wheel down
-    "SLOT_1": KeyType.SLOT_1,
-    "SLOT_2": KeyType.SLOT_2,
-    "SLOT_3": KeyType.SLOT_3,
-    "SLOT_4": KeyType.SLOT_4,
-    "SLOT_5": KeyType.SLOT_5,
-    "SLOT_6": KeyType.SLOT_6,
-    "SLOT_7": KeyType.SLOT_7,
-    "SLOT_8": KeyType.SLOT_8,
-}
-INVERSE_KEY_MAP = {value: key for key, value in KEY_MAP.items()}
+KEY_MAP = [
+    "forward",
+    "left",
+    "backward",
+    "right",
+    "jump",
+    "sneak",
+    "dig",
+    "place",
+]
 
-# Define noop action
-NOOP_ACTION = {key: 0 for key in KEY_MAP.keys()}
-NOOP_ACTION.update({"MOUSE": np.zeros(2, dtype=int)})
+INVERSE_KEY_MAP = {name: idx for idx, name in enumerate(KEY_MAP)}
 
 
 def unpack_pb_obs(received_obs: str):
-    pb_obs = pb_objects.Observation()
-    pb_obs.ParseFromString(received_obs)
-    obs = np.frombuffer(pb_obs.image.data, dtype=np.uint8).reshape(
-        pb_obs.image.height,
-        pb_obs.image.width,
-        3,
-    )
-    last_action = unpack_pb_action(pb_obs.action) if pb_obs.action else None
-    rew = pb_obs.reward
-    done = pb_obs.terminal
-    info = pb_obs.info
-    return obs, rew, done, info, last_action
-
-
-def unpack_pb_action(pb_action: pb_objects.Action):
-    action = dict(NOOP_ACTION)
-    action["MOUSE"] = [pb_action.mouseDx, pb_action.mouseDy]
-    for key_event in pb_action.keyEvents:
-        if key_event.key in INVERSE_KEY_MAP
-     and key_event.eventType == pb_objects.PRESS:
-            key_name = INVERSE_KEY_MAP
-        [key_event.key]
-            action[key_name] = 1
-    return action
+    with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_proto:
+        # Convert the response to a numpy array
+        img = obs_proto.image
+        img_data = np.frombuffer(img.data, dtype=np.uint8).reshape(
+            (img.height, img.width, 3)
+        )
+        # Reshape the numpy array to the correct dimensions
+        reward = obs_proto.reward
+        done = obs_proto.done
+    return img_data, reward, done
 
 
 def pack_pb_action(action: Dict[str, Any]):
-    pb_action = pb_objects.Action()
-    pb_action.mouseDx, pb_action.mouseDy = action["MOUSE"]
-    for key, v in action.items():
-        if key == "MOUSE":
-            continue
-        pb_action.keyEvents.append(
-            pb_objects.KeyboardEvent(
-                key=KEY_MAP[key],
-                eventType=pb_objects.PRESS if v else pb_objects.RELEASE,
-            ),
-        )
+    pb_action = remoteclient_capnp.Action.new_message()
+
+    pb_action.mouseDx = action["MOUSE"][0]
+    pb_action.mouseDy = action["MOUSE"][1]
+
+    keyEvents = pb_action.init("keyEvents", action["KEYS"].sum())
+    setIdx = 0
+    for idx, pressed in enumerate(action["KEYS"]):
+        if pressed:
+            keyEvents[setIdx] = KEY_MAP[idx]
+            setIdx += 1
     return pb_action
-
-
-def start_minetest_server(
-    minetest_path: str,
-    config_path: str,
-    log_path: str,
-    server_port: int,
-    world_dir: str,
-    sync_port: int,
-    sync_dtime: float,
-    game_id: str,
-):
-    cmd = [
-        minetest_path,
-        "--server",
-        "--world",
-        world_dir,
-        "--gameid",
-        game_id,
-        "--config",
-        config_path,
-        "--port",
-        str(server_port),
-    ]
-    if sync_port:
-        cmd.extend(["--sync-port", str(sync_port)])
-        cmd.extend(["--sync-dtime", str(sync_dtime)])
-    stdout_file = log_path.format("server_stdout")
-    stderr_file = log_path.format("server_stderr")
-
-    with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
-        server_process = subprocess.Popen(cmd, stdout=out, stderr=err)
-    return server_process
 
 
 def start_minetest_client(
@@ -160,22 +101,6 @@ def start_minetest_client(
             client_env["DISPLAY"] = ":" + str(display)
         client_process = subprocess.Popen(cmd, stdout=out, stderr=err, env=client_env)
     return client_process
-
-
-def start_xserver(
-    display_idx: int = 1,
-    display_size: Tuple[int, int] = (1024, 600),
-    display_depth: int = 24,
-):
-    cmd = [
-        "Xvfb",
-        f":{display_idx}",
-        "-screen",
-        "0",  # screennum param
-        f"{display_size[0]}x{display_size[1]}x{display_depth}",
-    ]
-    xserver_process = subprocess.Popen(cmd)
-    return xserver_process
 
 
 def read_config_file(file_path):

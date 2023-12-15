@@ -2,7 +2,7 @@
 @0xa7829f89062090f7;
 
 struct KeyPressType {
-  # this enum should equal the KeyType enum in keys.h
+  # this enum should equal the KeyType enum in keys.h so we can use the int value
   enum Key {
     forward @0;
     backward @1;
@@ -109,4 +109,5 @@ struct Image {
 struct Observation {
   image @0 :Image;
   reward @1 :Float32;
+  done @2 :Bool;
 }

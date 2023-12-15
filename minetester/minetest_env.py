@@ -4,6 +4,7 @@ import os
 import shutil
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path
 
 import gymnasium as gym
 import matplotlib.pyplot as plt
@@ -13,11 +14,9 @@ from minetester.utils import (
     KEY_MAP,
     pack_pb_action,
     start_minetest_client,
-    start_minetest_server,
     read_config_file,
     write_config_file,
     unpack_pb_obs,
-    start_xserver,
 )
 
 import pkg_resources
@@ -32,7 +31,12 @@ class Minetest(gym.Env):
         env_port: int = 5555,
         minetest_root: Optional[os.PathLike] = None,
         world_dir: Optional[os.PathLike] = None,
+        artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
+        display_size: Tuple[int, int] = default_display_size,
+        fov: int = 72,
+        base_seed: int = 0,
+        world_seed: Optional[int] = None,
         start_minetest: bool = True,
         game_id: str = "minetest",
         client_name: str = "minetester",
@@ -40,13 +44,15 @@ class Minetest(gym.Env):
     ):
         self.unique_env_id = str(uuid.uuid4())
 
+        self._set_graphics(display_size, fov)
+
         # Define action and observation space
         self._configure_spaces()
 
         # Define Minetest paths
-        self._set_artefact_dirs(
-            artefact_dir, world_dir, config_path
-        )  # Stores minetest artefacts and outputs
+        self._set_artifact_dirs(
+            artifact_dir, world_dir, config_path
+        )  # Stores minetest artifacts and outputs
         self._set_minetest_dirs(
             minetest_root
         )  # Stores actual minetest dirs and executable
@@ -56,10 +62,6 @@ class Minetest(gym.Env):
 
         # Used ports
         self.env_port = env_port  # MT env <-> MT client
-        self.server_port = server_port  # MT client <-> MT server
-        self.sync_port = sync_port  # MT client <-> MT server
-
-        self.sync_dtime = sync_dtime
 
         # Client Name
         self.client_name = client_name
@@ -69,7 +71,6 @@ class Minetest(gym.Env):
         self.context = None
 
         # Minetest processes
-        self.server_process = None
         self.client_process = None
 
         # Env objects
@@ -101,28 +102,6 @@ class Minetest(gym.Env):
 
         # Configure game and mods
         self.game_id = game_id
-        self.clientmods = clientmods
-        self.servermods = servermods
-        if self.sync_port:
-            self.servermods += ["rewards"]  # require the server rewards mod
-            self._enable_servermods()
-        else:
-            self.clientmods += ["rewards"]  # require the client rewards med
-            # add client mod names in case they entail a server side component
-            self.servermods += clientmods
-            self._enable_clientmods()
-            self._enable_servermods()
-
-        # Start X server virtual frame buffer
-        self.default_display = x_display or 0
-        if "DISPLAY" in os.environ:
-            self.default_display = int(os.environ["DISPLAY"].split(":")[1])
-        self.x_display = x_display or self.default_display
-        self.start_xvfb = start_xvfb and self.headless
-        self.xserver_process = None
-        if self.start_xvfb:
-            self.x_display = x_display or self.default_display + 4
-            self.xserver_process = start_xserver(self.x_display, self.display_size)
 
     def _configure_spaces(self):
         # Define action and observation space
@@ -131,6 +110,7 @@ class Minetest(gym.Env):
         self.action_space = gym.spaces.Dict(
             {
                 "KEYS": gym.spaces.MultiBinary(len(KEY_MAP)),
+                # TODO: check again if bounds are correct
                 "MOUSE": gym.spaces.Box(
                     np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
                     np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
@@ -146,8 +126,7 @@ class Minetest(gym.Env):
             dtype=np.uint8,
         )
 
-    def _set_graphics(self, headless, display_size, fov):
-        self.headless = headless
+    def _set_graphics(self, display_size, fov):
         self.display_size = display_size
         self.fov_y = fov
         self.fov_x = self.fov_y * self.display_size[0] / self.display_size[1]
@@ -187,16 +166,16 @@ class Minetest(gym.Env):
             "mouse_cursor_white_16x16.png",
         )
 
-    def _set_artefact_dirs(self, artefact_dir, world_dir, config_path):
-        if artefact_dir is None:
-            self.artefact_dir = os.path.join(os.getcwd(), "artefacts")
+    def _set_artifact_dirs(self, artifact_dir, world_dir, config_path):
+        if artifact_dir is None:
+            self.artifact_dir = os.path.join(os.getcwd(), "artifacts")
         else:
-            self.artefact_dir = artefact_dir
+            self.artifact_dir = artifact_dir
 
+        self.clean_config = True
         if config_path is None:
-            self.clean_config = True
             self.config_path = os.path.join(
-                self.artefact_dir, f"{self.unique_env_id}.conf"
+                self.artifact_dir, f"{self.unique_env_id}.conf"
             )
         else:
             self.clean_config = True
@@ -204,56 +183,16 @@ class Minetest(gym.Env):
 
         if world_dir is None:
             self.reset_world = True
-            self.world_dir = os.path.join(self.artefact_dir, self.unique_env_id)
+            self.world_dir = os.path.join(self.artifact_dir, self.unique_env_id)
         else:
             self.reset_world = False
             self.world_dir = world_dir
 
-        self.log_dir = os.path.join(self.artefact_dir, "log")
-        self.media_cache_dir = os.path.join(self.artefact_dir, "media_cache")
+        self.log_dir = os.path.join(self.artifact_dir, "log")
+        self.media_cache_dir = os.path.join(self.artifact_dir, "media_cache")
 
         os.makedirs(self.log_dir, exist_ok=True)
         os.makedirs(self.media_cache_dir, exist_ok=True)
-
-    def _enable_clientmods(self):
-        clientmods_folder = os.path.realpath(
-            os.path.join(os.path.dirname(self.minetest_executable), "../clientmods"),
-        )
-        if not os.path.exists(clientmods_folder):
-            raise RuntimeError(f"Client mods must be located at {clientmods_folder}!")
-        # Write mods.conf to enable client mods
-        with open(os.path.join(clientmods_folder, "mods.conf"), "w") as mods_config:
-            for clientmod in self.clientmods:
-                clientmod_folder = os.path.join(clientmods_folder, clientmod)
-                if not os.path.exists(clientmod_folder):
-                    logging.warning(
-                        f"Client mod {clientmod} was not found!"
-                        " It must be located at {clientmod_folder}.",
-                    )
-                else:
-                    mods_config.write(f"load_mod_{clientmod} = true\n")
-
-    def _enable_servermods(self):
-        # Check if there are any server mods
-        servermods_folder = os.path.realpath(
-            os.path.join(os.path.dirname(self.minetest_executable), "../mods"),
-        )
-        if not os.path.exists(servermods_folder):
-            raise RuntimeError(f"Server mods must be located at {servermods_folder}!")
-        # Create world_dir/worldmods folder
-        worldmods_folder = os.path.join(self.world_dir, "worldmods")
-        os.makedirs(worldmods_folder, exist_ok=True)
-        # Copy server mods to world_dir/worldmods
-        for mod in self.servermods:
-            mod_folder = os.path.join(servermods_folder, mod)
-            world_mod_folder = os.path.join(worldmods_folder, mod)
-            if not os.path.exists(mod_folder):
-                logging.warning(
-                    f"Server mod {mod} was not found!"
-                    f" It must be located at {mod_folder}.",
-                )
-            else:
-                shutil.copytree(mod_folder, world_mod_folder, dirs_exist_ok=True)
 
     def _reset_zmq(self):
         if self.socket:
@@ -271,22 +210,8 @@ class Minetest(gym.Env):
         )
 
         # Close Mintest processes
-        if self.server_process:
-            self.server_process.kill()
         if self.client_process:
             self.client_process.kill()
-
-        # (Re)start Minetest server
-        self.server_process = start_minetest_server(
-            self.minetest_executable,
-            self.config_path,
-            log_path,
-            self.server_port,
-            self.world_dir,
-            self.sync_port,
-            self.sync_dtime,
-            self.game_id,
-        )
 
         # (Re)start Minetest client
         self.client_process = start_minetest_client(
@@ -385,7 +310,7 @@ class Minetest(gym.Env):
         # Receive initial observation
         logging.debug("Waiting for first obs...")
         byte_obs = self.socket.recv()
-        obs, _, _, _, _ = unpack_pb_obs(byte_obs)
+        obs, _, _, = unpack_pb_obs(byte_obs)
         self.last_obs = obs
         logging.debug("Received first obs: {}".format(obs.shape))
         return obs, {}
@@ -396,24 +321,20 @@ class Minetest(gym.Env):
             action["MOUSE"] = action["MOUSE"].tolist()
         logging.debug("Sending action: {}".format(action))
         pb_action = pack_pb_action(action)
-        self.socket.send(pb_action.SerializeToString())
+        self.socket.send(pb_action.to_bytes())
 
         # TODO more robust check for whether a server/client is alive while receiving observations
-        for process in [self.server_process, self.client_process]:
-            if process is not None and process.poll() is not None:
-                return self.last_obs, 0.0, True, {}
+        if self.client_process is not None and self.client_process.poll() is not None:
+            return self.last_obs, 0.0, True, False, {}
 
         # Receive observation
         logging.debug("Waiting for obs...")
         byte_obs = self.socket.recv()
-        next_obs, rew, done, info, last_action = unpack_pb_obs(byte_obs)
-
-        if last_action:
-            assert action == last_action
+        next_obs, rew, done = unpack_pb_obs(byte_obs)
 
         self.last_obs = next_obs
-        logging.debug(f"Received obs - {next_obs.shape}; reward - {rew}; info - {info}")
-        return next_obs, rew, done, False, {"info": info}
+        logging.debug(f"Received obs - {next_obs.shape}; reward - {rew}")
+        return next_obs, rew, done, False, {}
 
     def render(self, render_mode: str = "human"):
         if render_mode == "human":
