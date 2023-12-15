@@ -2,7 +2,7 @@ import gymnasium as gym
 import pygame
 from dataclasses import dataclass
 import numpy as np
-from minetester.utils import KEY_MAP, INVERSE_KEY_MAP
+from minetester.minetest_env import KEY_MAP, INVERSE_KEY_MAP
 
 
 KEY_TO_KEYTYPE = {
@@ -48,10 +48,12 @@ def handle_key_event(event):
 
 
 def get_action_from_key_cache(key_cache, mouse):
-    action = np.zeros(len(KEY_MAP), dtype=np.bool)
+    keys = np.zeros(len(KEY_MAP), dtype=bool)
     for key in key_cache:
-        action[INVERSE_KEY_MAP[KEY_TO_KEYTYPE[key]]] = True
-    return action
+        keys[INVERSE_KEY_MAP[KEY_TO_KEYTYPE[key]]] = True
+
+    mouse = np.array([mouse.dx, mouse.dy])
+    return {"KEYS": keys, "MOUSE": mouse}
 
 
 def game_loop():
@@ -80,8 +82,12 @@ if __name__ == "__main__":
     pygame.init()
 
     # Initialize CartPole environment
-    env = gym.make("minetest", render_mode="human")
-
+    env = gym.make(
+        "minetest",
+        minetest_executable="/Users/siboehm/repos/minetest/build/macos/minetest.app/Contents/MacOS/minetest",
+        render_mode="human",
+    )
     env.reset()
+    game_loop()
     env.close()
     pygame.quit()

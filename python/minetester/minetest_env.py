@@ -2,35 +2,50 @@ import datetime
 import logging
 import os
 import shutil
+import subprocess
 import uuid
 from collections import namedtuple
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+import capnp
 import gymnasium as gym
 import numpy as np
 import pkg_resources
 import pygame
 import zmq
 
-from minetester.utils import (
-    KEY_MAP,
-    pack_pb_action,
-    read_config_file,
-    start_minetest_client,
-    unpack_pb_obs,
-    write_config_file,
+remoteclient_capnp = capnp.load(
+    pkg_resources.resource_filename(
+        "minetester", "../../src/network/proto/remoteclient.capnp"
+    )
 )
+
+
+# Define default keys / buttons
+KEY_MAP = [
+    "forward",
+    "left",
+    "backward",
+    "right",
+    "jump",
+    "sneak",
+    "dig",
+    "place",
+]
+
+INVERSE_KEY_MAP = {name: idx for idx, name in enumerate(KEY_MAP)}
 
 DisplaySize = namedtuple("DisplaySize", ["width", "height"])
 
 
 class MinetestEnv(gym.Env):
-    metadata = {"render.modes": ["rgb_array", "human"]}
+    metadata = {"render_modes": ["rgb_array", "human"]}
 
     def __init__(
         self,
         env_port: int = 5555,
-        minetest_root: Optional[os.PathLike] = None,
+        minetest_executable: Optional[os.PathLike] = None,
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
@@ -63,9 +78,10 @@ class MinetestEnv(gym.Env):
         self._set_artifact_dirs(
             artifact_dir, world_dir, config_path
         )  # Stores minetest artifacts and outputs
-        self._set_minetest_dirs(
-            minetest_root
-        )  # Stores actual minetest dirs and executable
+        self.minetest_executable = Path(minetest_executable)
+        assert (
+            self.minetest_executable.exists()
+        ), f"Minetest executable not found: {self.minetest_executable}"
 
         # Whether to start minetest server and client
         self.start_minetest = start_minetest
@@ -135,41 +151,6 @@ class MinetestEnv(gym.Env):
             dtype=np.uint8,
         )
 
-    def _set_minetest_dirs(self, minetest_root):
-        self.minetest_root = minetest_root
-        if self.minetest_root is None:
-            # check for local install
-            candiate_minetest_root = os.path.dirname(os.path.dirname(__file__))
-            candiate_minetest_executable = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), "bin", "minetest"
-            )
-            if os.path.isfile(candiate_minetest_executable):
-                self.minetest_root = candiate_minetest_root
-
-        if self.minetest_root is None:
-            # check for package install
-            try:
-                candiate_minetest_executable = pkg_resources.resource_filename(
-                    __name__, os.path.join("minetest", "bin", "minetest")
-                )
-                if os.path.isfile(candiate_minetest_executable):
-                    self.minetest_root = os.path.dirname(
-                        os.path.dirname(candiate_minetest_executable)
-                    )
-            except Exception as e:
-                logging.warning(f"Error loading resource file 'bin.minetest': {e}")
-
-        if self.minetest_root is None:
-            raise Exception("Unable to locate minetest executable")
-
-        self.minetest_executable = os.path.join(self.minetest_root, "bin", "minetest")
-
-        self.cursor_image_path = os.path.join(
-            self.minetest_root,
-            "cursors",
-            "mouse_cursor_white_16x16.png",
-        )
-
     def _set_artifact_dirs(self, artifact_dir, world_dir, config_path):
         if artifact_dir is None:
             self.artifact_dir = os.path.join(os.getcwd(), "artifacts")
@@ -202,8 +183,8 @@ class MinetestEnv(gym.Env):
         if self.socket:
             self.socket.close()
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REP)
-        self.socket.bind(f"tcp://*:{self.env_port}")
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect(f"tcp://localhost:{self.env_port}")
 
     def _reset_minetest(self):
         # Determine log paths
@@ -223,14 +204,12 @@ class MinetestEnv(gym.Env):
             self.config_path,
             log_path,
             self.env_port,
-            self.server_port,
-            self.cursor_image_path,
-            self.client_name,
-            self.media_cache_dir,
-            sync_port=self.sync_port,
-            headless=self.headless,
-            display=self.x_display,
         )
+
+    def _perform_client_handshake(self):
+        # handshake is an empty action
+        pb_action = remoteclient_capnp.Action.new_message()
+        self.socket.send(pb_action.to_bytes())
 
     def _check_world_dir(self):
         if self.world_dir is None:
@@ -265,8 +244,8 @@ class MinetestEnv(gym.Env):
             screen_w=self.display_size[0],
             screen_h=self.display_size[1],
             fov=self.fov_y,
-            # Adapt HUD size to display size
-            hud_scaling=self.display_size[0] / MinetestEnv.default_display_size[0],
+            # Adapt HUD size to display size, based on (1024, 600) default
+            hud_scaling=self.display_size[0] / 1024,
             # Experimental settings to improve performance
             server_map_save_interval=1000000,
             profiler_print_interval=0,
@@ -323,9 +302,9 @@ class MinetestEnv(gym.Env):
                 self._delete_world()
                 if self.reseed_on_reset:
                     self.world_seed = self._np_random.randint(np.iinfo(np.int64).max)
-            self._enable_servermods()
             self._reset_minetest()
         self._reset_zmq()
+        self._perform_client_handshake()
 
         # Receive initial observation
         logging.debug("Waiting for first obs...")
@@ -377,11 +356,90 @@ class MinetestEnv(gym.Env):
         # i.e. don't kill, but close signal
         if self.client_process is not None:
             self.client_process.kill()
-        if self.server_process is not None:
-            self.server_process.kill()
-        if self.xserver_process is not None:
-            self.xserver_process.terminate()
         if self.reset_world:
             self._delete_world()
         if self.clean_config:
             self._delete_config()
+
+
+def unpack_pb_obs(received_obs: str):
+    with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_proto:
+        # Convert the response to a numpy array
+        img = obs_proto.image
+        img_data = np.frombuffer(img.data, dtype=np.uint8).reshape(
+            (img.height, img.width, 3)
+        )
+        # Reshape the numpy array to the correct dimensions
+        reward = obs_proto.reward
+        done = obs_proto.done
+    return img_data, reward, done
+
+
+def pack_pb_action(action: Dict[str, Any]):
+    pb_action = remoteclient_capnp.Action.new_message()
+
+    pb_action.mouseDx = action["MOUSE"][0]
+    pb_action.mouseDy = action["MOUSE"][1]
+
+    keyEvents = pb_action.init("keyEvents", action["KEYS"].sum())
+    setIdx = 0
+    for idx, pressed in enumerate(action["KEYS"]):
+        if pressed:
+            keyEvents[setIdx] = KEY_MAP[idx]
+            setIdx += 1
+    return pb_action
+
+
+def start_minetest_client(
+    minetest_executable: str,
+    config_path: str,
+    log_path: str,
+    client_port: int,
+    display: int = None,
+):
+    cmd = [
+        minetest_executable,
+        "--go",
+        "--worldname",
+        "test_world",  # TODO don't hardcode this
+        "--config",
+        config_path,
+        "--remote-input",
+        "--verbose",
+    ]
+
+    stdout_file = log_path.format("client_stdout")
+    stderr_file = log_path.format("client_stderr")
+    with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
+        # client_env = os.environ.copy()
+        # if display is not None:
+        #     client_env["DISPLAY"] = ":" + str(display)
+        client_process = subprocess.Popen(cmd, stdout=out, stderr=err)
+    return client_process
+
+
+def read_config_file(file_path):
+    config = {}
+    with open(file_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if value.isdigit():
+                    value = int(value)
+                elif value.replace(".", "", 1).isdigit():
+                    value = float(value)
+                elif value.lower() == "true":
+                    value = True
+                elif value.lower() == "false":
+                    value = False
+                config[key] = value
+    return config
+
+
+def write_config_file(file_path, config):
+    with open(file_path, "w") as f:
+        for key, value in config.items():
+            f.write(f"{key} = {value}\n")
