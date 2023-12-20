@@ -9,14 +9,14 @@ minetest.register_item(":", {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
 	},
-
-	on_use = function(itemstack, user, pointed_thing)		
+--[[
+	on_use = function(itemstack, player, pointed_thing)		
 		if pointed_thing.type == "node" then
 			local pos = pointed_thing.under
 			local node = minetest.get_node(pos)
 	
 			if node.name == "basenodes:apple" then
-				addNutrient(user,"hunger",100)
+				addNutrient(player,"hunger",100)
 				if math.random(0,99) < APPLE_CHANCE_DIE then
 					local pos = pointed_thing.under
 					minetest.remove_node(pos)
@@ -28,13 +28,14 @@ minetest.register_item(":", {
 					minetest.remove_node(pos)
 				end
 			elseif node.name == "basenodes:pine_tree" and
-			       itemstack:get_name() == "notools:rock" then
+			    itemstack:get_name() == "notools:rock" then
 				minetest.remove_node(pos)
 				minetest.add_item(pos, 'basenodes:pine_tree')
 			end
 		end
-	return itemstack
+	return nil
 	end,
+	]]--
 	})
 
 minetest.register_tool("notools:rock", {

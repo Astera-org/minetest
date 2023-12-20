@@ -19,6 +19,19 @@ player_definition = {
 
 minetest.register_entity("main:player", player_definition)
 
+function changePlayerEnergy(player,amount)
+    local meta = player:get_meta()
+    local eCur = tonumber(meta:get_string("energy_cur"))
+    local eMax = tonumber(meta:get_string("energy_max"))
+    eCur = eCur + amount
+    if eCur < 0 then
+        eCur = 0
+    elseif eCur > eMax then
+        eCur = eMax
+    end
+    meta:set_string("energy_cur", eCur)
+end
+
 function changePlayerHP(player,amount)
     local new_health = player:get_hp() + amount  
 
@@ -194,9 +207,8 @@ minetest.register_on_joinplayer(function(player)
     print("Player joining")
 
     local inv = player:get_inventory()
-    if inv then
-        inv:set_size("main", INVENTORY_SIZE)  -- Set inventory size to INVENTORY_SIZE
-    end
+    inv:set_size("main", INVENTORY_SIZE)  
+   --inv:add_item("main", "main:potatoes")
 
     initializePlayerMeta(player)
 

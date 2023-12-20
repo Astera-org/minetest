@@ -4,25 +4,50 @@
 minetest.settings:set("mapgen_limit", MAP_SIZE)
 
 local gGribDecoID
+local gThornDecoID
+local gPotatoDecoID
 minetest.register_on_mods_loaded(function()
 	gGribDecoID = minetest.get_decoration_id("grib_weed_deco")
-	print("did: " .. gGribDecoID)
-	minetest.set_gen_notify("decoration", {gGribDecoID})
+	gThornDecoID = minetest.get_decoration_id("thorn_deco")
+	gPotatoDecoID = minetest.get_decoration_id("potatoes_deco")
+	print("GribID: " .. gGribDecoID)
+	print("ThornID: " .. gThornDecoID)
+	print("PotatoID: " .. gPotatoDecoID)
+	minetest.set_gen_notify("decoration", {gGribDecoID,gThornDecoID,gPotatoDecoID})
 end)
 
 minetest.register_on_generated(function(minp, maxp, blockseed)
 	local gen_notify = minetest.get_mapgen_object("gennotify")
-	local your_nodes = gen_notify["decoration#".. gGribDecoID]
 
 	-- minetest.log("action", "gen_notify contents: " .. dump(gen_notify))
 
+	local your_nodes = gen_notify["decoration#".. gGribDecoID]
 	if your_nodes then
 		for _, pos in ipairs(your_nodes) do
 			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
-			grib_start_timer(p)
+			start_node_timer(p) 
+		end
+	end
+
+	your_nodes = gen_notify["decoration#".. gThornDecoID]
+	if your_nodes then
+		for _, pos in ipairs(your_nodes) do
+			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
+			start_node_timer(p)
+		end
+	end
+
+	your_nodes = gen_notify["decoration#".. gPotatoDecoID]
+	if your_nodes then
+		for _, pos in ipairs(your_nodes) do
+			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
+			start_node_timer(p)
 		end
 	end
 end)
+
+
+
 
 
 

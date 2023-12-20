@@ -42,9 +42,14 @@ ENERGY_JUMP_COST = 20     -- Cost of energy per jump
 SLEEP_STARVE_COE=0.3 
 TIRED_RATE=0.5
 
+GAME_SPEED = 1
+
+
 local default_path = minetest.get_modpath("main")
+dofile(default_path.."/compat.lua")
 dofile(default_path.."/player.lua")
 dofile(default_path.."/creatures.lua")
 dofile(default_path.."/nodes.lua")
 dofile(default_path.."/decorations.lua")
+dofile(default_path.."/moisture_spread.lua")
 dofile(default_path.."/mapgen.lua")

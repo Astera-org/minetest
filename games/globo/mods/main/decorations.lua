@@ -12,6 +12,7 @@ function registerDecorations()
     })
 
     minetest.register_decoration({
+        name="thorn_deco",
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
         sidelen = 16,
@@ -21,6 +22,7 @@ function registerDecorations()
     })
 
     minetest.register_decoration({
+        name="potatoes_deco",
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
         sidelen = 16,
@@ -70,7 +72,7 @@ function registerDecorations()
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
         sidelen = 16,
-        fill_ratio = 0.001,
+        fill_ratio = 0.0001,
         biomes = {"mapgen:grassland"},
         decoration = "main:grib_weed",
         flags = {node_dust = "main:grib_weed", gen_notify = true},
