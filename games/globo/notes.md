@@ -1,19 +1,31 @@
 TODO:
-- Pulse blossom: glows periodically and hurts anything around it.
-- sun berry: plant that glows when it is in dry soil.
 - Corn: needs to be a plant for awhile and then becomes food
-- Kill grib_weed if it is too cold for too long
 - ensure the maps aren't too crazy
 - remove sounds
+- Wolf
+- mongoose
+- Lava Ox
+- Chaos Hawk
+- cow
+- badger
+- Ogre
+- Snagon
+- Frost mephit
+- Giant Moth
+- Skipping Fungus
+- Sand Slug
+
 
 
 to test
+- Pulse blossom: glows periodically and hurts anything around it.
 - do potatoes spread properly
 
 
 Later:
 - potatoes only spread under the right conditions
-
+- Kill grib_weed if it is too cold for too long
+- sun berry: plant that glows when it is in dry soil.
 
 
 - Each block type has a chance of becoming an item or just disappearing when you break it.

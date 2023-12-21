@@ -41,6 +41,7 @@ function registerDecorations()
     })
 
     minetest.register_decoration({
+        name="pulse_blossom_deco",
         deco_type = "simple",
         place_on = {"basenodes:dirt_with_grass"},
         sidelen = 16,

@@ -92,6 +92,75 @@ minetest.register_node("main:brambles", {
     damage_per_second = 1,
 })
 
+minetest.register_node("main:pulse_blossom", {
+	description = "Pulse Blossom",
+	drawtype = "plantlike",
+	tiles = {"pulse_blossom.png"},
+	inventory_image = "pulse_blossom.png",
+	wield_image = "pulse_blossom.png",
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+	groups = {snappy = 1},
+	on_construct = function(pos)
+        local timer = minetest.get_node_timer(pos)
+		local t=(math.random(60,270)+math.random(60,270))/2
+		timer:start(t*GAME_SPEED) 
+    end,
+	on_timer = function(pos, elapsed)
+		print("start pulse")
+		minetest.set_node(pos, {name = "main:pulse_blossom_on"})
+
+		return false 
+    end,
+})
+
+minetest.register_node("main:pulse_blossom_on", {
+	description = "Pulse Blossom",
+	drawtype = "plantlike",
+	tiles = {"pulse_blossom.png"},
+	inventory_image = "pulse_blossom.png",
+	wield_image = "pulse_blossom.png",
+	paramtype = "light",
+	light_source= 10,
+	sunlight_propagates = true,
+	walkable = false,
+	groups = {snappy = 1},
+	on_construct = function(pos)
+        start_node_timer(pos) 
+    end,
+	on_timer = function(pos, elapsed)
+		local node = minetest.get_node(pos)
+		local p1=node.param1+1
+		if p1 > 10 then
+			minetest.set_node(pos, {name = "main:pulse_blossom"})
+			return false
+		end
+
+		local ret = true
+		if p1 == 1 then
+			ret=false
+			local timer = minetest.get_node_timer(pos)
+			timer:start(10*GAME_SPEED) 
+		end
+		-- cause damage to any creature around
+		local objects = minetest.get_objects_inside_radius(pos, 3)
+		for _, obj in ipairs(objects) do
+			if obj:is_player() then
+				local player = obj:get_player_name()
+				changePlayerHP(player, -1)
+			elseif obj:is_player() == false and obj:get_luaentity() ~= nil then
+				local mob = obj:get_luaentity()
+				mob:set_hp(mob:get_hp() - 1)
+			end
+		end
+
+		minetest.swap_node(pos, {name = "main:pulse_blossom_on", param1 = p1})
+		return ret
+    end,
+})
+
+
 minetest.register_node("main:thorns", {
 	description = "Thorns",
 	drawtype = "plantlike",
@@ -147,10 +216,11 @@ minetest.register_node("main:potatoes", {
 	on_timer = function(pos, elapsed)
 		local node = minetest.get_node(pos)
 		local p1=node.param1+1
+		local p2=node.param2
 	
 		if p1 > 10 then
-			if node.param2 == 0 then  -- Check if potato
-				minetest.swap_node(pos, {name = "main:potatoes", param2 = 1}) -- Set potato state
+			if p2 == 0 then  -- Check if potato
+				p2=1 -- Set potato state
 			end
 			if p1 > 30 then
 				if potatoes_spred(pos) then
@@ -158,7 +228,7 @@ minetest.register_node("main:potatoes", {
 				end
 			end
 		end
-		minetest.swap_node(pos, {name = "main:potatoes", param1 = p1})
+		minetest.swap_node(pos, {name = "main:potatoes", param1 = p1, param2=p2})
 		return true -- Continue the cycle
     end,
 	on_use = function(itemstack, player, pointed_thing)
@@ -187,13 +257,13 @@ function potatoes_spred(pos)
 		{"air"}
 	)
 
-	newPos=positions[math.random(#positions)]
+	local newPos=positions[math.random(#positions)]
 
 	local node_under = minetest.get_node({x = newPos.x, y = newPos.y - 1, z = newPos.z})
 	if node_under.name == "basenodes:dirt" or node_under.name == "basenodes:dirt_with_grass" then
-		if minetest.get_node(p).name == "air" then
+		if minetest.get_node(newPos).name == "air" then
 			print("spread potatoes")
-			minetest.set_node(p, {name = "main:potatoes"})
+			minetest.set_node(newPos, {name = "main:potatoes"})
 			return true
 		end
 	end
@@ -224,10 +294,10 @@ minetest.register_node("main:sun_berry", {
 	inventory_image = "sun_berry.png",
 	wield_image = "sun_berry.png",
 	paramtype = "light",
+	light_source=4,
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 3, flammable = 2, flora=1},
-	on_use = minetest.item_eat(2),  -- Assuming it's eatable
 })
 
 minetest.register_node("main:coffee", {

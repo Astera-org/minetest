@@ -99,18 +99,17 @@ minetest.register_node("basenodes:dirt_with_grass", {
 minetest.register_node("basenodes:dirt_with_grass", {
 	description = "Dirt with Grass",
 	tiles ={"default_grass.png",
-		-- a little dot on the bottom to distinguish it from dirt
-		"default_dirt.png^basenodes_dirt_with_grass_bottom.png",
+		"default_dirt.png",
 		{name = "default_dirt.png^default_grass_side.png",
 		tileable_vertical = false}},
-	groups = {crumbly=3, soil=1},
+	groups = {crumbly=3, soil=1,falling_node = 1},
 })
 ]]--
 
 minetest.register_node("basenodes:dirt", {
 	description = "Dirt",
 	tiles ={"default_dirt.png"},
-	groups = {crumbly=3, soil=1},
+	groups = {crumbly=3, soil=1, falling_node = 1},
 })
 
 minetest.register_node("basenodes:stone", {
@@ -122,7 +121,7 @@ minetest.register_node("basenodes:stone", {
 minetest.register_node("basenodes:sand", {
 	description = "Sand",
 	tiles ={"default_sand.png"},
-	groups = {crumbly=3},
+	groups = {crumbly=3, falling_node = 1},
 })
 
 

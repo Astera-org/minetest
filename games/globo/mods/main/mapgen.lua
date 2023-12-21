@@ -6,14 +6,17 @@ minetest.settings:set("mapgen_limit", MAP_SIZE)
 local gGribDecoID
 local gThornDecoID
 local gPotatoDecoID
+local gPulseBlossomDecoID
 minetest.register_on_mods_loaded(function()
 	gGribDecoID = minetest.get_decoration_id("grib_weed_deco")
 	gThornDecoID = minetest.get_decoration_id("thorn_deco")
 	gPotatoDecoID = minetest.get_decoration_id("potatoes_deco")
+	gPulseBlossomDecoID = minetest.get_decoration_id("pulse_blossom_deco")
 	print("GribID: " .. gGribDecoID)
 	print("ThornID: " .. gThornDecoID)
 	print("PotatoID: " .. gPotatoDecoID)
-	minetest.set_gen_notify("decoration", {gGribDecoID,gThornDecoID,gPotatoDecoID})
+	print("PulseBlossomID: " .. gPulseBlossomDecoID)
+	minetest.set_gen_notify("decoration", {gGribDecoID,gThornDecoID,gPotatoDecoID,gPulseBlossomDecoID})
 end)
 
 minetest.register_on_generated(function(minp, maxp, blockseed)
@@ -42,6 +45,15 @@ minetest.register_on_generated(function(minp, maxp, blockseed)
 		for _, pos in ipairs(your_nodes) do
 			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
 			start_node_timer(p)
+		end
+	end
+
+	local node_def = minetest.registered_nodes["main:pulse_blossom"]
+	your_nodes = gen_notify["decoration#".. gPulseBlossomDecoID]
+	if your_nodes then
+		for _, pos in ipairs(your_nodes) do
+			local p={x=pos.x, y=pos.y+1, z=pos.z} -- WTF: why do they make us do this?
+			node_def.on_construct(p)
 		end
 	end
 end)
