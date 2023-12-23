@@ -1,7 +1,5 @@
 TODO:
-- Corn: needs to be a plant for awhile and then becomes food
-- ensure the maps aren't too crazy
-- remove sounds
+- Add creatures
 - Wolf
 - mongoose
 - Lava Ox
@@ -14,7 +12,9 @@ TODO:
 - Giant Moth
 - Skipping Fungus
 - Sand Slug
-
+- Corn: needs to be a plant for awhile and then becomes food
+- ensure the maps aren't too crazy
+- remove sounds
 
 
 to test

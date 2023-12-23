@@ -1,0 +1,84 @@
+# textdomain: nodes_nature
+
+# data_plant.lua
+Moss=Мох
+Moss Spores=Споры мха
+Anperla Tuber=Клубень анперла
+Reshedaar Spores=Споры решедара
+Mahal Spores=Споры махала
+Lambakap Spores=Споры ламбакапа
+Kelp=Келп
+Seagrass=Морская трава
+Sea Lettuce=Морской салат
+Maraka Nut=Орех марака
+Tangkal Fruit=Фрукт тангкала
+Sasaran Cone=Шишка сасаранская
+Kagum Pod=Стручок кагума
+Maraka Tree=Дерево марака
+Tangkal Tree=Дерево тангкал
+Sasaran Tree=Дерево сасаран
+Kagum Tree=Дерево кагум
+
+# data_rock.lua
+Sandstone=Песчаник
+Siltstone=Алевролит
+Claystone=Глинистый камень
+Conglomerate=Конгломерат
+Limestone=Известняк
+Ironstone=Железистый камень
+Granite=Гранит
+Basalt=Базальт
+Gneiss=Гнейс
+Jade=Нефрит
+Sand=Песок
+Silt=Ил
+Clay=Глина
+Gravel=Гравий
+Loam=Суглинок
+Grassland Soil=Почва пастбищная
+Marshland Soil=Почва болотная
+Duneland Soil=Почва дюн
+Highland Soil=Почва горная
+Woodland Soil=Почва лесная
+Barren Grassland Soil=Почва бесплодных пастбищ
+Dry Woodland Soil=Почва сухая лесная
+Clay Agricultural Soil=Почва глинистая сельскохозяйственная
+Silty Agricultural Soil=Почва шелковистая сельскохозяйственная
+Sandy Agricultural Soil=Почва песчаная сельскохозяйственная
+Stony Agricultural Soil=Почва каменистая сельскохозяйственная
+Loamy Agricultural Soil=Почва суглинистая сельскохозяйственная
+
+# life.lua
+Young @1=Молодой(ая) @1
+@1 Spores=Споры @1
+@1 Seeds=Семена @1
+Cana=Кана
+Glow Worm=Светящийся червь
+
+# liquids.lua
+Salt Water=Соленая вода
+Freshwater=Пресная вода
+@1 Source=Источник @1
+@1 Flowing=Течение @1
+Snow=Снег
+Snow Block=Снежный блок
+Ice=Лёд
+Sea Ice=Морской лед
+Lava Source=Источник лавы
+Lava Flowing=Течение лавы
+
+# rocks.lua
+@1 Boulder=Валун @1
+@1 Brick=Кирпич @1
+@1 Block=Блок @1
+
+# sediment.lua
+Wet @1=Влажный @1
+Salty Wet @1=Солёный влажный @1
+Depleted @1=Истощенный @1
+Wet Depleted @1=Истощенный влажный @1
+
+# trees.lua
+Tree Marker=Маркер дерева
+@1 Log=Бревно @1
+@1 Leaves=Листья @1

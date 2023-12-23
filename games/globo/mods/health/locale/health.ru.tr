@@ -1,0 +1,13 @@
+# textdomain: health
+
+# hud.lua
+Health:=Здоровье:
+Energy:=Энергия:
+Thirst:=Жажда:
+Hunger:=Голод:
+Body Temp:=Темп. тела:
+Temp:=Темп.:
+Effects:=Эффекты:
+
+# food.lua
+This is inedible.=Это несъедобно.

@@ -1,0 +1,42 @@
+# textdomain: animals
+
+# crafts.lua
+@1 Carcass=Туша @1
+Cooked @1=Приготовленный @1
+Burned @1=Сожжённый @1
+
+# darkasthaan.lua
+Darkasthaan Eggs=Яйца даркастаана
+Live Darkasthaan=Живой даркастаан
+
+# gundu.lua
+Gundu Eggs=Яйца Гунду
+Live Gundu=Живой Гунду
+
+# impethu.lua
+Impethu Eggs=Яйца Импету
+Live Impethu=Живой Импету
+
+# kubwakubwa.lua
+Kubwakubwa Eggs=Яйца Кубвакубва
+Live Kubwakubwa=Живой Кубвакубва
+
+# pegasun.lua
+Pegasun Egg=Яйцо Пегаса
+Live Pegasun (male)=Живой Пегас (самец)
+Live Pegasun (female)=Живой Пегас (самка)
+
+# sarkamos.lua
+Sarkamos Eggs=Яйца Саркамоса
+Live Sarkamos=Живой Саркамос
+
+# sneachan.lua
+Sneachan Eggs=Яйца Сничана
+Live Sneachan=Живой Сничан
+
+# crafts.lua
+Small Invertebrate=Маленький беспозвоночный
+Large Invertebrate=Большой беспозвоночный
+Small Bird=Маленькая птица
+Small Fish=Маленькая рыба
+Large Fish=Большая рыба
