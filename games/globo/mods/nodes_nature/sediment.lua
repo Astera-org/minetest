@@ -416,30 +416,10 @@ function agricultural_soil.register_wet_depleted(ag_soil)
     minetest.register_node(ag_soil.wet_depleted_node_name, props)
 end
 
-function agricultural_soil.register_recipe(agri_soil)
-    crafting.register_recipe({
-            type = "mixing_spot",
-            output = agri_soil.dry_node_name,
-            items = {agri_soil.sediment.dry_node_name.." 1","group:fertilizer 1"},
-            level = 1,
-            always_known = true,
-    })
-end
-
-function agricultural_soil.register_recipe_wet(agri_soil)
-    crafting.register_recipe({
-            type = "mixing_spot",
-            output = agri_soil.wet_node_name,
-            items = {agri_soil.sediment.wet_node_name.." 1","group:fertilizer 1"},
-            level = 1,
-            always_known = true,
-    })
-end
-
 -- Functions for making sets: sediment + soil + agricultural soil
 ---------------------------------------------------
 
--- Registers sediments, their slabs, wet, salty, slopes etc. and crafting recipes
+-- Registers sediments, their slabs, wet, salty, slopes etc. 
 function sediment.register_sed_variants(sed)
     sediment.register_dry(sed)
     sediment.register_wet(sed)
@@ -459,8 +439,6 @@ function sediment.register_agri_soil_variants(sed)
     agricultural_soil.register_wet(agri)
     agricultural_soil.register_depleted(agri)
     agricultural_soil.register_wet_depleted(agri)
-    agricultural_soil.register_recipe(agri)
-    agricultural_soil.register_recipe_wet(agri)
 end
 
 -- Registers soils with "grasses" and their variants including slopes
@@ -547,23 +525,6 @@ local soil_list = {
 	      description = S("Dry Woodland Soil"),
 	      sediment = sediment_list.silt}),
 }
-
--- Recipes for loam
-crafting.register_recipe({
-	type = "mixing_spot",
-	output = "nodes_nature:loam 3",
-	items = {"nodes_nature:clay 1","nodes_nature:silt 1","nodes_nature:sand 1"},
-	level = 1,
-	always_known = true,
-})
-
-crafting.register_recipe({
-	type = "mixing_spot",
-	output = "nodes_nature:loam_wet 3",
-	items = {"nodes_nature:clay_wet 1","nodes_nature:silt_wet 1","nodes_nature:sand_wet 1"},
-	level = 1,
-	always_known = true,
-})
 
 -- Actually registers (almost) all soils in the game
 -- see red_ochre above

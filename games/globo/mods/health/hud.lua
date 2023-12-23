@@ -6,7 +6,7 @@
 local S = HEALTH.S
 
 local hud = {}
-local hudupdateseconds = tonumber(minetest.settings:get("exile_hud_update"))
+local hudupdateseconds = 60 -- JED tonumber(minetest.settings:get("exile_hud_update"))
 -- global setting for whether to show stats
 local mtshowstats = minetest.settings:get_bool("exile_hud_show_stats") or true
 local mthudopacity = minetest.settings:get("exile_hud_icon_transparency") or 127

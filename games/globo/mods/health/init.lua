@@ -64,75 +64,6 @@ local function set_default_attibutes(player)
 end
 
 
-
---[[
------------------------------
---Forms for sfinv
---only for bug testing
-
-
---get data and create form
-local function sfinv_get(self, player, context)
-	local meta = player:get_meta()
-
-	local player_pos = player:get_pos()
-	player_pos.y = player_pos.y + 0.6 --adjust to body height
-	local enviro_temp = tostring(math.floor(climate.get_point_temp(player_pos)))
-
-	local health = tostring(player:get_hp())
-	local thirst = tostring(meta:get_int("thirst"))
-	local hunger = tostring(meta:get_int("hunger"))
-	local energy = tostring(meta:get_int("energy"))
-	local temperature = tostring(meta:get_int("temperature"))
-	local heal_rate = tostring(meta:get_int("heal_rate"))
-	local thirst_rate = tostring(meta:get_int("thirst_rate"))
-	local hunger_rate = tostring(meta:get_int("hunger_rate"))
-	local recovery_rate = tostring(meta:get_int("recovery_rate"))
-	local move = tostring(meta:get_int("move"))
-	local jump = tostring(meta:get_int("jump"))
-
-
-
-	local formspec = "label[0.1,0.1; Health: " .. health .. " / 20]"..
-	"label[0.1,0.6; Thirst: " .. thirst .. " / 100]"..
-	"label[0.1,1.1; Hunger: " .. hunger .. " / 1000]"..
-	"label[0.1,1.6; Energy: " .. energy .. " / 1000]"..
-	"label[0.1,2.1; Body Temperature: " .. temperature .. " C]"..
-	"label[0.1,3.1; Move Speed: " .. move .. " % change]"..
-	"label[0.1,3.6; Jumping: " .. jump .. " % change]"..
-
-	"label[4,0.1; Heal Rate: " .. heal_rate .. " ]"..
-	"label[4,0.6; Thirst Rate: " .. thirst_rate .. " ]"..
-	"label[4,1.1; Hunger Rate: " .. hunger_rate .. " ]"..
-	"label[4,1.6; Recovery Rate: " .. recovery_rate .. " ]"..
-	"label[4,2.1; External Temperature: " .. enviro_temp .. " C]"..
-	"button[4,3.1;1,1;toggle_health_hud;HUD]"
-	--..
-	--"textarea[0.5,5.1;6,6;;Active Effects:;"..active_list.." ]"
-
-	return formspec
-end
-
-
-
-local function register_tab()
-	sfinv.register_page("health:health_tab", {
-		title = "Health",
-		on_enter = function(self, player, context)
-			sfinv.set_player_inventory_formspec(player)
-		end,
-		get = function(self, player, context)
-			local formspec = sfinv_get(self, player, context)
-			return sfinv.make_formspec(player, context, formspec, true)
-		end
-	})
-end
-
-register_tab()
-
-
-]]
-
 -----------------------------
 --Applies Health Effects
 --called by malus_bonus
@@ -450,7 +381,7 @@ function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, 
 
 	--apply player physics
 	--don't do in bed or it buggers the physics
-	if not bed_rest.player[name] then
+	
 		player_monoids.speed:add_change(player, 1 + (mov/100), "health:physics")
 		player_monoids.jump:add_change(player, 1 + (jum/100), "health:physics")
 		--split physics from hunger etc from that from health effects
@@ -461,7 +392,7 @@ function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, 
 		player_monoids.jump:add_change(player, 1 + (HE_jum/100), "health:physics_HE")
 
 
-	end
+	
 
 	--return adjusted rates so can be applied if necessary
 	return h_rate, r_rate, t_rate, hun_rate, mov, jum, health, energy, thirst, hunger, temperature
@@ -481,8 +412,7 @@ function reset_attributes(player)
 end
 
 minetest.register_on_joinplayer(function(player)
-	sfinv.set_player_inventory_formspec(player)
-
+	
 	--set physics etc
 	local name = player:get_player_name()
 	local meta = player:get_meta()
@@ -518,8 +448,6 @@ end)
 
 minetest.register_on_respawnplayer(function(player)
 	set_default_attibutes(player)
-	sfinv.set_player_inventory_formspec(player)
-	clothing:update_temp(player)
 end)
 
 minetest.register_on_leaveplayer(function(player, timed_out)
@@ -616,8 +544,7 @@ if minetest.settings:get_bool("enable_damage") then
 				meta:set_int("hunger", hunger1)
 				meta:set_int("energy", energy1)
 				meta:set_int("temperature", temperature1)
-				--update form so can see change while looking
-				sfinv.set_player_inventory_formspec(player)
+				
 
 
 				end

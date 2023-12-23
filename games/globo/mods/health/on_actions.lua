@@ -114,10 +114,10 @@ local function quick_physics(player, name, health, energy, thirst, hunger, tempe
 
   --apply player physics
   --don't do in bed or it buggers the physics
-  if not bed_rest.player[name] then
+  
     player_monoids.speed:add_change(player, 1 + (mov/100), "health:physics")
     player_monoids.jump:add_change(player, 1 + (jum/100), "health:physics")
-  end
+  
 
 
 
@@ -191,9 +191,7 @@ function HEALTH.use_item(itemstack, user, hp_change, thirst_change, hunger_chang
 	meta:set_int("hunger", hunger)
 	meta:set_int("energy", energy)
 	meta:set_int("temperature", temperature)
-  --update form so can see change while looking
-  sfinv.set_player_inventory_formspec(user)
-
+  
 	--minetest.chat_send_player(name, minetest.registered_items[item].description .." effect = Health: "..hp_change..", Thirst: "..thirst_change.. ", Hunger: "..hunger_change.. ", Energy: "..energy_change.. ", Body Temperature: "..temp_change )
   local pos = user:get_pos()
   minetest.sound_play("health_eat", {pos = pos, gain = 0.5, max_hear_distance = 2}
@@ -336,9 +334,9 @@ if minetest.settings:get_bool("enable_damage") then
 				--bed rest
 				--when in bed, under shelter boost energy
 				if energy < 1000 then
-					if bed_rest.player[name] then
+					-- JED if bed_rest.player[name] then
 						--best rest is under shelter, in a non-extreme temperature
-            local lvl = bed_rest.level[name]
+            local lvl = 1 -- bed_rest.level[name]
 						if rain
             or snow
             or dam_weather
@@ -359,7 +357,7 @@ if minetest.settings:get_bool("enable_damage") then
               --best rest is under shelter, in a non-extreme temperature
 							energy = energy + (16 * lvl)
 						end
-					end
+					
 				end
 
         ------------------
@@ -458,8 +456,7 @@ if minetest.settings:get_bool("enable_damage") then
         meta:set_int("thirst", thirst)
         meta:set_int("hunger", hunger)
         player:set_hp(health)
-				--update form so can see change while looking
-				sfinv.set_player_inventory_formspec(player)
+				
 
 				end
 

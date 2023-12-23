@@ -7,13 +7,6 @@ nodes_nature.S = minetest.get_translator("nodes_nature")
 local path = minetest.get_modpath("nodes_nature")
 
 
---crafting spots
-crafting.register_type("mixing_spot")
-crafting.register_type("threshing_spot")
-crafting.register_type("hammering_block")
-crafting.register_type("chopping_block")
-crafting.register_type("masonry_bench")
-
 --------------------------------
 
 dofile(path.."/sounds.lua")
