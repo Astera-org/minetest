@@ -374,7 +374,7 @@ end
 ---------------
 
 --eggs
-minetest.register_node("animals:wolf_spwan", {
+minetest.register_node("animals:wolf_spawn", {
 	description = S('Wolf Spawn'),
 	tiles = {"animals_gundu_eggs.png"},
 	stack_max = minimal.stack_max_medium,
@@ -415,8 +415,8 @@ minetest.register_entity("animals:wolf_male",{
 	collide_with_objects = true,
 	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
 	visual = "mesh",
-	mesh = "animals_pegasun.b3d",
-	textures = {"animals_pegasun_male.png"},
+	mesh = "mobs_wolf.b3d",
+	textures = {"mobs_wolf.png"},
 	visual_size = {x = 1, y = 1},
 	makes_footstep_sound = true,
 	timeout = 0,
@@ -426,7 +426,7 @@ minetest.register_entity("animals:wolf_male",{
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+    energy_loss = 1,
 
 	--interaction
 	predators = {},
@@ -488,8 +488,8 @@ minetest.register_entity("animals:wolf",{
 	collide_with_objects = true,
 	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
 	visual = "mesh",
-	mesh = "animals_pegasun.b3d",
-	textures = {"animals_pegasun.png"},
+	mesh = "mobs_wolf.b3d",
+	textures = {"mobs_wolf.png"},
 	visual_size = {x = 1, y = 1},
 	makes_footstep_sound = true,
 	timeout = 0,
@@ -499,7 +499,7 @@ minetest.register_entity("animals:wolf",{
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+    energy_loss = 1,
 
 	--interaction
 	predators = {},

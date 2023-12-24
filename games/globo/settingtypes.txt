@@ -1,0 +1,150 @@
+## Error correction
+
+# If your map has broken half-bed objects that can't be interacted with. 
+# 
+# Enabling this LBM will remove them at the cost of a bit of performance.
+# If you know how it happened, please let me know so I can prevent it.
+exile_bed_clear (Fix broken beds *press edit for details*) bool false
+
+## Gameplay settings
+
+# By default, Exile uses the world seed to generate dye sources. This
+# means dye sources will normally be the same for a given seed. Disable
+# this to use a random seed, so different plants will be chosen each time
+# the world seed is used.
+ncrafting_worldseed (Use world seed for dye generation) bool true
+
+## Settings for displays
+
+
+# Select the temperature scale to display in the HUD.
+exile_temp_scale (Temperature scale) enum Celsius Celsius,Fahrenheit,Kelvin
+
+# Determines the frequency of refresh for the displayed HUD information.
+# 
+# For singleplayer or LAN, this can be left at 0.1, but on Internet 
+# servers, a rate of 1 second per update may help to mitigate HUD lag.
+exile_hud_update (Number of seconds before HUD updates) float 0.1 0.1 4
+
+# Whether to display the notification screen when a player 
+# has been in the game for a long period of time, and then 
+# rests in a bed.
+# 
+# Set from 30 to 90 minutes for the first notice.
+#
+# After each notice the time before the next is halved.
+# Set to 30 minutes, it will be a constant nag after ~1 hour.
+# At 60 it will be constant at two hours, at 90 it will take 3 hours.
+exile_breaktime (Set delay before the first break notice) int 30 30 90
+
+# If true, turns off breaktaker by default for all players.
+# Individual players may still re-enable it with personal overrides.
+exile_nobreaktaker (Disable the notice to take a break) bool false
+
+## Settings for respawning
+
+# Use this to set a safe location for new players to spawn.
+# 
+# This can break intended balance, but can be used to make 
+# a tutorial area or a newbie-only zone.
+exile_safe_spawn_pos (Location of safe spawn point) string
+
+# The number of lives before you are switched to regular respawn or rspawn.
+# 
+# This has no effect without also setting a safe spawn point
+exile_safe_spawn_lives (Number of lives spawned at safe point) int 0 0 100
+
+
+## Settings for map generation
+
+# This setting will enable the experimental v4 biomes for Exile.
+# 
+# These are not yet ready for regular use, and have balance issues
+# Note: Enabling this will only take effect on new worlds.
+exile_v4_biomes (Enable the experimental v4 biomes) bool false
+
+
+## Settings for Climate
+
+[Climate Settings]
+# Average room tempurature indoors and underground.
+exile_av_temp (Average Tempurature indoors and underground) int 15 0 20
+# Depth average room tempurature is reached.
+exile_av_temp_depth (Depth av_temp is reached underground) int -12 -100 0
+
+## Settings for HUD
+[HUD Settings]
+# Enable 16 slot hotbar
+#
+exile_hud_wide_hotbar (Enable 16 slot hotbar) bool false
+
+# Enable or disable raw stat numbers next to the status icons
+#
+exile_hud_raw_stats (Show stat numbers by their icons) bool true
+
+# Set HUD icon transparency
+#
+exile_hud_icon_transparency (HUD icon transparency [0-255]) int 127 0 255
+
+
+[Natural Slopes settings]
+# 
+# 
+# 
+exile_enableslopes (Create natural slopes on mapgen) bool true
+
+# Set the percentage of non-slopes that appear on map generation
+# 
+# 10% = 90% chance of a slope in a given spot, 90 = 10% chance
+exile_slopechance (Non-Slope percentage) int 20 0 100
+
+## Update shape ABM
+
+# Enable or disable the automatic update of the shape of nodes at the surface (requires twmlib mod).
+naturalslopeslib_enable_surface_update (Timed surface update) bool true
+
+
+## Update shape on walk
+
+# Enable or disable shape update when walking on blocks (requires poschangelib mod).
+naturalslopeslib_enable_shape_on_walk (Enable shaping by walking on edges) bool true
+
+
+## Update shape on world generation
+
+# Enable or disable shape update when the world is generated.
+# 
+# This will probably put a lot of pressure on the server. Hopefully it doesn't happen that frequently.
+naturalslopeslib_enable_shape_on_generate (Shape update on generation) bool true
+
+# Define which method is used when generating a new area.
+#  - VoxelManip (default) is the most efficient one, but the area will be available only once it is completely updated and may be resource intensive. This is the preferred method as map generation is optimized not to impact the game.
+#  - Progressive is way much slower, but the area is available directly in it's untransformed shape. The nodes will be updated one after the other while the game is rather idle. This method is preferred on old single core CPU that cannot benefit from map generation optimization, if the areas are too long to emerge or if you like to see mountains smoothing themselves progressively.
+naturalslopeslib_generation_method (Generation method) enum VoxelManip VoxelManip,Progressive
+
+# Inverted chance factor on generation. 
+# 
+# The lesser, the more likely the node will be
+# generated in their updated shape. 0.1 means 10 time more likely.
+naturalslopeslib_update_shape_generate_factor (Generation factor) float 0.05 0
+
+# Skip n nodes when generating an area. 
+# The higher, the less nodes can be updated 
+# but it dramatically saves server resources.
+naturalslopeslib_update_shape_generate_skip (Generation skip nodes) int 0 0
+
+
+## Update shape on dig and place
+
+# Enable or disable shape update of neighbor nodes when one is placed or updated.
+naturalslopeslib_enable_shape_on_dig_place (Shape update on dig and place) bool false
+
+
+## Rendering
+
+# Enable smooth rendering instead of cubic. 
+# 
+# It will show some disconnections at some points 
+# that won't be fixed and may be visually misleading with heights.
+naturalslopeslib_smooth_rendering (Smooth but glitched rendering) bool false
+

@@ -59,6 +59,8 @@ end
 
 function setupHUD(player)
     -- Remove existing HUD elements if they exist
+    player:hud_set_flags({healthbar = false})
+    
     local meta = player:get_meta()
     local hud_ids = meta:get("hud_ids")
     if hud_ids then

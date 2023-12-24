@@ -156,7 +156,7 @@ local function brain(self)
 						--mobkit.hq_roam(self,10)
 						animals.hq_roam_surface_group(self, 'spreading', 20)
 					end
-				elseif random()< 0.75 then
+				else
 					--veg
 					if animals.eat_flora(pos, 0.005) == true then
 						energy = energy + 20
@@ -165,14 +165,6 @@ local function brain(self)
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
 						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
-				else
-					--hunt
-					if not animals.prey_hunt(self, 25) then
-						--random search
-						mobkit.animate(self,'walk')
-						mobkit.hq_roam(self,10)
-						--animals.hq_roam_surface_group(self, 'spreading', 10)
 					end
 				end
 			end
@@ -327,7 +319,7 @@ local function brain_male(self)
 						--mobkit.hq_roam(self,10)
 						animals.hq_roam_surface_group(self, 'spreading', 20)
 					end
-				elseif random()< 0.5 then
+				else
 					--veg
 					if animals.eat_flora(pos, 0.005) == true then
 						energy = energy + 20
@@ -337,15 +329,7 @@ local function brain_male(self)
 						--mobkit.hq_roam(self,10)
 						animals.hq_roam_walkable_group(self, 'flora', 10)
 					end
-				else
-					--hunt
-					if not animals.prey_hunt(self, 25) then
-						--random search
-						mobkit.animate(self,'walk')
-						mobkit.hq_roam(self,10)
-						--animals.hq_roam_surface_group(self, 'spreading', 10)
-					end
-				end
+                end
 			end
 
 		end
@@ -374,7 +358,7 @@ end
 ---------------
 
 --eggs
-minetest.register_node("animals:cow_spwan", {
+minetest.register_node("animals:cow_spawn", {
 	description = S('Cow Spawn'),
 	tiles = {"animals_gundu_eggs.png"},
 	stack_max = minimal.stack_max_medium,
@@ -411,13 +395,17 @@ minetest.register_node("animals:cow_spwan", {
 
 minetest.register_entity("animals:cow_male",{
 	--core
+    --type = "animal",
 	physical = true,
 	collide_with_objects = true,
-	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
+	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
 	visual = "mesh",
-	mesh = "animals_pegasun.b3d",
-	textures = {"animals_pegasun_male.png"},
-	visual_size = {x = 1, y = 1},
+	mesh = "mobs_cow.b3d",
+	textures = { {
+		"mobs_cow.png",
+		"transparent_pixel.png",
+	}, },
+	visual_size = {x=2.8, y=2.8},
 	makes_footstep_sound = true,
 	timeout = 0,
 
@@ -426,10 +414,10 @@ minetest.register_entity("animals:cow_male",{
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+    energy_loss = 1,
 
 	--interaction
-	predators = {"animals:kubwakubwa", "animals:darkasthaan"},
+	predators = {"animals:wolf", "animals:wolf_male"},
 	friends = {"animals:cow"},
 	rivals = {"animals:cow_male"},
 	sex = "male",
@@ -483,13 +471,17 @@ minetest.register_entity("animals:cow_male",{
 
 minetest.register_entity("animals:cow",{
 	--core
+    --type = "animal",
 	physical = true,
 	collide_with_objects = true,
-	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
+	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
 	visual = "mesh",
-	mesh = "animals_pegasun.b3d",
-	textures = {"animals_pegasun.png"},
-	visual_size = {x = 1, y = 1},
+	mesh = "mobs_cow.b3d",
+	textures = { {
+		"mobs_cow.png",
+		"transparent_pixel.png",
+	}, },
+	visual_size = {x=2.8, y=2.8},
 	makes_footstep_sound = true,
 	timeout = 0,
 
@@ -498,10 +490,10 @@ minetest.register_entity("animals:cow",{
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+    energy_loss = 1,
 
 	--interaction
-	predators = {"animals:kubwakubwa", "animals:darkasthaan"},
+	predators = {"animals:wolf", "animals:wolf_male"},
 	friends = {"animals:cow", "animals:cow_male"},
 	rivals = {"animals:cow"},
 

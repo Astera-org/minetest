@@ -20,6 +20,19 @@ dofile(path.."/sarkamos.lua")
 dofile(path.."/pegasun.lua")
 dofile(path.."/sneachan.lua")
 
+dofile(path.."/badger.lua")
+dofile(path.."/chaoshawk.lua")
+dofile(path.."/cow.lua")
+dofile(path.."/frostmephit.lua")
+dofile(path.."/giantmoth.lua")
+dofile(path.."/lavaox.lua")
+dofile(path.."/mongoose.lua")
+dofile(path.."/ogre.lua")
+dofile(path.."/sandslug.lua")
+dofile(path.."/snagon.lua")
+dofile(path.."/wolf.lua")
+
+
 ---
 --Food Web
 

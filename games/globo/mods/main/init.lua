@@ -47,6 +47,7 @@ GAME_SPEED = 1
 
 local default_path = minetest.get_modpath("main")
 dofile(default_path.."/compat.lua")
+dofile(default_path.."/tools.lua")
 dofile(default_path.."/player.lua")
 dofile(default_path.."/creatures.lua")
 dofile(default_path.."/nodes.lua")

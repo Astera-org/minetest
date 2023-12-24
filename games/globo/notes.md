@@ -1,9 +1,11 @@
 TODO:
+- cow
+    - make cows seek other cows
 - Wolf
+    - make wolves seek other wolves
 - mongoose
 - Lava Ox
 - Chaos Hawk
-- cow
 - badger
 - Ogre
 - Snagon
@@ -19,7 +21,6 @@ TODO:
     - wake up when you move if you are sleeping
     - wake up if you take damage
 
-- get rid of health hearts
 
 
 
@@ -66,3 +67,7 @@ We are trying to use gen_notify to do something when grib weed is created. The g
 
 
 Thorns should have a random chance of going into the "with fruit" state. This changes the image shown and allows the player to harvest from the node. If harvested it should get out of he "with fruit" state
+
+Ideas
+----
+Motion detector
