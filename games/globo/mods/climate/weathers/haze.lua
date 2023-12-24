@@ -64,7 +64,7 @@ haze.star_data = {
 
 
 
-haze.sound_loop = 'duststorm_loop_light'
+--haze.sound_loop = 'duststorm_loop_light'
 
 
 	--probabilities in each temp class

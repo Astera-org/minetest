@@ -114,7 +114,7 @@ local function vomit(player, meta, repeat_min, repeat_max, delay_min, delay_max,
       end
 
 			local pos = player:get_pos()
-			minetest.sound_play("health_vomit", {pos = pos, gain = 0.5, max_hear_distance = 2})
+			--minetest.sound_play("health_vomit", {pos = pos, gain = 0.5, max_hear_distance = 2})
 
 			local rant =  random(t_min, t_max)
 			local ranh = random(h_min, h_max)
@@ -174,7 +174,7 @@ local function organ_failure(player, repeat_min, repeat_max, delay_min, delay_ma
 
 	local ranrep = random(repeat_min, repeat_max)
 	local name = player:get_player_name()
-	minetest.sound_play("health_heart", {to_player = name, gain = 0.5})
+	--minetest.sound_play("health_heart", {to_player = name, gain = 0.5})
 
 	local randel = 0
 
@@ -228,7 +228,7 @@ local function auditory_hallucination(player, repeat_min, repeat_max, delay_min,
 
 			pos = {x=pos.x+random(-15,15), y=pos.y+random(-15,15), z=pos.z+random(-15,15)}
 
-			minetest.sound_play("health_hallucinate", {to_player = name, pos = pos, gain = random(min_gain,max_gain)})
+			--minetest.sound_play("health_hallucinate", {to_player = name, pos = pos, gain = random(min_gain,max_gain)})
 
 		end)
 	end
@@ -1246,7 +1246,7 @@ function HEALTH.meta_stim(order, player, meta, effects_list, h_rate,
 			end
 
 			--I am a GOD!
-			minetest.sound_play( {name="health_superpower", gain=1}, {pos=pos, max_hear_distance=20})
+			--minetest.sound_play( {name="health_superpower", gain=1}, {pos=pos, max_hear_distance=20})
 			minetest.add_particlespawner({
 				amount = 80,
 				time = 18,

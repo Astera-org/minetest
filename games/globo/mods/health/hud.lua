@@ -71,11 +71,6 @@ end
 
 local stdpos = { x = .5, y = 1}
 
-local function make_image_hud(player, offset, text)
-   return player:hud_add({ hud_elem_type = "image", scale = icon_scale,
-			   offset = offset, position = stdpos, text = text })
-end
-
 local function make_text_hud(player, offset)
    return player:hud_add{ hud_elem_type = "text", offset = offset,
 			  position = stdpos, text = "" }
@@ -97,66 +92,6 @@ local setup_hud = function(player)
 	end
 
 	local lb = tobool(meta:get_string("hud16")) -- nil -> default false
-
-	hud_data.p_health = make_image_hud(player,
-	   {x = hud_health_x - longbarpos[lb].x,
-	    y = hud_vert_pos + longbarpos[lb].y},
-	   "hud_health.png" )
-
-	hud_data.p_hunger = make_image_hud(player,
-	   {x = hud_hunger_x, y = hud_vert_pos},
-	   "hud_hunger.png" )
-
-	hud_data.p_thirst = make_image_hud(player,
-	   {x = hud_thirst_x, y = hud_vert_pos},
-	   "hud_thirst.png" )
-
-	hud_data.p_energy = make_image_hud(player,
-	   {x = hud_energy_x, y = hud_vert_pos},
-	   "hud_energy.png" )
-
-	hud_data.p_body_temp = make_image_hud(player,
-	   {x = hud_body_temp_x, y = hud_vert_pos},
-	   "hud_body_temp.png" )
-
-	hud_data.p_body_temp_type = make_image_hud(player,
-	   {x = hud_body_temp_x, y = hud_vert_pos + hud_extra_y},
-	   "hud_temp_normal.png" )
-
-	hud_data.p_air_temp = make_image_hud(player,
-	   {x = hud_air_temp_x, y = hud_vert_pos},
-	   "hud_air_temp.png" )
-
-	hud_data.p_air_temp_type = make_image_hud(player,
-	   {x = hud_air_temp_x, y = hud_vert_pos + hud_extra_y},
-	   "hud_temp_normal.png" )
-
-	hud_data.p_sick = make_image_hud(player,
-	   {x = hud_sick_x + longbarpos[lb].x,
-	    y = hud_vert_pos + longbarpos[lb].y},
-	   "hud_sick.png" )
-
-	hud_data.p_health_text = make_text_hud(player,
-	   {x = hud_health_x + longbarpos[lb].x,
-	    y = hud_vert_pos + hud_text_y + longbarpos[lb].y} )
-
-	hud_data.p_hunger_text = make_text_hud(player,
-	   {x = hud_hunger_x, y = hud_vert_pos + hud_text_y} )
-
-	hud_data.p_thirst_text = make_text_hud(player,
-	   {x = hud_thirst_x, y = hud_vert_pos + hud_text_y} )
-
-	hud_data.p_energy_text = make_text_hud(player,
-	   {x = hud_energy_x, y = hud_vert_pos + hud_text_y} )
-
-	hud_data.p_body_temp_text = make_text_hud(player,
-	   {x = hud_body_temp_x, y = hud_vert_pos + hud_text_y} )
-
-	hud_data.p_air_temp_text = make_text_hud(player,
-	   {x = hud_air_temp_x, y = hud_vert_pos + hud_text_y} )
-
-	hud_data.p_sick_text = make_text_hud(player,
-	   {x = hud_sick_x, y = hud_vert_pos + hud_text_y + longbarpos[lb].y} )
 
 end
 
@@ -233,97 +168,6 @@ local function color_envirotemp(v, meta)
 	return stat_col, ttype, overlay
 end
 
-local function health(player, hud_data)
-	local v = player:get_hp()
-	v = (v/20)*100
-	local stat_col = color(v)
-	local t = v .." %"
-	local hud1 = hud_data.p_health
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(hud1, "text", "hud_health.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-
-	local hud2 = hud_data.p_health_text
-	player:hud_change(hud2, "number", tonumber("0x"..stat_col))
-	if ( hud_data.showstats and hud_data.showstats == true ) or
-	   ( hud_data.showstats == nil and mtshowstats == true ) then
-		player:hud_change(hud2, "text", t)
-	else
-		player:hud_change(hud2, "text", "")
-	end
-end
-
-local function energy(player, hud_data, meta)
-	local v = meta:get_int("energy")
-	v = (v/1000)*100
-	local stat_col = color(v)
-	local t = v .." %"
-	local hud1 = hud_data.p_energy
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(hud1, "text", "hud_energy.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-	local hud2 = hud_data.p_energy_text
-	player:hud_change(hud2, "number", tonumber("0x"..stat_col))
-	if ( hud_data.showstats and hud_data.showstats == true ) or
-	   ( hud_data.showstats == nil and mtshowstats == true ) then
-		player:hud_change(hud2, "text", t)
-	else
-		player:hud_change(hud2, "text", "")
-	end
-end
-
-local function thirst(player, hud_data, meta)
-	local v = meta:get_int("thirst")
-	v = (v/100)*100
-	local t = v .." %"
-	local stat_col = color(v)
-	local hud1 =  hud_data.p_thirst
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(hud1, "text", "hud_thirst.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-	local hud2 = hud_data.p_thirst_text
-	player:hud_change(hud2, "number", tonumber("0x"..stat_col))
-	if ( hud_data.showstats and hud_data.showstats == true ) or
-	   ( hud_data.showstats == nil and mtshowstats == true ) then
-		player:hud_change(hud2, "text", t)
-	else
-		player:hud_change(hud2, "text", "")
-	end
-end
-
-local function hunger(player, hud_data, meta)
-	local v = meta:get_int("hunger")
-	v = (v/1000)*100
-	local t = v .." %"
-	local stat_col = color(v)
-	local hud1 =  hud_data.p_hunger
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(hud1, "text", "hud_hunger.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-	local hud2 = hud_data.p_hunger_text
-	player:hud_change(hud2, "number", tonumber("0x"..stat_col))
-	if ( hud_data.showstats and hud_data.showstats == true ) or
-	   ( hud_data.showstats == nil and mtshowstats == true ) then
-		player:hud_change(hud2, "text", t)
-	else
-		player:hud_change(hud2, "text", "")
-	end
-end
-
-
-local function temp(player, hud_data, meta)
-	local v = meta:get_int("temperature")
-	local stat_col, ttype = color_bodytemp(v)
-	local t = climate.get_temp_string(v, meta)
-	local hud1 = hud_data.p_body_temp
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(hud1, "text", "hud_body_temp.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-	local hudtype = hud_data.p_body_temp_type
-	local hudtext = hud_data.p_body_temp_text
-	player:hud_change(hudtype, "text", ttype..".png^[opacity:"..opac) -- don't colorize)
-	player:hud_change(hudtext, "number", tonumber("0x"..stat_col))
-	if are_stats_visible(hud_data) then
-		player:hud_change(hudtext, "text", t)
-	else
-		player:hud_change(hudtext, "text", "")
-   end
-end
 
 local function do_overlay(player, pname, pos, overlay)
    local handle = player:hud_add({
@@ -339,40 +183,6 @@ local function do_overlay(player, pname, pos, overlay)
    hud[pname].overlay = handle
 end
 
-local function enviro_temp(player, hud_data, meta)
-	local pname = player:get_player_name()
-	local player_pos = player:get_pos()
-	player_pos.y = player_pos.y + 0.6 --adjust to body height
-	local v = math.floor(climate.get_point_temp(player_pos, true))
-	local stat_col, ttype, overlay = color_envirotemp(v, meta)
-	if overlay then
-	   if not hud_data.overlay then
-	      do_overlay(player, pname, player_pos, overlay)
-	   elseif player:hud_get(hud_data.overlay) and
-	      ( overlay ~= player:hud_get(hud_data.overlay).name ) then
-	      -- direct transition from one overlay to another
-	      player:hud_remove(hud_data.overlay)
-	      do_overlay(player, pname, player_pos, overlay)
-	   end
-	elseif hud_data.overlay then -- remove overlay
-	   player:hud_remove(hud_data.overlay)
-	   hud_data.overlay = nil
-	end
-	local t = climate.get_temp_string(v, meta)
-	local newhud = hud_data.p_air_temp
-	local newhud2 = hud_data.p_air_temp_type
-	local opac = hud_data.opacity or mthudopacity
-	player:hud_change(newhud, "text", "hud_air_temp.png^[colorize:#"..stat_col.."^[opacity:"..opac)
-	player:hud_change(newhud2, "text", ttype..".png^[opacity:"..opac) -- don't colorize)
-	local hud2 = hud_data.p_air_temp_text
-	player:hud_change(hud2, "number", tonumber("0x"..stat_col))
-	if ( hud_data.showstats and hud_data.showstats == true ) or
-	   ( hud_data.showstats == nil and mtshowstats == true ) then
-		player:hud_change(hud2, "text", t)
-	else
-		player:hud_change(hud2, "text", "")
-	end
-end
 
 local function effects(player, hud_data, meta)
 	local stat_col = stat_fine

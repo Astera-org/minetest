@@ -336,7 +336,7 @@ function [yournamespace].lq_jumpattack(self,height,target)
 				dir=vector.multiply(dir,6)
 				dir.y = -mobkit.gravity*sqrt(height*2/-mobkit.gravity)
 				self.object:set_velocity(dir)
-				mobkit.make_sound(self,'charge')
+				--mobkit.make_sound(self,'charge')
 				init=false
 			else
 				[yournamespace].lq_idle(self,0.3)
@@ -356,7 +356,7 @@ function [yournamespace].lq_jumpattack(self,height,target)
 				local vy = self.object:get_velocity().y
 				self.object:set_velocity({x=dir.x*-3,y=vy,z=dir.z*-3})	
 					-- play attack sound if defined
-				mobkit.make_sound(self,'attack')
+				--mobkit.make_sound(self,'attack')
 				return true
 			end
 		end
@@ -480,7 +480,7 @@ function [yournamespace].hq_runfrom(self,prty,tgtobj)
 		if init then
 			timer = timer-self.dtime
 			if timer <=0 or vector.distance(self.object:get_pos(),tgtobj:get_pos()) < 8 then
-				mobkit.make_sound(self,'scared')
+				--mobkit.make_sound(self,'scared')
 				init=false
 			end
 			return
@@ -549,7 +549,7 @@ function [yournamespace].hq_warn(self,prty,tgtobj)
 			end
 			-- make noise in random intervals
 			if timer > tgttime then
-				mobkit.make_sound(self,'warn')
+				--mobkit.make_sound(self,'warn')
 				-- if self.sounds and self.sounds.warn then
 					-- minetest.sound_play(self.sounds.warn, {object=self.object})
 				-- end
@@ -788,7 +788,7 @@ function [yournamespace].hq_aqua_attack(self,prty,tgtobj,speed)
 		if not mobkit.is_alive(tgtobj) then return true end
 		if init then
 			mobkit.animate(self,'fast')
-			mobkit.make_sound(self,'attack')
+			--mobkit.make_sound(self,'attack')
 			init = false
 		end
 		local pos = mobkit.get_stand_pos(self)

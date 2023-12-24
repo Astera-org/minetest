@@ -129,7 +129,7 @@ lightning.strike = function(pos, cosmetic)
 		glow = 14,
 	})
 
-	minetest.sound_play({ pos = pos, name = "lightning_thunder", gain = 10, max_hear_distance = 500 })
+	-- minetest.sound_play({ pos = pos, name = "lightning_thunder", gain = 10, max_hear_distance = 500 })
 
 	-- damage nearby objects, player or not
 	if not cosmetic then

@@ -65,7 +65,7 @@ superstorm.star_data = {
 
 
 
-superstorm.sound_loop = 'heavy_rain_loop'
+--superstorm.sound_loop = 'heavy_rain_loop'
 
 	--probabilities in each temp class
 superstorm.chain = {

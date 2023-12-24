@@ -42,7 +42,7 @@ local function flee_sound(self)
 	if not self.isinliquid then
 		return
 	end
-	mobkit.make_sound(self,'flee')
+	--mobkit.make_sound(self,'flee')
 end
 
 --------------------------------------------------------------------------
@@ -282,7 +282,7 @@ function animals.hatch_egg(pos, medium_name, replace_name, name, energy_egg, you
   while cnt < young_per_egg and objcount < max_objects do
     local ran_pos = air[random(#air)]
     local ent = minetest.add_entity(ran_pos, name)
-    minetest.sound_play("animals_hatch_egg", {pos = pos, gain = 0.2, max_hear_distance = 6})
+    -- minetest.sound_play("animals_hatch_egg", {pos = pos, gain = 0.2, max_hear_distance = 6})
     ent = ent:get_luaentity()
     mobkit.remember(ent,'energy', start_e)
     mobkit.remember(ent,'age',0)
@@ -606,7 +606,7 @@ function mobkit.hq_chaseafter(self,prty,tgtobj)
 			local pos = mobkit.get_stand_pos(self)
 			local opos = tgtobj:get_pos()
 			if vector.distance(pos,opos) > 3 then
-        mobkit.make_sound(self,'warn')
+        --mobkit.make_sound(self,'warn')
 				mobkit.goto_next_waypoint(self,opos)
 			else
 				mobkit.lq_idle(self,1)
@@ -671,7 +671,7 @@ function animals.on_punch(self, tool_capabilities, puncher, prty, chance)
     local hbnate = mobkit.recall(self,'hibernate')
     local dmg = tool_capabilities.damage_groups.fleshy or 1
     mobkit.hurt(self,dmg)
-    mobkit.make_sound(self,'punch')
+    --mobkit.make_sound(self,'punch')
     if use_vh1 then
        VH1.update_bar(self.object, self.hp, self.max_hp)
     end
@@ -679,7 +679,7 @@ function animals.on_punch(self, tool_capabilities, puncher, prty, chance)
     --flee if hurt (or hibernating!)
     if self.hp < self.max_hp/10 or self.hp <= (dmg * 2) or hbnate == true then 
       mobkit.animate(self,'fast')
-      mobkit.make_sound(self,'warn')
+      --mobkit.make_sound(self,'warn')
       mobkit.hq_runfrom(self, prty, puncher)
     elseif prty < 20 then
       animals.fight_or_flight(self, puncher, prty, chance)
@@ -695,7 +695,7 @@ function animals.on_punch_water(self, tool_capabilities, puncher, prty, chance)
     --do damage
     mobkit.clear_queue_high(self)
     mobkit.hurt(self,tool_capabilities.damage_groups.fleshy or 1)
-    mobkit.make_sound(self,'punch')
+    --mobkit.make_sound(self,'punch')
     if use_vh1 then
        VH1.update_bar(self.object, self.hp, self.max_hp)
     end
@@ -838,7 +838,7 @@ function animals.eat_spreading_under(pos, chance)
       local drop = nodedef.drop
       minetest.check_for_falling(posu)
       minetest.set_node(posu, {name = drop})
-      minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
+      -- minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
     end
 
     return true
@@ -864,7 +864,7 @@ function animals.eat_sediment_under(pos, chance)
       local drop = nodedef.drop
       minetest.check_for_falling(posu)
       minetest.set_node(posu, {name = drop})
-      minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
+      -- minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
     end
 
     return true
@@ -890,7 +890,7 @@ function animals.eat_flora(pos, chance)
     if random()< chance then
       --destroy the plant
       minetest.set_node(p, {name = 'air'})
-      minetest.sound_play("nodes_nature_dig_snappy", {gain = 0.2, pos = pos, max_hear_distance = 10})
+      -- minetest.sound_play("nodes_nature_dig_snappy", {gain = 0.2, pos = pos, max_hear_distance = 10})
     end
 
     return true
@@ -922,7 +922,7 @@ function animals.hq_aqua_attack_eat(self,prty,tgtobj,speed)
 
 		if init then
 			mobkit.animate(self,'fast')
-			mobkit.make_sound(self,'attack')
+			--mobkit.make_sound(self,'attack')
 			init = false
 		end
 
@@ -955,7 +955,7 @@ function animals.hq_aqua_attack_eat(self,prty,tgtobj,speed)
 			elseif tpos.y<pos.y-0.5 then self.object:set_velocity({x=vel.x,y=vel.y-0.5,z=vel.z}) end
 		end
 		if mobkit.is_pos_in_box(mobkit.pos_translate2d(pos,yaw,self.attack.range),tpos,tgtbox) then	--bite
-    mobkit.make_sound(self,'bite')
+    --mobkit.make_sound(self,'bite')
 			tgtobj:punch(self.object,1,self.attack)
 			mobkit.hq_aqua_turn(self,prty,yaw-pi,speed)
     if random()>0.15 then
@@ -991,7 +991,7 @@ local function lq_jumpattack_eat(self,height,target)
 				local vel = self.object:get_velocity()
 				vel.y = -mobkit.gravity*sqrt(height*2/-mobkit.gravity)
 				self.object:set_velocity(vel)
-				mobkit.make_sound(self,'charge')
+				--mobkit.make_sound(self,'charge')
 				phase=2
 			else
 				mobkit.lq_idle(self,0.3)
@@ -1021,7 +1021,7 @@ local function lq_jumpattack_eat(self,height,target)
 				local vy = self.object:get_velocity().y
 				self.object:set_velocity({x=dir.x*-3,y=vy,z=dir.z*-3})
 					-- play attack sound if defined
-				mobkit.make_sound(self,'attack')
+				--mobkit.make_sound(self,'attack')
 				phase=4
         local ent = target:get_luaentity()
         local ent_hp = ent.hp or 1
@@ -1119,7 +1119,7 @@ function animals.territorial(self, energy, eat)
       --flee if hurt
       if self.hp < self.max_hp/4 then
         mobkit.animate(self,'fast')
-        mobkit.make_sound(self,'warn')
+        --mobkit.make_sound(self,'warn')
         mobkit.hq_runfrom(self, 25, rival)
         return true
       end
@@ -1133,13 +1133,13 @@ function animals.territorial(self, energy, eat)
           animals.hq_attack_eat(self, 25, rival)
         else
           mobkit.animate(self,'fast')
-          mobkit.make_sound(self,'warn')
+          --mobkit.make_sound(self,'warn')
           mobkit.hq_chaseafter(self,25,rival)
         end
         return true
       else
         mobkit.animate(self,'fast')
-        mobkit.make_sound(self,'warn')
+        --mobkit.make_sound(self,'warn')
         mobkit.hq_runfrom(self,25,rival)
         return true
       end
@@ -1266,7 +1266,7 @@ function animals.hq_flock_water(self,prty,tgtobj, min_dist, speed)
       local tyaw = tgtobj:get_yaw()
 
       mobkit.hq_aqua_turn(self,prty+1,tyaw,tvel)
-      mobkit.make_sound(self,'call')
+      --mobkit.make_sound(self,'call')
       return true
     end
 
@@ -1291,11 +1291,11 @@ function animals.flock(self, prty, min_dist, aqua_speed)
       --get distance, if too far away go to them
       if aqua_speed then
         mobkit.animate(self,'walk')
-        mobkit.make_sound(self,'call')
+        --mobkit.make_sound(self,'call')
         animals.hq_flock_water(self, prty, friend, min_dist, aqua_speed)
       else
         mobkit.animate(self,'walk')
-        mobkit.make_sound(self,'call')
+        --mobkit.make_sound(self,'call')
         animals.hq_flock(self, prty, friend, min_dist)
       end
       return
@@ -1323,7 +1323,7 @@ function animals.hq_mate(self,prty,tgtobj)
       local dist = vector.distance(pos,tpos)
       if dist <= self.attack.range then
         mobkit.lq_idle(self,1)
-        mobkit.make_sound(self,'mating')
+        --mobkit.make_sound(self,'mating')
         if self.sex == "male" then
           --get the other one pregnant
           mobkit.remember(tgtobj,'pregnant',true)
@@ -1333,7 +1333,7 @@ function animals.hq_mate(self,prty,tgtobj)
         end
         return true
       else
-        mobkit.make_sound(self,'call')
+        --mobkit.make_sound(self,'call')
         mobkit.goto_next_waypoint(self,tpos)
       end
     end

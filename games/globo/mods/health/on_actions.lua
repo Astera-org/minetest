@@ -60,19 +60,19 @@ local function quick_physics(player, name, health, energy, thirst, hunger, tempe
 
 
   --bonus/malus from thirst
-  if thirst > 80 then
+  if thirst > 800 then
     mov = mov + 1
     jum = jum + 1
-  elseif thirst < 1 then
+  elseif thirst < 10 then
     mov = mov - 30
     jum = jum - 30
-  elseif thirst < 20 then
+  elseif thirst < 200 then
     mov = mov - 20
     jum = jum - 20
-  elseif thirst < 40 then
+  elseif thirst < 400 then
     mov = mov - 10
     jum = jum - 10
-  elseif thirst < 60 then
+  elseif thirst < 600 then
     mov = mov - 1
     jum = jum - 1
   end
@@ -159,8 +159,8 @@ function HEALTH.use_item(itemstack, user, hp_change, thirst_change, hunger_chang
 	thirst = thirst + thirst_change
 	if thirst < 0 then
 		thirst = 0
-	elseif thirst > 100 then
-		thirst = 100
+	elseif thirst > 1000 then
+		thirst = 1000
 	end
 
 	hunger = hunger + hunger_change
@@ -194,8 +194,7 @@ function HEALTH.use_item(itemstack, user, hp_change, thirst_change, hunger_chang
   
 	--minetest.chat_send_player(name, minetest.registered_items[item].description .." effect = Health: "..hp_change..", Thirst: "..thirst_change.. ", Hunger: "..hunger_change.. ", Energy: "..energy_change.. ", Body Temperature: "..temp_change )
   local pos = user:get_pos()
-  minetest.sound_play("health_eat", {pos = pos, gain = 0.5, max_hear_distance = 2}
-  )
+  --minetest.sound_play("health_eat", {pos = pos, gain = 0.5, max_hear_distance = 2} )
 
 	--replace/take
 	itemstack:take_item()
@@ -255,15 +254,15 @@ if minetest.settings:get_bool("enable_damage") then
 					energy = energy - 3
           --thirsty work
           if random()<0.07 then
-            thirst = thirst - 1
-            hunger = hunger - 2
+            thirst = thirst - 10
+            hunger = hunger - 20
           end
 				elseif controls.LMB
 				or controls.jump then
 					energy = energy - 8
           --thirsty work
           if random()<0.07 then
-            thirst = thirst - 2
+            thirst = thirst - 20
             hunger = hunger - 4
           end
 				end
@@ -362,19 +361,19 @@ if minetest.settings:get_bool("enable_damage") then
 
         ------------------
 				--drink a little rain
-				if rain and thirst < 100 then
+				if rain and thirst < 1000 then
 					--only sometimes or too easy
 					if random()<0.2 then
-						thirst = thirst + 1
+						thirst = thirst + 10
 					end
 				end
 
         --thirsty in heat
         if random()<0.1 then
           if enviro_temp > stress_high then
-            thirst = thirst - 2
+            thirst = thirst - 20
           elseif enviro_temp > comfort_high then
-            thirst = thirst - 1
+            thirst = thirst - 10
           end
         end
 
@@ -440,8 +439,8 @@ if minetest.settings:get_bool("enable_damage") then
 
         if thirst < 0 then
           thirst = 0
-        elseif thirst > 100 then
-          thirst = 100
+        elseif thirst > 1000 then
+          thirst = 1000
         end
 
         if hunger < 0 then

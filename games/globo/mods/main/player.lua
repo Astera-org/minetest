@@ -21,7 +21,7 @@ minetest.register_entity("main:player", player_definition)
 
 function changePlayerEnergy(player,amount)
     local meta = player:get_meta()
-    local eCur = tonumber(meta:get_string("energy_cur"))
+    local eCur = tonumber(meta:get_string("energy"))
     local eMax = tonumber(meta:get_string("energy_max"))
     eCur = eCur + amount
     if eCur < 0 then
@@ -29,7 +29,7 @@ function changePlayerEnergy(player,amount)
     elseif eCur > eMax then
         eCur = eMax
     end
-    meta:set_string("energy_cur", eCur)
+    meta:set_string("energy", eCur)
 end
 
 function changePlayerHP(player,amount)
@@ -57,83 +57,109 @@ function addNutrient(player,name,value)
 	meta:set_string(name, nut)
 end
 
-local function updateHUD(player)
+function setupHUD(player)
     -- Remove existing HUD elements if they exist
     local meta = player:get_meta()
     local hud_ids = meta:get("hud_ids")
     if hud_ids then
         hud_ids = minetest.deserialize(hud_ids)
-        if hud_ids.hunger_id then
-            player:hud_remove(hud_ids.hunger_id)
-        end
-
-        if hud_ids.thirst_id then
-            player:hud_remove(hud_ids.thirst_id)
-        end
-
-        if hud_ids.energy_id then
-            player:hud_remove(hud_ids.energy_id)
-        end
-
-        -- Sleeping overlay
-        if hud_ids.sleep_overlay_id then
-            player:hud_remove(hud_ids.sleep_overlay_id)
+        for _, id in pairs(hud_ids) do
+            player:hud_remove(id)
         end
     else
         hud_ids = {}
     end
 
-    local hunger_level = math.floor(tonumber(meta:get_string("hunger")))
-    local thirst_level = math.floor(tonumber(meta:get_string("thirst")))
-    local energy_cur = math.floor(tonumber(meta:get_string("energy_cur")))
-    local energy_max = math.floor(tonumber(meta:get_string("energy_max")))
-    local sleeping = meta:get_string("sleeping") ~= ""
+    hud_ids.air = player:hud_add({
+        hud_elem_type = "text",
+        text = "Air: ",
+        number = 0xFFFFFF,
+        position = {x = 0.05, y = 0.7},
+        offset = {x = 0, y = 0},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
 
-    -- Add new HUD elements
+    hud_ids.health = player:hud_add({
+        hud_elem_type = "text",
+        text = "Health: ",
+        number = 0xFFFFFF,
+        position = {x = 0.05, y = 0.75},
+        offset = {x = 0, y = 0},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
+
     hud_ids.hunger_id = player:hud_add({
         hud_elem_type = "text",
-        position = {x = 0.5, y = 0.8},
+        position = {x = 0.05, y = 0.8},
         offset = {x = 0, y = 0},
-        text = "Hunger: " .. hunger_level,
-        alignment = {x = 0, y = 0},
+        text = "Hunger: ",
+        alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
         number = 0xFFFFFF,
     })
 
     hud_ids.thirst_id = player:hud_add({
         hud_elem_type = "text",
-        position = {x = 0.5, y = 0.85},
+        position = {x = 0.05, y = 0.85},
         offset = {x = 0, y = 0},
-        text = "Thirst: " .. thirst_level,
-        alignment = {x = 0, y = 0},
+        text = "Thirst: ",
+        alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
         number = 0xFFFFFF,
     })
 
     hud_ids.energy_id = player:hud_add({
         hud_elem_type = "text",
-        text = "Energy: " .. energy_cur .. " / " .. energy_max,
+        text = "Energy: ",
         number = 0xFFFFFF,
-        position = {x = 0.5, y = 0.9},
+        position = {x = 0.05, y = 0.9},
         offset = {x = 0, y = 0},
-        alignment = {x = 0, y = 0},
+        alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
 
-    -- Add a dark overlay when the player is sleeping
-    if sleeping then
-        hud_ids.sleep_overlay_id = player:hud_add({
-            hud_elem_type = "image",
-            position = {x = 0, y = 0},
-            offset = {x = 0, y = 0},
-            text = "default_cloud.png^[colorize:#000000:220",
-            alignment = {x = 0, y = 0},
-            scale = {x = -100, y = -100},
-        })
-    end
+    hud_ids.temp = player:hud_add({
+        hud_elem_type = "text",
+        text = "Temp: ",
+        number = 0xFFFFFF,
+        position = {x = 0.05, y = 0.95},
+        offset = {x = 0, y = 0},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
 
-    -- Save HUD element IDs for later removal
     player:get_meta():set_string("hud_ids", minetest.serialize(hud_ids))
+end
+
+local function updateHUD(player)
+    local meta = player:get_meta()
+    local player_pos = player:get_pos()
+	player_pos.y = player_pos.y + 0.6 --adjust to body height
+	local external_temp = math.floor(climate.get_point_temp(player_pos, true))
+
+    local hunger_level = math.floor(tonumber(meta:get_string("hunger")))
+    local thirst_level = math.floor(tonumber(meta:get_string("thirst")))
+    local energy_cur = math.floor(tonumber(meta:get_string("energy")))
+    local energy_max = math.floor(tonumber(meta:get_string("energy_max")))
+    local internal_temp=math.floor(tonumber(meta:get_string("temperature")))
+    local air=1000
+    local health=math.floor(tonumber(player:get_hp()))
+
+
+    local sleeping = meta:get_string("sleeping") ~= ""
+
+    local hud_ids = meta:get("hud_ids")
+    hud_ids = minetest.deserialize(hud_ids)
+
+    player:hud_change(hud_ids.air, "text", "Air: " .. air)
+    player:hud_change(hud_ids.health, "text", "Health: " .. health)
+    player:hud_change(hud_ids.hunger_id, "text", "Hunger: " .. hunger_level)
+    player:hud_change(hud_ids.thirst_id, "text", "Thirst: " .. thirst_level)
+    player:hud_change(hud_ids.energy_id, "text", "Energy: " .. energy_cur .. " / " .. energy_max)
+    player:hud_change(hud_ids.temp, "text", "Temp: " .. internal_temp .. " / " .. external_temp)
+    
 end
 
 
@@ -185,8 +211,8 @@ end
 
 function initializePlayerMeta(player)
     local meta = player:get_meta()
-    if meta:get_string("energy_cur") == "" then
-        meta:set_string("energy_cur", 1000)
+    if meta:get_string("energy") == "" then
+        meta:set_string("energy", 1000)
     end
     if meta:get_string("energy_max") == "" then
         meta:set_string("energy_max", 1000)
@@ -197,8 +223,8 @@ function initializePlayerMeta(player)
     if meta:get_string("thirst") == "" then
         meta:set_string("thirst", 1000)
     end
-    if meta:get_string("temp") == "" then
-        meta:set_string("temp", START_TEMPERATURE)
+    if meta:get_string("temperature") == "" then
+        meta:set_string("temperature", START_TEMPERATURE)
     end
 end
 
@@ -211,17 +237,18 @@ minetest.register_on_joinplayer(function(player)
    --inv:add_item("main", "main:potatoes")
 
     initializePlayerMeta(player)
+    setupHUD(player)
 
 end)
 
 
 minetest.register_on_respawnplayer(function(player)
     local meta = player:get_meta()
-    meta:set_string("energy_cur", 1000)
+    meta:set_string("energy", 1000)
     meta:set_string("energy_max", 1000)
     meta:set_string("hunger", 1000)
     meta:set_string("thirst", 1000)
-    meta:set_string("temp", START_TEMPERATURE)
+    meta:set_string("temperature", START_TEMPERATURE)
     meta:set_string("sleeping","")
 
     return false
@@ -260,12 +287,12 @@ function stepPlayerSleep(player,dtime)
         player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
 
         local eMax = tonumber(meta:get_string("energy_max"))
-        local eCur = tonumber(meta:get_string("energy_cur"))
+        local eCur = tonumber(meta:get_string("energy"))
 
         -- Increase energy and health while sleeping
         eMax = math.min(eMax + (ENERGY_RECOVERY_RATE_SLEEP * dtime), 1000)
         eCur = math.min(eCur + (ENERGY_RECOVERY_RATE_SLEEP * dtime), eMax) 
-        meta:set_string("energy_cur", eCur)
+        meta:set_string("energy", eCur)
         meta:set_string("energy_max",eMax)
         changePlayerHP(player,HEAL_RATE_SLEEP * dtime)
 
@@ -307,7 +334,7 @@ minetest.register_on_player_hpchange(on_player_hpchange)
 -- only called when awake
 function stepPlayerEnergy(player,dtime)
     local player_meta = player:get_meta()
-    local eCur = tonumber(player_meta:get_string("energy_cur"))
+    local eCur = tonumber(player_meta:get_string("energy"))
     local eMax = tonumber(player_meta:get_string("energy_max"))
     
     local ctrl = player:get_player_control()
@@ -347,7 +374,7 @@ function stepPlayerEnergy(player,dtime)
     end
     
     -- Set the energy values
-    player_meta:set_string("energy_cur", eCur)
+    player_meta:set_string("energy", eCur)
     player_meta:set_string("energy_max", eMax)
     
 end

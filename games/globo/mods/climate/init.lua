@@ -315,57 +315,61 @@ local timer_p = 0
 local timer_r = 0
 
 minetest.register_globalstep(function(dtime)
-  local updatesound = false
-  timer = timer + dtime
-  timer_r = timer_r + dtime
-  --update weather state
-  if timer > active_weather_interval then
-     --timer has expired, switch to a new weather state
-     --print(" Updating weather at "..minetest.get_gametime())
-     --reset timer and interval
-     timer = 0
-     active_weather_interval = set_active_interval()
-     --save interval
-     --mod_storage:set_float('active_weather_interval', active_weather_interval)
-     set_world_temperature()
-     select_new_active_weather()
-     updatesound = true
-  end
-  if timer_r >= 60 then -- it's time to record changes
-     record_climate_history(climate)
-     store:set_string("climate_history", get_climate_history())
-     timer_r = 0
-  end
-  timer_p = timer_p + dtime
-  for _,player in ipairs(minetest.get_connected_players()) do
-     local pos = player:get_pos()
-     local p_name = player:get_player_name()
-     local sound = sound_handlers[p_name]
-     if pos.y > -12 then
-	if updatesound or sound == nil then
-	   update_player_sounds(p_name)
-	end
-	--fast weather effects for aboveground players
-	if (climate.active_weather.particle_interval and
-	    timer_p > climate.active_weather.particle_interval) then
-	   -- do particle effects for current weather
-	   climate.active_weather.particle_function(player)
-	end
-     elseif pos.y < -11 and sound then
-	local x = 1-(-1*pos.y-12)/5
-	if x < 0 then
-	   minetest.sound_stop(sound)
-	   sound_handlers[p_name] = nil
-	else
-	   minetest.sound_fade(sound, 0.5, x)
-	end
-     elseif pos.y > -17 and not sound then
-	sound_handlers[p_name] =
-	   minetest.sound_play(climate.active_weather.sound_loop,
-			       {to_player = p_name, loop = true, gain = 0.1})
-     end
-  end
+   local updatesound = false
+   timer = timer + dtime
+   timer_r = timer_r + dtime
+   --update weather state
+   if timer > active_weather_interval then
+      --timer has expired, switch to a new weather state
+      --print(" Updating weather at "..minetest.get_gametime())
+      --reset timer and interval
+      timer = 0
+      active_weather_interval = set_active_interval()
+      --save interval
+      --mod_storage:set_float('active_weather_interval', active_weather_interval)
+      set_world_temperature()
+      select_new_active_weather()
+      updatesound = true
+   end
 
+   if timer_r >= 60 then -- it's time to record changes
+      record_climate_history(climate)
+      store:set_string("climate_history", get_climate_history())
+      timer_r = 0
+   end
+
+   timer_p = timer_p + dtime
+   --[[
+   for _,player in ipairs(minetest.get_connected_players()) do
+      local pos = player:get_pos()
+      local p_name = player:get_player_name()
+      --local sound = sound_handlers[p_name]
+      if pos.y > -12 then
+         if updatesound or sound == nil then
+            update_player_sounds(p_name)
+         end
+      --fast weather effects for aboveground players
+      if (climate.active_weather.particle_interval and
+         timer_p > climate.active_weather.particle_interval) then
+         -- do particle effects for current weather
+         climate.active_weather.particle_function(player)
+      end
+      elseif pos.y < -11 and sound then
+	      local x = 1-(-1*pos.y-12)/5
+	   if x < 0 then
+         minetest.sound_stop(sound)
+         sound_handlers[p_name] = nil
+	   else
+	      minetest.sound_fade(sound, 0.5, x)
+	   end
+     --elseif pos.y > -17 and not sound then
+	--sound_handlers[p_name] = function nop()
+     --                      end
+	   -- minetest.sound_play(climate.active_weather.sound_loop, {to_player = p_name, loop = true, gain = 0.1})
+     --end
+   end
+   ]]--
+   
   if (climate.active_weather.particle_interval and
       timer_p > climate.active_weather.particle_interval) then
      timer_p = 0
@@ -451,9 +455,9 @@ minetest.register_chatcommand("set_weather", {
 		sound_handlers[p_name] = nil
 	     end
 	     --add new loop
-	     if climate.active_weather.sound_loop then
-		sound_handlers[p_name] = minetest.sound_play(climate.active_weather.sound_loop, {to_player = p_name, loop = true})
-	     end
+	   --  if climate.active_weather.sound_loop then
+		-- sound_handlers[p_name] = minetest.sound_play(climate.active_weather.sound_loop, {to_player = p_name, loop = true})
+	   --  end
 
 	  end
 	  --only actually needed on log out,... but that doesn't work

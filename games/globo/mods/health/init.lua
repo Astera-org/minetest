@@ -35,7 +35,7 @@ local interval = 60
 --Only adjusted values saved in player meta so they can be accessed without recalculating
 --cf hunger etc which do get change and have no base value
 local heal_rate = 1 -- 4
-local thirst_rate = -1
+local thirst_rate = -10
 local hunger_rate = -3 -- -2
 local recovery_rate = 4 -- 5
 local move = 0
@@ -48,7 +48,7 @@ local temp_max = 32--30
 --e.g. for new players
 local function set_default_attibutes(player)
 	local meta = player:get_meta()
-	meta:set_int("thirst", 100)
+	meta:set_int("thirst", 1000)
 	meta:set_int("hunger", 1000)
 	meta:set_int("energy", 1000)
 	meta:set_int("temperature", 37)
@@ -266,23 +266,23 @@ function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, 
 		h_rate = h_rate - 1
 		mov = mov - 40
 		jum = jum - 40
-		t_rate = t_rate - 12
+		t_rate = t_rate - 120
 		hun_rate = hun_rate - 24
 	elseif energy < 200 then
 		h_rate = h_rate - 1
 		mov = mov - 20
 		jum = jum - 20
-		t_rate = t_rate - 4
+		t_rate = t_rate - 40
 		hun_rate = hun_rate - 8
 	elseif energy < 400 then
 		mov = mov - 10
 		jum = jum - 10
-		t_rate = t_rate - 3
+		t_rate = t_rate - 30
 		hun_rate = hun_rate - 4
 	elseif energy < 600 then
 		mov = mov - 5
 		jum = jum - 5
-		t_rate = t_rate - 2
+		t_rate = t_rate - 20
 		hun_rate = hun_rate - 2
 	elseif energy < 700 then
 		hun_rate = hun_rate - 1
@@ -295,7 +295,7 @@ function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, 
 		r_rate = r_rate + 2
 		mov = mov + 1
 		jum = jum + 1
-	elseif thirst < 1 then
+	elseif thirst < 10 then
 		h_rate = h_rate - 12
 		r_rate = r_rate - 10
 		mov = mov - 30
@@ -495,8 +495,8 @@ if minetest.settings:get_bool("enable_damage") then
 				thirst1 = thirst + t_rate
 				if thirst1 < 0 then
 					thirst1 = 0
-				elseif thirst1 > 100 then
-					thirst1 = 100
+				elseif thirst1 > 1000 then
+					thirst1 = 1000
 				end
 
 				hunger1 = hunger + hun_rate

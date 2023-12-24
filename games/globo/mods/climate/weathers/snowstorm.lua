@@ -62,7 +62,7 @@ snowstorm.star_data = {
 
 snowstorm.damage = true
 
-snowstorm.sound_loop = 'snowstorm_loop'
+--snowstorm.sound_loop = 'snowstorm_loop'
 
 --probabilities in each temp class
 snowstorm.chain = {

@@ -63,7 +63,7 @@ overcast_heavy_rain.star_data = {
 
 
 
-overcast_heavy_rain.sound_loop = 'heavy_rain_loop'
+--overcast_heavy_rain.sound_loop = 'heavy_rain_loop'
 
 --probabilities in each temp class
 overcast_heavy_rain.chain = {

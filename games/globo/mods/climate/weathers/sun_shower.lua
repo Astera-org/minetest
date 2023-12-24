@@ -64,7 +64,7 @@ sun_shower.star_data = {
 
 
 
-sun_shower.sound_loop = 'light_rain_loop'
+--sun_shower.sound_loop = 'light_rain_loop'
 
 --probabilities in each temp class
 

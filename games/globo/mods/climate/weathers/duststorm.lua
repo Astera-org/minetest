@@ -63,7 +63,7 @@ duststorm.star_data = {
 
 
 
-duststorm.sound_loop = 'duststorm_loop'
+--duststorm.sound_loop = 'duststorm_loop'
 
 duststorm.damage = true
 

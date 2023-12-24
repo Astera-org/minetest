@@ -138,18 +138,18 @@ minetest.override_item("nodes_nature:freshwater_source",{
       local meta = clicker:get_meta()
       local thirst = meta:get_int("thirst")
       --only drink if thirsty
-      if thirst < 100 then
+      if thirst < 1000 then
 
-        local water = 100
+        local water = 1000
         thirst = thirst + water
-        if thirst > 100 then
-          thirst = 100
+        if thirst > 1000 then
+          thirst = 1000
         end
 
         meta:set_int("thirst", thirst)
         --remove so don't get infinity water supply
         minetest.set_node(pos, {name = "air"})
-        minetest.sound_play("nodes_nature_slurp",	{pos = pos, max_hear_distance = 3, gain = 0.25})
+        --minetest.sound_play("nodes_nature_slurp",	{pos = pos, max_hear_distance = 3, gain = 0.25})
 
         --food poisoning
         local c = 0.005
@@ -369,7 +369,7 @@ minetest.register_node("nodes_nature:lava_flowing", {
 --cool when next to a cooling node
 local cool_lava = function(pos, node)
 	minetest.set_node(pos, {name = "nodes_nature:basalt"})
-	minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
+	--minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
 end
 
 minetest.register_abm({
@@ -396,7 +396,7 @@ local erupt = function(pos, aname)
 			height = height + 1
 			pos.y = pos.y + 1
 			minetest.set_node(pos, {name = "nodes_nature:lava_flowing"})
-			minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
+			--minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
 			local posa = 	{x = pos.x, y = pos.y+1, z = pos.z}
 			aname = minetest.get_node(posa).name
 		else
@@ -428,7 +428,7 @@ local lava_melt = function(pos, node)
 			--cool vs erupt
 			if c<0.5 then
 				minetest.set_node(pos, {name = "nodes_nature:basalt"})
-				minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
+				--minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
 				return
 			elseif c<0.75 then
 				erupt(pos, aname)
@@ -459,7 +459,7 @@ local lava_melt = function(pos, node)
 			end
 			--melt above
 			minetest.set_node(posa, {name = "nodes_nature:lava_source"})
-			minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
+			--minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
 		end
 	end
 
@@ -474,7 +474,7 @@ local lava_melt = function(pos, node)
 			return
 		end
 		minetest.set_node(pos, {name = "nodes_nature:basalt"})
-		minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
+		--minetest.sound_play("nodes_nature_cool_lava",	{pos = pos, max_hear_distance = 16, gain = 0.25})
 		return
 	end
 

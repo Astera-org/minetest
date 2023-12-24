@@ -476,7 +476,7 @@ function mobkit.animate(self,anim)
 		self._anim = nil
 	end
 end
-
+--[[
 function mobkit.make_sound(self, sound)
 	local spec = self.sounds and self.sounds[sound]
 	local param_table = {object=self.object}
@@ -498,6 +498,7 @@ function mobkit.make_sound(self, sound)
 	end
 	return minetest.sound_play(spec, param_table)
 end
+]]--
 
 function mobkit.go_forward_horizontal(self,speed)	-- sets velocity in yaw direction, y component unaffected
 	local y = self.object:get_velocity().y

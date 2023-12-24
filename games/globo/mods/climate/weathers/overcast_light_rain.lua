@@ -62,7 +62,7 @@ overcast_light_rain.star_data = {
 
 
 
-overcast_light_rain.sound_loop = 'light_rain_loop'
+--overcast_light_rain.sound_loop = 'light_rain_loop'
 
 --probabilities in each temp class
 overcast_light_rain.chain = {

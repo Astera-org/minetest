@@ -63,7 +63,7 @@ light_rain.star_data = {
 }
 
 
-light_rain.sound_loop = 'light_rain_loop'
+--light_rain.sound_loop = 'light_rain_loop'
 
 --probabilities in each temp class
 light_rain.chain = {
