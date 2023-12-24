@@ -66,7 +66,7 @@ end)
 
 minetest.register_on_mapgen_init(function(mgparams)
     
-    minetest.set_mapgen_setting("mg_name", "v7", true)
+    minetest.set_mapgen_setting("mg_name", "valleys", true)
 	local flags = minetest.get_mapgen_setting("mg_flags")
 
     if flags then
