@@ -17,7 +17,6 @@ TODO:
 - make sure exile and our stuff arent both changing hunger etc
 
 
-
 to test
 - Pulse blossom: glows periodically and hurts anything around it.
 - do potatoes spread properly
@@ -30,7 +29,7 @@ Later:
 
 
 - Each block type has a chance of becoming an item or just disappearing when you break it.
-- Trees from Exile
+
 - Temperature
     Look at temp system in Exile
     you start to die if not kept in a certain temperature range. It is colder at night. Certain parts of the map are colder. Some days are colder than others. If you are too hot you will lose energy faster and get thirsty faster.
@@ -40,7 +39,7 @@ Later:
 
 What can we take from existing mods?
 mobs from Exile?
-Natural slopes library (in Exile)
+
 
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 

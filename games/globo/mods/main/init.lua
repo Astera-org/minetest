@@ -4,7 +4,7 @@
 -- Values that need to be moved into a config file
 
 -- won't allow you to go below 64. World goes gray
-MAP_SIZE=256
+MAP_SIZE=1024
 
 STARVE_1_MUL=7
 STARVE_2_MUL=5
@@ -50,6 +50,7 @@ dofile(default_path.."/compat.lua")
 dofile(default_path.."/player.lua")
 dofile(default_path.."/creatures.lua")
 dofile(default_path.."/nodes.lua")
+dofile(default_path.."/biomes.lua")
 dofile(default_path.."/decorations.lua")
 dofile(default_path.."/moisture_spread.lua")
 dofile(default_path.."/mapgen.lua")
