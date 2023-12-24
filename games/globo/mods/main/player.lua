@@ -169,9 +169,9 @@ minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
         if stepPlayerSleep(player,dtime) then
             stepPlayerWalkRun(player)
-            stepPlayerEnergy(player,dtime)
+            -- stepPlayerEnergy(player,dtime)
         end
-        stepPlayerHunger(player,dtime)
+        -- stepPlayerHunger(player,dtime)
         updateHUD(player)
     end
 end)

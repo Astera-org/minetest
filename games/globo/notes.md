@@ -1,5 +1,4 @@
 TODO:
-- Add creatures
 - Wolf
 - mongoose
 - Lava Ox
@@ -14,7 +13,14 @@ TODO:
 - Sand Slug
 - Corn: needs to be a plant for awhile and then becomes food
 - ensure the maps aren't too crazy
-- make sure exile and our stuff arent both changing hunger etc
+- adjust the exile energy system to have a max energy and regain your current energy when you are still
+- sleep
+    - wake you up if too hungry when sleeping
+    - wake up when you move if you are sleeping
+    - wake up if you take damage
+
+- get rid of health hearts
+
 
 
 to test

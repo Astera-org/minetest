@@ -5,17 +5,10 @@ minetest.register_alias("mapgen_river_water_source", "nodes_nature:freshwater_so
 -- sets this for the NEXT map that is generated. very lame
 minetest.settings:set("mapgen_limit", MAP_SIZE)
 
-minetest.register_on_mapgen_init(function(mgparams)
-    
-    minetest.set_mapgen_setting("mg_name", "valleys", true)
-	local flags = minetest.get_mapgen_setting("mg_flags")
-
-    if flags then
-        local new_flags = flags:gsub("caves", "nocaves")
-        minetest.set_mapgen_setting("mg_flags", new_flags, true)
-    end
-
-end)
+minetest.set_mapgen_setting("mg_name", "valleys", true)
+minetest.set_mapgen_setting("mg_flags", "nocaves, nodungeons, light, decorations, biomes", true)
+minetest.set_mapgen_setting("mgvalleys_spflags", "altitude_chill, humid_rivers, vary_river_depth, altitude_dry", true)
+	
 
 
 -- registerDecorations()
