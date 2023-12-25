@@ -884,7 +884,7 @@ function animals.eat_flora(pos, chance)
   local node = minetest.get_node(p).name
 
   if minetest.get_item_group(node, "flora") > 0
-  and minetest.get_item_group(node, "cane_plant") == 0
+    and minetest.get_item_group(node, "cane_plant") == 0
   then
     --gain energy
     if random()< chance then
@@ -1495,12 +1495,7 @@ end
 function animals.get_nearby_player(self,forceplyr)
   -- "forceplyr" bool parameter to force a player despite creative mode
   local plyr = mobkit.get_nearby_player(self) -- get player from mobkit
-  if (plyr) then
-    -- if player, then check if player is NOT in creative...
-    if (not minimal.player_in_creative(plyr) or forceplyr == true) then
-      return plyr
-    end
-  end
+  return plyr
 end
 
 -- Taken directly from mobkit to properly calculate fall damage

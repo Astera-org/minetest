@@ -413,11 +413,11 @@ minetest.register_entity("animals:wolf_male",{
 	--core
 	physical = true,
 	collide_with_objects = true,
-	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
+	collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
 	visual = "mesh",
 	mesh = "mobs_wolf.b3d",
 	textures = {"mobs_wolf.png"},
-	visual_size = {x = 1, y = 1},
+	visual_size = {x = 3, y = 3},
 	makes_footstep_sound = true,
 	timeout = 0,
 
@@ -486,11 +486,11 @@ minetest.register_entity("animals:wolf",{
 	--core
 	physical = true,
 	collide_with_objects = true,
-	collisionbox = {-0.16, -0.75, -0.16, 0.16, -0.25, 0.16},
+	collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
 	visual = "mesh",
 	mesh = "mobs_wolf.b3d",
 	textures = {"mobs_wolf.png"},
-	visual_size = {x = 1, y = 1},
+	visual_size = {x = 3, y = 3},
 	makes_footstep_sound = true,
 	timeout = 0,
 

@@ -70,3 +70,29 @@ else
       ["clip"] = true, -- may be false for some draw types?
    }
 end
+
+function minimal.math_clamp(num,min,max) -- math.clamp implementation from my function library (TPH/TubberPupperHusker)
+   -- PARAMETERS: num;"number" - number to be clamped | min;"number" - minimum number that 'num' can be | max;"number" - maximum number that 'num' can be
+   -- RETURNS: number - 'num' that is clamped (or not if 'num' is between 'min' and 'max')
+   -- FUNCTION: clamps a specified number between a min & max
+   ------------------------------------------------------------------------------------------------------------------
+   assert(type(num) == "number","math.clamp: no number provided to be clamped!")
+   assert(type(min) == "number","math.clamp: no minimum number provided for clamping")
+   assert(type(max) == "number","math.clamp: no maximum number provided for clamping")
+   
+   -- if num, min, and max are numbers then
+   if (min > max) then -- if programmer puts max number in place of minimum number... don't punish them for it
+     local temp = min -- create a temporary value so that 'min' can be stored
+     min = max
+     max = temp -- set 'max' to the temporary value
+   end
+   
+   if (num < min) then
+     num = min
+   elseif (num > max) then
+     num = max
+   end
+   -- "if elseif" statement because if it's lower than minimum then it's obviously not going to be greater than maximum and vice versa (and DO NOT clamp if the number is between min and max)
+   
+   return num
+ end

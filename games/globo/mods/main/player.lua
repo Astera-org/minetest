@@ -60,7 +60,7 @@ end
 function setupHUD(player)
     -- Remove existing HUD elements if they exist
     player:hud_set_flags({healthbar = false})
-    
+
     local meta = player:get_meta()
     local hud_ids = meta:get("hud_ids")
     if hud_ids then
@@ -71,12 +71,23 @@ function setupHUD(player)
     else
         hud_ids = {}
     end
-
+--[[  doesn't work 
+    hud_ids.debug = player:hud_add({
+        hud_elem_type = "text",
+        text = " ",
+        number = 0xFFFFFF,
+        position = {x = 0.05, y = 0.65},
+        offset = {x = 0, y = 0},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
+]]--
+    local startPos = {x = 0.05, y = 0.75} 
     hud_ids.air = player:hud_add({
         hud_elem_type = "text",
         text = "Air: ",
         number = 0xFFFFFF,
-        position = {x = 0.05, y = 0.7},
+        position = startPos,
         offset = {x = 0, y = 0},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
@@ -86,16 +97,16 @@ function setupHUD(player)
         hud_elem_type = "text",
         text = "Health: ",
         number = 0xFFFFFF,
-        position = {x = 0.05, y = 0.75},
-        offset = {x = 0, y = 0},
+        position = startPos,
+        offset = {x = 0, y = 20},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
 
     hud_ids.hunger_id = player:hud_add({
         hud_elem_type = "text",
-        position = {x = 0.05, y = 0.8},
-        offset = {x = 0, y = 0},
+        position = startPos,
+        offset = {x = 0, y = 40},
         text = "Hunger: ",
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
@@ -104,8 +115,8 @@ function setupHUD(player)
 
     hud_ids.thirst_id = player:hud_add({
         hud_elem_type = "text",
-        position = {x = 0.05, y = 0.85},
-        offset = {x = 0, y = 0},
+        position = startPos,
+        offset = {x = 0, y = 60},
         text = "Thirst: ",
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
@@ -116,8 +127,8 @@ function setupHUD(player)
         hud_elem_type = "text",
         text = "Energy: ",
         number = 0xFFFFFF,
-        position = {x = 0.05, y = 0.9},
-        offset = {x = 0, y = 0},
+        position = startPos,
+        offset = {x = 0, y = 80},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -126,8 +137,18 @@ function setupHUD(player)
         hud_elem_type = "text",
         text = "Temp: ",
         number = 0xFFFFFF,
-        position = {x = 0.05, y = 0.95},
-        offset = {x = 0, y = 0},
+        position = startPos,
+        offset = {x = 0, y = 100},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
+
+    hud_ids.status = player:hud_add({
+        hud_elem_type = "text",
+        text = "",
+        number = 0xFFFFFF,
+        position = startPos,
+        offset = {x = 0, y = 120},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -149,6 +170,13 @@ local function updateHUD(player)
     local air=1000
     local health=math.floor(tonumber(player:get_hp()))
 
+    local h_rate, r_rate, t_rate, hun_rate, mov, jum, health_after, energy, thirst, hunger, temperature = HEALTH.malus_bonus(player, meta, health, energy_cur, thirst_level, hunger_level, internal_temp)
+    energy_cur= energy
+    health=health_after
+    thirst_level=thirst
+    hunger_level=hunger
+    internal_temp=temperature
+
 
     local sleeping = meta:get_string("sleeping") ~= ""
 
@@ -161,7 +189,21 @@ local function updateHUD(player)
     player:hud_change(hud_ids.thirst_id, "text", "Thirst: " .. thirst_level)
     player:hud_change(hud_ids.energy_id, "text", "Energy: " .. energy_cur .. " / " .. energy_max)
     player:hud_change(hud_ids.temp, "text", "Temp: " .. internal_temp .. " / " .. external_temp)
-    
+    player:hud_change(hud_ids.status, "text", effectListStr(player))
+
+    --[[ debug HUD
+   
+    local pointed_thing = player:get_pointed_thing()
+    if pointed_thing.type == "node" then
+        local pos = pointed_thing.under
+        local node = minetest.get_node(pos)
+        local node_name = node.name
+
+        player:hud_change(hud_ids.debug, "text", node_name .. "(" .. node.param1 .. "," .. node.param2 .. ") pos:" .. minetest.pos_to_string(pos))
+    else
+        player:hud_change(hud_ids.debug, "text", "")
+    end
+    ]]--
 end
 
 
@@ -298,12 +340,21 @@ function stepPlayerSleep(player,dtime)
         meta:set_string("energy_max",eMax)
         changePlayerHP(player,HEAL_RATE_SLEEP * dtime)
 
+        local controls = player:get_player_control()
+        -- minetest.chat_send_player(player:get_player_name(), dump(controls))
+        -- if you move forward or jump, you wake up
+        if controls.up or controls.jump then
+            wakeUp(player,"You wake up.")
+            return true
+        end
+
         -- Wake up if fully rested
         if eCur == 1000 then
             wakeUp(player,"You wake up feeling rested.")
         else 
             return false
         end
+        
     else
         local controls = player:get_player_control()
         if controls.sneak then

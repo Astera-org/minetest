@@ -17,9 +17,7 @@ function cobble_on_place(itemstack, placer, pointed_thing, name)
 	local cobble_nr = math.random(1,3)
 	local param2 = math.random(0,3)
 	local place_item = ItemStack("nodes_nature:"..name.."_cobble"..cobble_nr)
-  if not (minimal.player_in_creative(placer)) then
     itemstack:take_item(1)
-  end
 	minetest.item_place_node(place_item, placer, pointed_thing, param2)
 	return itemstack
 end

@@ -64,6 +64,18 @@ local function set_default_attibutes(player)
 end
 
 
+-- return names of the effects on the effects list as a string
+function effectListStr(player)
+	local meta = player:get_meta()
+	local effects_list = meta:get_string("effects_list")
+	-- get a list of just the names
+	local effects_names = {}
+	for _, effect in ipairs(minetest.deserialize(effects_list) or {}) do
+		table.insert(effects_names, effect[1])
+	end
+	return table.concat(effects_names, ", ")
+end
+
 -----------------------------
 --Applies Health Effects
 --called by malus_bonus
@@ -196,7 +208,7 @@ end
 --also give name and meta, bc anything calling it should already have that
 -- returns the adjusted rates so they can be used if desired
 --
-function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, temperature)
+function HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
 
 	--use standard values, so it doesn't compound each time adjusted.
 	--Only saved to player meta so they can be accessed without recalculating
@@ -262,7 +274,7 @@ function HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, 
 		h_rate = h_rate + 2
 		mov = mov + 15
 		jum = jum + 15
-	elseif energy < 1 then
+	elseif energy < 10 then
 		h_rate = h_rate - 1
 		mov = mov - 40
 		jum = jum - 40
@@ -421,7 +433,7 @@ minetest.register_on_joinplayer(function(player)
 	local hunger = meta:get_int("hunger")
 	local energy = meta:get_int("energy")
 	local temperature = meta:get_int("temperature")
-	HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, temperature)
+	HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
 
 	local velo = meta:get_string("player_velocity")
 	if velo ~= nil then
@@ -481,7 +493,7 @@ if minetest.settings:get_bool("enable_damage") then
 
 
 				--apply rate adjustments so they are correct for current player status
-				local h_rate, r_rate, t_rate, hun_rate, mov, jum, health, energy, thirst, hunger, temperature  = HEALTH.malus_bonus(player, name, meta, health, energy, thirst, hunger, temperature)
+				local h_rate, r_rate, t_rate, hun_rate, mov, jum, health, energy, thirst, hunger, temperature  = HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
 
 				--
 				--update attributes based on adjusted rates

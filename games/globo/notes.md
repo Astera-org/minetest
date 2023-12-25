@@ -1,4 +1,12 @@
 TODO:
+- will drift at last speed once at energy 0
+
+- need a way to throw things away
+- Do we want to be able to dig clay or cut trees?
+- Pulse blossom: glows periodically and hurts anything around it.
+    - not hurting you
+
+
 - cow
     - make cows seek other cows
 - Wolf
@@ -18,14 +26,12 @@ TODO:
 - adjust the exile energy system to have a max energy and regain your current energy when you are still
 - sleep
     - wake you up if too hungry when sleeping
-    - wake up when you move if you are sleeping
     - wake up if you take damage
 
 
 
 
 to test
-- Pulse blossom: glows periodically and hurts anything around it.
 - do potatoes spread properly
 
 

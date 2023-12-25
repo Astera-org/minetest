@@ -54,7 +54,18 @@ minetest.register_node("main:glow_stone", {
 	drawtype = "normal",
 	tiles = {"glow_stone.png"},
 	light_source = 7, 
-	groups = {cracky = 3},
+	groups = {cracky = 3, falling_node = 1},
+	on_punch = function(pos, node, player, pointed_thing)
+		-- move this node 1 space in the direction the player is facing if possibl
+		local dir = player:get_look_dir()
+		minetest.chat_send_player(player:get_player_name()," " .. dir.x .. " " .. dir.y .. " " .. dir.z)
+		local newpos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
+		if minetest.get_node(newpos).name ~= "air" then
+			return
+		end
+		minetest.set_node(newpos, {name = "main:glow_stone"})
+		minetest.remove_node(pos)
+	end,
 })
 
 minetest.register_node("main:apple", {
@@ -108,9 +119,7 @@ minetest.register_node("main:pulse_blossom", {
 		timer:start(t*GAME_SPEED) 
     end,
 	on_timer = function(pos, elapsed)
-		print("start pulse")
 		minetest.set_node(pos, {name = "main:pulse_blossom_on"})
-
 		return false 
     end,
 })
@@ -127,36 +136,39 @@ minetest.register_node("main:pulse_blossom_on", {
 	walkable = false,
 	groups = {snappy = 1},
 	on_construct = function(pos)
-        start_node_timer(pos) 
+        local timer = minetest.get_node_timer(pos)
+		timer:start(10*GAME_SPEED)  
     end,
 	on_timer = function(pos, elapsed)
+		
 		local node = minetest.get_node(pos)
-		local p1=node.param1+1
+		local p1=node.param2+1
+		if p1 == 1 then
+			minetest.swap_node(pos, {name = "main:pulse_blossom_on", param2 = p1})
+			local timer = minetest.get_node_timer(pos)
+			timer:start(1)
+			return false 
+		end
+
 		if p1 > 10 then
 			minetest.set_node(pos, {name = "main:pulse_blossom"})
 			return false
-		end
+		end	
 
-		local ret = true
-		if p1 == 1 then
-			ret=false
-			local timer = minetest.get_node_timer(pos)
-			timer:start(10*GAME_SPEED) 
-		end
 		-- cause damage to any creature around
-		local objects = minetest.get_objects_inside_radius(pos, 3)
+		local objects = minetest.get_objects_inside_radius(pos, 4)
 		for _, obj in ipairs(objects) do
 			if obj:is_player() then
-				local player = obj:get_player_name()
-				changePlayerHP(player, -1)
-			elseif obj:is_player() == false and obj:get_luaentity() ~= nil then
+				minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a pulse blossom")
+				changePlayerHP(obj, -1)
+			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
 				mob:set_hp(mob:get_hp() - 1)
 			end
 		end
 
-		minetest.swap_node(pos, {name = "main:pulse_blossom_on", param1 = p1})
-		return ret
+		minetest.swap_node(pos, {name = "main:pulse_blossom_on", param2 = p1})
+		return true
     end,
 })
 

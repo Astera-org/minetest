@@ -62,16 +62,12 @@ local function brain(self)
 			end
 
 			animals.predator_avoid(self, 55, 0.01)
-
-
 		end
 
 
 		----------------------
 		--Low priority actions
 		if prty < 20 then
-
-
 			--random choice between
 			--feeding, exploring, social
 			--chance differs by time
@@ -120,7 +116,7 @@ local function brain(self)
 						if preg == true then
 							mobkit.lq_idle(self,3)
 							if random() < 0.05 then
-								energy = animals.place_egg(pos, "animals:pegasun_eggs", energy, energy_egg, 'air')
+								energy = animals.place_egg(pos, "animals:cow_spawn", energy, energy_egg, 'air')
 								mobkit.remember(self,'pregnant',false)
 							end
 
@@ -146,7 +142,7 @@ local function brain(self)
 			elseif energy < energy_max then
 
 				--feed via a method
-				if random()< 0.85 then
+				if random()< 0.25 then
 					--scratch dirt
 					if animals.eat_spreading_under(pos, 0.001) == true then
 						energy = energy + 6
@@ -158,7 +154,7 @@ local function brain(self)
 					end
 				else
 					--veg
-					if animals.eat_flora(pos, 0.005) == true then
+					if animals.eat_flora(pos, 0.05) == true then
 						energy = energy + 20
 					else
 						--wander random
@@ -381,13 +377,6 @@ minetest.register_node("animals:cow_spawn", {
 		end
 	end,
 })
-
-
-
-
-
-
-
 
 
 ----------------------------------------------
