@@ -814,7 +814,7 @@ function mobkit.actfunc(self, staticdata, dtime_s)
 	if type(self.armor_groups) ~= 'table' then
 		self.armor_groups={}
 	end
-	self.armor_groups.immortal = 1
+	-- JED: self.armor_groups.immortal = 1
 	self.object:set_armor_groups(self.armor_groups)
 	
 	self.buoyancy = self.buoyancy or 0

@@ -49,50 +49,44 @@ local function brain(self)
 		end
 
 
-		local prty = mobkit.get_queue_priority(self)
+		local priority = mobkit.get_queue_priority(self)
 		-------------------
 		--High priority actions
-		if prty < 50 then
-
-
+		if priority < 50 then
 			--Threats
-			local plyr = mobkit.get_nearby_player(self)
-			if plyr then
-				animals.fight_or_flight_plyr(self, plyr, 55, 0.01)
+			local player = mobkit.get_nearby_player(self)
+			if player then
+				animals.fight_or_flight_plyr(self, player, 55, 0.2)
 			end
 
 			animals.predator_avoid(self, 55, 0.01)
-
-
 		end
 
 
 		----------------------
 		--Low priority actions
-		if prty < 20 then
-
-
+		if priority < 20 then
 			--random choice between
 			--feeding, exploring, social
 			--chance differs by time
-			local ce = 0.1
-			local cs = 0.1
-			-- c feeding is simply what happens if no
-			--others are selected
+			local chanceExplore = 0.1
 			local tod = minetest.get_timeofday()
 			if tod <0.2 or tod >0.8 then
 				--more social at night
-				ce = 0.01
-				cs = 0.75
+				chanceExplore = 0.7
 			elseif tod >0.55 and tod <0.55 then
 				--explore during midday
-				ce = 0.5
-				cs = 0.1
+				chanceExplore = 0.2
 			end
 
-
-			if random() < ce then
-				if random() < 0.95 then
+			if energy < (energy_max-energy_max*.2) then
+				if not animals.prey_hunt(self, 25) then
+					--random search
+					mobkit.animate(self,'walk')
+					mobkit.hq_roam(self,10)
+				end
+			elseif random() < chanceExplore then
+				if random() < 0.9 then
 					--wander random
 					mobkit.animate(self,'walk')
 					mobkit.hq_roam(self,10)
@@ -101,9 +95,7 @@ local function brain(self)
 					mobkit.animate(self,'walk')
 					animals.hq_roam_comfort_temp(self,12, 21)
 				end
-
-			elseif random() < cs then
-
+			else
 				--social
 				if random()< 0.3 then
 					animals.flock(self, 25, 3)
@@ -120,7 +112,7 @@ local function brain(self)
 						if preg == true then
 							mobkit.lq_idle(self,3)
 							if random() < 0.05 then
-								energy = animals.place_egg(pos, "animals:pegasun_eggs", energy, energy_egg, 'air')
+								energy = animals.place_egg(pos, "animals:wolf_spawn", energy, energy_egg, 'air')
 								mobkit.remember(self,'pregnant',false)
 							end
 
@@ -128,7 +120,7 @@ local function brain(self)
 
 							--we are randy
 							mobkit.remember(self,'sexual',true)
-							local mate = animals.mate_assess(self, 'animals:pegasun_male')
+							local mate = animals.mate_assess(self, 'animals:wolf_male')
 							if mate then
 								--go get him!
 								--mobkit.make_sound(self,'mating')
@@ -142,41 +134,7 @@ local function brain(self)
 						mobkit.remember(self,'sexual',false)
 					end
 				end
-
-			elseif energy < energy_max then
-
-				--feed via a method
-				if random()< 0.85 then
-					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
-						energy = energy + 6
-					else
-						--wander to food source
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_surface_group(self, 'spreading', 20)
-					end
-				elseif random()< 0.75 then
-					--veg
-					if animals.eat_flora(pos, 0.005) == true then
-						energy = energy + 20
-					else
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
-				else
-					--hunt
-					if not animals.prey_hunt(self, 25) then
-						--random search
-						mobkit.animate(self,'walk')
-						mobkit.hq_roam(self,10)
-						--animals.hq_roam_surface_group(self, 'spreading', 10)
-					end
-				end
 			end
-
 		end
 
 		-------------------
@@ -228,16 +186,14 @@ local function brain_male(self)
 		end
 
 
-		local prty = mobkit.get_queue_priority(self)
+		local priority = mobkit.get_queue_priority(self)
 		-------------------
 		--High priority actions
-		if prty < 50 then
-
-
+		if priority < 50 then
 			--Threats
-			local plyr = mobkit.get_nearby_player(self)
-			if plyr then
-				animals.fight_or_flight_plyr(self, plyr, 55, 0.6)
+			local player = mobkit.get_nearby_player(self)
+			if player then
+				animals.fight_or_flight_plyr(self, player, 55, 0.6)
 			end
 
 			animals.predator_avoid(self, 55, 0.6)
@@ -248,41 +204,37 @@ local function brain_male(self)
 		----------------------
 		--Low priority actions
 
-		if prty < 20 then
-
-
+		if priority < 20 then
 			--random choice between
 			--feeding, exploring, social
 			--chance differs by time
-			local ce = 0.2
-			local cs = 0.4
-			-- c feeding is simply what happens if no
-			--others are selected
+			local chanceExplore = 0.1
 			local tod = minetest.get_timeofday()
 			if tod <0.2 or tod >0.8 then
 				--more social at night
-				ce = 0.01
-				cs = 0.95
+				chanceExplore = 0.7
 			elseif tod >0.55 and tod <0.55 then
 				--explore during midday
-				ce = 0.6
-				cs = 0.2
+				chanceExplore = 0.2
 			end
 
-
-			if random() < ce then
-				if random() < 0.95 then
+			if energy < (energy_max-energy_max*.2) then
+				if not animals.prey_hunt(self, 25) then
+					--random search
+					mobkit.animate(self,'walk')
+					mobkit.hq_roam(self,10)
+				end
+			elseif random() < chanceExplore then
+				if random() < 0.9 then
 					--wander random
 					mobkit.animate(self,'walk')
 					mobkit.hq_roam(self,10)
 				else
 					--wander temp
 					mobkit.animate(self,'walk')
-					animals.hq_roam_comfort_temp(self,10, 21)
+					animals.hq_roam_comfort_temp(self,12, 21)
 				end
-
-			elseif random() < cs then
-
+			else
 				--social
 				if random()< 0.5 then
 					animals.flock(self, 25, 1)
@@ -297,13 +249,13 @@ local function brain_male(self)
 						--set status as randy
 						--find nearby prospect and try to mate
 						mobkit.remember(self, 'sexual', true)
-						local mate = animals.mate_assess(self, 'animals:pegasun')
+						local mate = animals.mate_assess(self, 'animals:wolf')
 
 						if mate then
 							--go get her!
 							--mobkit.make_sound(self,'mating')
 							if random() < 0.5 then
-                mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
+                				mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
 								animals.hq_mate(self, 25, mate)
 							end
 						end
@@ -313,41 +265,7 @@ local function brain_male(self)
 						mobkit.remember(self, 'sexual', false)
 					end
 				end
-
-			elseif energy < energy_max then
-
-				--feed via a method
-				if random()< 0.75 then
-					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
-						energy = energy + 6
-					else
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_surface_group(self, 'spreading', 20)
-					end
-				elseif random()< 0.5 then
-					--veg
-					if animals.eat_flora(pos, 0.005) == true then
-						energy = energy + 20
-					else
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
-				else
-					--hunt
-					if not animals.prey_hunt(self, 25) then
-						--random search
-						mobkit.animate(self,'walk')
-						mobkit.hq_roam(self,10)
-						--animals.hq_roam_surface_group(self, 'spreading', 10)
-					end
-				end
 			end
-
 		end
 
 		-------------------

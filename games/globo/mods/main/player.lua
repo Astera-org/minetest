@@ -267,14 +267,17 @@ function initializePlayerMeta(player)
     if meta:get_string("thirst") == "" then
         meta:set_string("thirst", 1000)
     end
-    if meta:get_string("temperature") == "" then
-        meta:set_string("temperature", START_TEMPERATURE)
-    end
 end
 
 
 minetest.register_on_joinplayer(function(player)
     print("Player joining")
+
+    local privs = minetest.get_player_privs("singleplayer")
+    privs.fly = true
+    privs.fast = true
+    privs.settime = true
+    minetest.set_player_privs("singleplayer", privs)
 
     local inv = player:get_inventory()
     inv:set_size("main", INVENTORY_SIZE)  
@@ -292,7 +295,6 @@ minetest.register_on_respawnplayer(function(player)
     meta:set_string("energy_max", 1000)
     meta:set_string("hunger", 1000)
     meta:set_string("thirst", 1000)
-    meta:set_string("temperature", START_TEMPERATURE)
     meta:set_string("sleeping","")
 
     return false

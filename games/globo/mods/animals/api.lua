@@ -684,8 +684,6 @@ function animals.on_punch(self, tool_capabilities, puncher, prty, chance)
     elseif prty < 20 then
       animals.fight_or_flight(self, puncher, prty, chance)
     end
-
-
   end
 end
 

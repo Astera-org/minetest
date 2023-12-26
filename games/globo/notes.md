@@ -1,16 +1,25 @@
 TODO:
+- health efects are being cleared instantly
 - will drift at last speed once at energy 0
 
 - need a way to throw things away
 - Do we want to be able to dig clay or cut trees?
-- Pulse blossom: glows periodically and hurts anything around it.
-    - not hurting you
 
+- make glow stone drop when pushed into air
+- make sure fire works
 
 - cow
     - make cows seek other cows
+    - are cows being hurt?
+    - make sure animals are stable
 - Wolf
     - make wolves seek other wolves
+    - make wolves more aggressive
+    - wolves don't seem to kill cows. The cows fight the wolves
+
+- make animals sleep
+
+
 - mongoose
 - Lava Ox
 - Chaos Hawk

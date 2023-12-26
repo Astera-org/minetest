@@ -24,22 +24,21 @@ plant_base_timer = plant_base_timer
 crop_rewind = crop_rewind
 exile_add_food_hooks = exile_add_food_hooks
 creative = creative
-wielded_light = wielded_light
 
 ---------------------------
 -- Dig upwards
 --
 
 local function dig_up(pos, node, digger)
-	local lnode = wielded_light.get_unlit_node(node)
+	local lnode = node
 	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
-	local unode = wielded_light.get_unlit_node(minetest.get_node(np))
+	local unode = minetest.get_node(np)
 	local count = 0
 	while lnode.name == unode.name do
 	   count = count + 1
 	   minetest.set_node(np, {name = "air"})
 	   np.y = np.y + 1
-	   unode = wielded_light.get_unlit_node(minetest.get_node(np))
+	   unode = minetest.get_node(np)
 	end
 	if count > 0 then
 	   local inv = digger:get_inventory()

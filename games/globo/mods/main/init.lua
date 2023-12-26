@@ -4,7 +4,7 @@
 -- Values that need to be moved into a config file
 
 -- won't allow you to go below 64. World goes gray
-MAP_SIZE=1024
+MAP_SIZE=600
 
 STARVE_1_MUL=7
 STARVE_2_MUL=5
@@ -20,7 +20,7 @@ CHANCE_SNOW_SPAWN=10
 
 
 -- Globo settings
-START_TEMPERATURE=98
+
 
 -- Inventory settings
 INVENTORY_SIZE = 2  -- Players can only hold 2 items at a time in inventory

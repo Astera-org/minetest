@@ -163,7 +163,7 @@ minetest.register_node("main:pulse_blossom_on", {
 				changePlayerHP(obj, -1)
 			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
-				mob:set_hp(mob:get_hp() - 1)
+				mobkit.hurt(mob,1)
 			end
 		end
 

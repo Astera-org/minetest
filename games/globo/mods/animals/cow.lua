@@ -143,18 +143,11 @@ local function brain(self)
 
 				--feed via a method
 				if random()< 0.25 then
-					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
-						energy = energy + 6
-					else
-						--wander to food source
 						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
 						animals.hq_roam_surface_group(self, 'spreading', 20)
-					end
 				else
 					--veg
-					if animals.eat_flora(pos, 0.05) == true then
+					if animals.eat_flora(pos, 0.5) == true then
 						energy = energy + 20
 					else
 						--wander random
@@ -237,8 +230,6 @@ local function brain_male(self)
 		--Low priority actions
 
 		if prty < 20 then
-
-
 			--random choice between
 			--feeding, exploring, social
 			--chance differs by time
@@ -303,26 +294,17 @@ local function brain_male(self)
 				end
 
 			elseif energy < energy_max then
-
-				--feed via a method
-				if random()< 0.75 then
-					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
-						energy = energy + 6
-					else
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_surface_group(self, 'spreading', 20)
-					end
+				if random()< 0.3 then
+					--wander random
+					mobkit.animate(self,'walk')
+					animals.hq_roam_surface_group(self, 'spreading', 20)
 				else
 					--veg
-					if animals.eat_flora(pos, 0.005) == true then
+					if animals.eat_flora(pos, 0.5) == true then
 						energy = energy + 20
 					else
 						--wander random
 						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
 						animals.hq_roam_walkable_group(self, 'flora', 10)
 					end
                 end
