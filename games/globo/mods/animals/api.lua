@@ -89,6 +89,7 @@ function animals.core_hp(self)
   end
   hp = self.hp
   if hp <= 0 then
+    minimal.log("die no HP")
     mobkit.clear_queue_high(self)
     animals.handle_drops(self)
     mobkit.hq_die(self)
@@ -184,6 +185,7 @@ function animals.core_life(self, lifespan, pos)
 
   --die from exhaustion, old age
   if energy <=0 or age > lifespan then
+    minimal.log("Die from exhaustion")
     mobkit.clear_queue_high(self)
     animals.handle_drops(self)
     mobkit.hq_die(self)
@@ -216,14 +218,13 @@ function animals.core_life(self, lifespan, pos)
 
 
   --heal using energy
-  if self.hp < self.max_hp and energy > 10 and random() <= 0.75 then
+  if self.hp < self.max_hp and energy > 10 then
     if not (not self.isinliquid and self.class == 2) then
       -- if not a fish out of water then (fish in water will heal up nicely :D)
-      mobkit.heal(self,1)
+      mobkit.heal(self,self.heal_rate)
       if use_vh1 then
-	 VH1.update_bar(self.object, self.hp, self.max_hp)
+	      VH1.update_bar(self.object, self.hp, self.max_hp)
       end
-      energy = energy - 5
     end
   end
   
@@ -439,10 +440,10 @@ function animals.hq_roam_far(self,priority)
 
       local r=math.random()
       if r < 0.08 then
-        minimal.log("turn left ")
+        --minimal.log("turn left ")
         yaw = yaw + .78 
       elseif r < 0.18 then
-        minimal.log("turn right ")
+        --minimal.log("turn right ")
         yaw = yaw - .78
       end
 
@@ -462,7 +463,7 @@ function animals.hq_roam_far(self,priority)
         mobkit.dumbstep(self,height,tpos,1,0) 
         return
       else
-        minimal.log("turning "..yaw+.78)
+        --minimal.log("turning "..yaw+.78)
         mobkit.turn2yaw(self,yaw+.78)
       end
 		end
@@ -869,6 +870,7 @@ function animals.prey_hunt(self, prty)
   for  _, prey in ipairs(self.prey) do
     local tgtobj = mobkit.get_closest_entity(self,prey)
     if tgtobj then
+      minimal.log("prey_hunt")
       animals.hq_attack_eat(self,prty,tgtobj)
       mobkit.remember(self,"action","attack eat")
       return true
@@ -1094,35 +1096,32 @@ local function lq_jumpattack_eat(self,height,target)
 				--mobkit.make_sound(self,'attack')
 				phase=4
         local ent = target:get_luaentity()
-        local ent_hp = ent.hp or 1
-        local ent_mhp = ent.max_hp or 1
+        if ent == nil then minimal.log("Nil ent?") return true end
+     
         local dmg = 1
         if (type(self.attack) == "table") then
           if (type(self.attack.damage_groups) == "table") then
-            dmg = self.attack.damage_groups.fleshy or 1
-            
-            dmg = math_clamp(dmg,0,ent_mhp) -- clamp damage between 0 and entity max health to prevent excessive energygain
+            dmg = self.attack.damage_groups.fleshy or 1  
           end
         end
-        
+
+       
         mobkit.hurt(ent,dmg) -- hurt opponent
+
+        minimal.log("Bite for:"..dmg.." hp:"..ent.hp)
+       
         
-        -- eat bits of opponent
-        local ent_e = (mobkit.recall(ent,'energy') or 1)
-        local self_e = (mobkit.recall(self,'energy') or 1)
-        local energygain = (ent_e * (dmg / ent_mhp) ) -- omnomnom
-        
-        mobkit.remember(self,'energy', (energygain*0.4)  + self_e) -- take 40%
-        mobkit.remember(ent,'energy', ent_e - energygain) -- make opponent lose energy
-        
-        if (ent.hp <= dmg) then
+        if (ent.hp <= 0) then
           local ent_e = (mobkit.recall(ent,'energy') or 1)
           local self_e = (mobkit.recall(self,'energy') or 1)
-          mobkit.remember(self,'energy', (energygain*0.25) + self_e) -- add another 25% for nomming fully
+          local self_max_e = (mobkit.recall(self,"energy_max") or 1)
+          minimal.log("Eating:"..ent_e)
+          local newEnergy=(ent_e*0.8) + self_e  -- only get 80% of the energy of the prey
+          if newEnergy > self_max_e then newEnergy=self_max_e end
+          mobkit.remember(self,'energy', newEnergy) 
           ent.object:remove()
           return true
         end
-        
 			end
 		end
 	end
@@ -1143,24 +1142,17 @@ function animals.hq_attack_eat(self,prty,tgtobj)
 
 		if mobkit.is_queue_empty_low(self) then
       local pos = mobkit.get_stand_pos(self)
-		--	local pos = mobkit.get_stand_pos(self)
 			local tpos = mobkit.get_stand_pos(tgtobj)
 			local dist = vector.distance(pos,tpos)
-			if dist > 3 then
-				return true
-			else
-			   mobkit.lq_turn2pos(self,tpos)
-			   local tgtheight = tgtobj:get_luaentity().height
-			   if tgtheight == nil then
-			      tgtheight = 0
-			   end
+			if dist < 1.01 then
+        local tgtheight = tgtobj:get_luaentity().height
+        if tgtheight == nil then
+          tgtheight = 0
+        end
         local height = tgtobj:is_player() and 0.35 or tgtheight*0.6
-				if tpos.y+height>pos.y then
-					lq_jumpattack_eat(self,tpos.y+height-pos.y,tgtobj)
-
-				else
-					mobkit.lq_dumbwalk(self,mobkit.pos_shift(tpos,{x=random()-0.5,z=random()-0.5}))
-				end
+        lq_jumpattack_eat(self,tpos.y+height-pos.y,tgtobj)
+			else
+        mobkit.goto_next_waypoint(self,tpos)
 			end
 		end
 	end

@@ -653,9 +653,8 @@ local function sensors()
 			end
 			
 			local pos = self.object:get_pos()
---local tim = minetest.get_us_time()
 			self.nearby_objects = minetest.get_objects_inside_radius(pos, range)
---minetest.chat_send_all(minetest.get_us_time()-tim)
+
 			for i,obj in ipairs(self.nearby_objects) do	
 				if obj == self.object then
 					table.remove(self.nearby_objects,i)
@@ -801,6 +800,7 @@ function mobkit.actfunc(self, staticdata, dtime_s)
 	
 	if self.timeout and ((self.timeout>0 and dtime_s > self.timeout and next(self.memory)==nil) or
 	                     (self.timeout<0 and dtime_s > abs(self.timeout))) then
+		minimal.log("mobkit.actfunc remove?")
 		self.object:remove()
 	end
 	

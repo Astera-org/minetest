@@ -91,7 +91,7 @@ local function brain(self)
 				if random() < 0.95 then
 					--wander random
 					mobkit.animate(self,'walk')
-					mobkit.hq_roam(self,10)
+					animals.hq_roam_far(self,10)
 				else
 					--wander temp
 					mobkit.animate(self,'walk')
@@ -164,7 +164,7 @@ local function brain(self)
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
-			mobkit.hq_roam(self,10)
+			animals.hq_roam_far(self,10)
 		end
 
 		-----------------
@@ -253,7 +253,7 @@ local function brain_male(self)
 				if random() < 0.95 then
 					--wander random
 					mobkit.animate(self,'walk')
-					mobkit.hq_roam(self,10)
+					animals.hq_roam_far(self,10)
 				else
 					--wander temp
 					mobkit.animate(self,'walk')
@@ -316,7 +316,7 @@ local function brain_male(self)
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
-			mobkit.hq_roam(self,10)
+			animals.hq_roam_far(self,10)
 		end
 
 		-----------------
@@ -382,6 +382,7 @@ minetest.register_entity("animals:cow_male",{
 
 	--damage
 	max_hp = 45,
+	heal_rate= 0.25,
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
@@ -458,6 +459,7 @@ minetest.register_entity("animals:cow",{
 
 	--damage
 	max_hp = 40,
+	heal_rate= 0.25,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,

@@ -232,7 +232,6 @@ function mobkit.lq_dumbwalk(self,dest,speed_factor)
 	local timer = 3			-- failsafe
 	speed_factor = speed_factor or 1
 	local func=function(self)
-		--minimal.log("lq_dumbwalk: "..self.dtime)
 		mobkit.animate(self,'walk')
 		timer = timer - self.dtime
 		if timer < 0 then return true end
@@ -241,7 +240,9 @@ function mobkit.lq_dumbwalk(self,dest,speed_factor)
 		local y = self.object:get_velocity().y
 
 		if mobkit.is_there_yet2d(pos,minetest.yaw_to_dir(self.object:get_yaw()),dest) then
+--		if mobkit.isnear2d(pos,dest,0.25) then
 			if not self.isonground or abs(dest.y-pos.y) > 0.1 then		-- prevent uncontrolled fall when velocity too high
+--			if abs(dest.y-pos.y) > 0.1 then	-- isonground too slow for speeds > 4
 				self.object:set_velocity({x=0,y=y,z=0})
 			end
 			return true 
@@ -251,6 +252,7 @@ function mobkit.lq_dumbwalk(self,dest,speed_factor)
 			local dir = vector.normalize(vector.direction({x=pos.x,y=0,z=pos.z},
 														{x=dest.x,y=0,z=dest.z}))
 			dir = vector.multiply(dir,self.max_speed*speed_factor)
+--			self.object:set_yaw(minetest.dir_to_yaw(dir))
 			mobkit.turn2yaw(self,minetest.dir_to_yaw(dir))
 			dir.y = y
 			self.object:set_velocity(dir)
@@ -258,6 +260,7 @@ function mobkit.lq_dumbwalk(self,dest,speed_factor)
 	end
 	mobkit.queue_low(self,func)
 end
+
 
 -- initial velocity for jump height h, v= a*sqrt(h*2/a) ,add 20%
 function mobkit.lq_dumbjump(self,height,anim)

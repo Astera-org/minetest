@@ -1,9 +1,7 @@
 TODO:
-- debugging for mobs
-    - command to mark the closest mob as the target
-    - command to dump the stats of the target
-
+- make it where predators eat the carcass of the dead animals
 - make pregnant a timer rather than a bool
+- player should be no different than other animals to the mobs
 
 - health efects are being cleared instantly
 - will drift at last speed once at energy 0
@@ -11,20 +9,13 @@ TODO:
 - need a way to throw things away
 - Do we want to be able to dig clay or cut trees?
 
-- make glow stone drop when pushed into air
+- make glow stone drops when pushed into air
 - make sure fire works
 
-- cow
-    - make cows seek other cows
-    - are cows being hurt?
-    - make sure animals are stable
-- Wolf
-    - make wolves seek other wolves
-    - make wolves more aggressive
-    - wolves don't seem to kill cows. The cows fight the wolves
 
 - make animals sleep
-
+- animals run from fire
+- make sure animals can be in equalibrim
 
 - mongoose
 - Lava Ox
@@ -43,7 +34,8 @@ TODO:
     - wake you up if too hungry when sleeping
     - wake up if you take damage
 
-
+- add laying eggs
+- temperature should effect you
 
 
 to test

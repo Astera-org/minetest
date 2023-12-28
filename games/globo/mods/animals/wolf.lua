@@ -13,13 +13,16 @@ local random = math.random
 local floor = math.floor
 
 --energy
-local energy_max = 8000--secs it can survive without food
+local energy_max = 8000 --secs it can survive without food
 local energy_egg = energy_max/2 --energy that goes to egg
 local egg_timer  = 60*60
 local young_per_egg = 1		--will get this/energy_egg starting energy
 
 local lifespan = energy_max * 10
 local lifespan_male = lifespan * 1.2 
+
+
+
 
 
 -----------------------------------
@@ -149,7 +152,7 @@ local function brain(self)
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
-			mobkit.hq_roam_far(self,10)
+			animals.hq_roam_far(self,10)
 			mobkit.remember(self,"action","default wander")
 		end
 
@@ -157,6 +160,7 @@ local function brain(self)
 		--housekeeping
 		--save energy, age
 		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'energy_max',energy_max)
 		mobkit.remember(self,'age',age)
 
 	end
@@ -281,13 +285,14 @@ local function brain_male(self)
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
-			mobkit.hq_roam(self,10)
+			animals.hq_roam_far(self,10)
 		end
 
 		-----------------
 		--housekeeping
 		--save energy, age
 		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'energy_max',energy_max)
 		mobkit.remember(self,'age',age)
 
 	end
@@ -325,92 +330,7 @@ minetest.register_node("animals:wolf_spawn", {
 	end,
 })
 
-
-
-
-
-
-
-
-
-----------------------------------------------
---THE MALE
-
-minetest.register_entity("animals:wolf_male",{
-	--core
-	physical = true,
-	collide_with_objects = true,
-	collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
-	visual = "mesh",
-	mesh = "mobs_wolf.b3d",
-	textures = {"mobs_wolf.png"},
-	visual_size = {x = 3, y = 3},
-	makes_footstep_sound = true,
-	timeout = 0,
-
-	--damage
-	max_hp = 45,
-	lung_capacity = 25,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 1,
-
-	--interaction
-	predators = {},
-    prey={"animals:cow","animals:cow_male"},
-	friends = {"animals:wolf","animals:wolf_male"},
-	rivals = {},
-	sex = "male",
-
-	on_step = mobkit.stepfunc,
-	on_activate = mobkit.actfunc,
-	get_staticdata = mobkit.statfunc,
-	logic = brain_male,
-	-- optional mobkit props
-	-- or used by built in behaviors
-	--physics = [function user defined] 		-- optional, overrides built in physics
-	animation = {
-		walk={range={x=71, y=90}, speed=24, loop=true},
-		fast={range={x=91, y=110}, speed=24, loop=true},
-		stand={
-			{range={x=1, y=30}, speed=28, loop=true},
-			{range={x=31, y=70}, speed=32, loop=true},
-		},
-	},
-	
-
-	--movement
-	springiness=0,
-	buoyancy = 1.01,
-	max_speed = 2.5,					-- m/s
-	jump_height = 2,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
-
-	--attack
-	attack={range=0.5, damage_groups={fleshy=4}},
-	armor_groups = {fleshy=100},
-
-	--on actions
-	drops = {
-		{name = "animals:carcass_bird_small", chance = 1, min = 1, max = 1,},
-	},
-	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		animals.on_punch(self, tool_capabilities, puncher, 55, 0.6)
-	end,
-	on_rightclick = function(self, clicker)
-		if not clicker or not clicker:is_player() then
-			return
-		end
-		animals.stun_catch_mob(self, clicker, 0.15)
-	end,
-})
-
-
-------------------------------------------------------------------------
---FEMALE
-
-minetest.register_entity("animals:wolf",{
-	--core
+local baseWolf={
 	physical = true,
 	collide_with_objects = true,
 	collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
@@ -423,6 +343,7 @@ minetest.register_entity("animals:wolf",{
 
 	--damage
 	max_hp = 40,
+	heal_rate= 0.25,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -453,12 +374,12 @@ minetest.register_entity("animals:wolf",{
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
+	max_speed = 3,					-- m/s
 	jump_height = 2,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
+	view_range = 15,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=2}},
+	attack={range=0.3, damage_groups={fleshy=5}},
 	armor_groups = {fleshy=100},
 
 	--on actions
@@ -474,5 +395,11 @@ minetest.register_entity("animals:wolf",{
 		end
 		animals.stun_catch_mob(self, clicker, 0.25)
 	end,
-})
+}
 
+local maleWolf=baseWolf
+maleWolf.logic=brain_male
+maleWolf.sex="male"
+
+minetest.register_entity("animals:wolf_male",maleWolf)
+minetest.register_entity("animals:wolf",baseWolf)
