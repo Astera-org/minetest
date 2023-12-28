@@ -30,6 +30,7 @@ dofile(path.."/mongoose.lua")
 dofile(path.."/ogre.lua")
 dofile(path.."/sandslug.lua")
 dofile(path.."/snagon.lua")
+dofile(path.."/skipfungus.lua")
 dofile(path.."/wolf.lua")
 
 

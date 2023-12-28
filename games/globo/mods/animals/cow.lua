@@ -109,7 +109,7 @@ local function brain(self)
 
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max - 100 then
+					and energy >= self.energy_max - 100 then
 
 						--are we already pregnant?
 						local preg = mobkit.recall(self,'pregnant') or false
@@ -139,7 +139,7 @@ local function brain(self)
 					end
 				end
 
-			elseif energy < energy_max then
+			elseif energy < self.energy_max then
 
 				--feed via a method
 				if random()< 0.25 then
@@ -271,7 +271,7 @@ local function brain_male(self)
 
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max/2 then
+					and energy >= self.energy_max/2 then
 
 						--set status as randy
 						--find nearby prospect and try to mate
@@ -293,7 +293,7 @@ local function brain_male(self)
 					end
 				end
 
-			elseif energy < energy_max then
+			elseif energy < self.energy_max then
 				if random()< 0.3 then
 					--wander random
 					mobkit.animate(self,'walk')
@@ -360,11 +360,7 @@ minetest.register_node("animals:cow_spawn", {
 	end,
 })
 
-
-----------------------------------------------
---THE MALE
-
-minetest.register_entity("animals:cow_male",{
+local baseCow = {
 	--core
     --type = "animal",
 	physical = true,
@@ -372,87 +368,7 @@ minetest.register_entity("animals:cow_male",{
 	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
 	visual = "mesh",
 	mesh = "mobs_cow.b3d",
-	textures = { {
-		"mobs_cow.png",
-		"transparent_pixel.png",
-	}, },
-	visual_size = {x=2.8, y=2.8},
-	makes_footstep_sound = true,
-	timeout = 0,
-
-	--damage
-	max_hp = 45,
-	heal_rate= 0.25,
-	lung_capacity = 25,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 1,
-
-	--interaction
-	predators = {"animals:wolf", "animals:wolf_male"},
-	friends = {"animals:cow"},
-	rivals = {"animals:cow_male"},
-	sex = "male",
-
-	on_step = mobkit.stepfunc,
-	on_activate = mobkit.actfunc,
-	get_staticdata = mobkit.statfunc,
-	logic = brain_male,
-	-- optional mobkit props
-	-- or used by built in behaviors
-	--physics = [function user defined] 		-- optional, overrides built in physics
-	animation = {
-		walk={range={x=71, y=90}, speed=24, loop=true},
-		fast={range={x=91, y=110}, speed=24, loop=true},
-		stand={
-			{range={x=1, y=30}, speed=28, loop=true},
-			{range={x=31, y=70}, speed=32, loop=true},
-		},
-	},
-	
-
-	--movement
-	springiness=0,
-	buoyancy = 1.01,
-	max_speed = 2.5,					-- m/s
-	jump_height = 1.5,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
-
-	--attack
-	attack={range=0.5, damage_groups={fleshy=4}},
-	armor_groups = {fleshy=100},
-
-	--on actions
-	drops = {
-		{name = "animals:carcass_bird_small", chance = 1, min = 1, max = 1,},
-	},
-	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		animals.on_punch(self, tool_capabilities, puncher, 55, 0.6)
-	end,
-	on_rightclick = function(self, clicker)
-		if not clicker or not clicker:is_player() then
-			return
-		end
-		animals.stun_catch_mob(self, clicker, 0.15)
-	end,
-})
-
-
-------------------------------------------------------------------------
---FEMALE
-
-minetest.register_entity("animals:cow",{
-	--core
-    --type = "animal",
-	physical = true,
-	collide_with_objects = true,
-	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
-	visual = "mesh",
-	mesh = "mobs_cow.b3d",
-	textures = { {
-		"mobs_cow.png",
-		"transparent_pixel.png",
-	}, },
+	textures = { "mobs_cow.png" },
 	visual_size = {x=2.8, y=2.8},
 	makes_footstep_sound = true,
 	timeout = 0,
@@ -464,6 +380,7 @@ minetest.register_entity("animals:cow",{
 	min_temp = -20,
 	max_temp = 45,
     energy_loss = 1,
+	energy_max= 8000,
 
 	--interaction
 	predators = {"animals:wolf", "animals:wolf_male"},
@@ -505,10 +422,16 @@ minetest.register_entity("animals:cow",{
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)
-		if not clicker or not clicker:is_player() then
-			return
-		end
-		animals.stun_catch_mob(self, clicker, 0.25)
 	end,
-})
+}
 
+
+local maleCow=baseCow
+maleCow.logic=brain_male
+maleCow.sex="male"
+maleCow.rivals = {"animals:cow_male"}
+maleCow.max_hp=45
+
+
+minetest.register_entity("animals:cow_male",maleCow)
+minetest.register_entity("animals:cow",baseCow)

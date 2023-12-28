@@ -619,6 +619,26 @@ function mobkit.get_closest_entity(self,name)	-- returns closest entity of name 
 	return cobj
 end
 
+function mobkit.get_closest_other_entity(self)	-- returns closest entity or nil
+	minimal.log("Self: "..dump(self))
+	local cobj = nil
+	local dist = abr*64
+	local pos = mobkit.get_stand_pos(self)
+	for _,obj in ipairs(self.nearby_objects) do
+		local luaent = obj:get_luaentity()
+		if luaent and luaent.name==self.name then
+		elseif mobkit.is_alive(obj) then
+			local opos = obj:get_pos()
+			local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
+			if odist < dist then
+				dist=odist
+				cobj=obj
+			end
+		end 
+	end
+	return cobj
+end
+
 local function execute_queues(self)
 	--Execute hqueue
 	if #self.hqueue > 0 then

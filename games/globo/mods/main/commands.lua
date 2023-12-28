@@ -90,6 +90,7 @@ minetest.register_chatcommand("mob", {
         local dir = player:get_look_dir()
         local pos = player:get_pos()
 		local newpos = {x = pos.x + dir.x, y = pos.y+dir.y, z = pos.z + dir.z}
+        minimal.log("mob:"..param)
         animals.hatch_egg(newpos, 'air', 'air', "animals:"..param, 4000, 1)
         local entity=nearest(newpos)
 		if entity ~= nil then

@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Cow
+-- Wolf
 --[[
 males and females, must mate to reproduce.
 lives off animals
@@ -85,7 +85,7 @@ local function brain(self)
 				chanceExplore = 0.2
 			end
 
-			if energy < (energy_max-energy_max*.2) then
+			if energy < (self.energy_max-self.energy_max*.2) then
 				if not animals.prey_hunt(self, 25) then
 					--random search
 					mobkit.animate(self,'walk')
@@ -115,7 +115,7 @@ local function brain(self)
 				elseif random() < 0.05 then
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max - (energy_max*.3) then
+					and energy >= self.energy_max - (self.energy_max*.3) then
 
 						--are we already pregnant?
 						local preg = mobkit.recall(self,'pregnant') or false
@@ -160,7 +160,6 @@ local function brain(self)
 		--housekeeping
 		--save energy, age
 		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'energy_max',energy_max)
 		mobkit.remember(self,'age',age)
 
 	end
@@ -231,7 +230,7 @@ local function brain_male(self)
 				chanceExplore = 0.2
 			end
 
-			if energy < (energy_max-energy_max*.2) then
+			if energy < (self.energy_max-self.energy_max*.2) then
 				if not animals.prey_hunt(self, 25) then
 					--random search
 					mobkit.animate(self,'walk')
@@ -257,7 +256,7 @@ local function brain_male(self)
 
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max/2 then
+					and energy >= self.energy_max/2 then
 
 						--set status as randy
 						--find nearby prospect and try to mate
@@ -292,7 +291,6 @@ local function brain_male(self)
 		--housekeeping
 		--save energy, age
 		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'energy_max',energy_max)
 		mobkit.remember(self,'age',age)
 
 	end
@@ -348,6 +346,7 @@ local baseWolf={
 	min_temp = -20,
 	max_temp = 45,
     energy_loss = 1,
+	energy_max = 8000,
 
 	--interaction
 	predators = {},
@@ -390,10 +389,6 @@ local baseWolf={
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)
-		if not clicker or not clicker:is_player() then
-			return
-		end
-		animals.stun_catch_mob(self, clicker, 0.25)
 	end,
 }
 

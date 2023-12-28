@@ -442,7 +442,7 @@ function animals.hq_roam_far(self,priority)
       if r < 0.08 then
         --minimal.log("turn left ")
         yaw = yaw + .78 
-      elseif r < 0.18 then
+      elseif r < 0.16 then
         --minimal.log("turn right ")
         yaw = yaw - .78
       end
@@ -1114,10 +1114,9 @@ local function lq_jumpattack_eat(self,height,target)
         if (ent.hp <= 0) then
           local ent_e = (mobkit.recall(ent,'energy') or 1)
           local self_e = (mobkit.recall(self,'energy') or 1)
-          local self_max_e = (mobkit.recall(self,"energy_max") or 1)
           minimal.log("Eating:"..ent_e)
           local newEnergy=(ent_e*0.8) + self_e  -- only get 80% of the energy of the prey
-          if newEnergy > self_max_e then newEnergy=self_max_e end
+          if newEnergy > self.energy_max then newEnergy=self.energy_max end
           mobkit.remember(self,'energy', newEnergy) 
           ent.object:remove()
           return true
