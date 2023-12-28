@@ -96,3 +96,9 @@ function minimal.math_clamp(num,min,max) -- math.clamp implementation from my fu
    
    return num
  end
+
+
+ function minimal.log(message)
+   minetest.chat_send_all(message)
+   minetest.log("action", message)
+ end

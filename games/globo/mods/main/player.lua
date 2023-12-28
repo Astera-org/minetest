@@ -4,6 +4,8 @@ Implements all changes to the players:
  - The hunger or thirst will increase till the player eats or drinks
 ]]--
 
+
+
 player_definition = {
     physical = true,
     collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.7, 0.3},
@@ -71,24 +73,14 @@ function setupHUD(player)
     else
         hud_ids = {}
     end
---[[  doesn't work 
-    hud_ids.debug = player:hud_add({
-        hud_elem_type = "text",
-        text = " ",
-        number = 0xFFFFFF,
-        position = {x = 0.05, y = 0.65},
-        offset = {x = 0, y = 0},
-        alignment = {x = 1, y = 0},
-        scale = {x = 100, y = 100},
-    })
-]]--
-    local startPos = {x = 0.05, y = 0.75} 
+
+    local startPos = {x = 0, y = 1} 
     hud_ids.air = player:hud_add({
         hud_elem_type = "text",
         text = "Air: ",
         number = 0xFFFFFF,
         position = startPos,
-        offset = {x = 0, y = 0},
+        offset = {x = 10, y = -140},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -98,7 +90,7 @@ function setupHUD(player)
         text = "Health: ",
         number = 0xFFFFFF,
         position = startPos,
-        offset = {x = 0, y = 20},
+        offset = {x = 10, y = -120},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -106,7 +98,7 @@ function setupHUD(player)
     hud_ids.hunger_id = player:hud_add({
         hud_elem_type = "text",
         position = startPos,
-        offset = {x = 0, y = 40},
+        offset = {x = 10, y = -100},
         text = "Hunger: ",
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
@@ -116,7 +108,7 @@ function setupHUD(player)
     hud_ids.thirst_id = player:hud_add({
         hud_elem_type = "text",
         position = startPos,
-        offset = {x = 0, y = 60},
+        offset = {x = 10, y = -80},
         text = "Thirst: ",
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
@@ -128,7 +120,7 @@ function setupHUD(player)
         text = "Energy: ",
         number = 0xFFFFFF,
         position = startPos,
-        offset = {x = 0, y = 80},
+        offset = {x = 10, y = -60},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -138,7 +130,7 @@ function setupHUD(player)
         text = "Temp: ",
         number = 0xFFFFFF,
         position = startPos,
-        offset = {x = 0, y = 100},
+        offset = {x = 10, y = -40},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
@@ -148,7 +140,7 @@ function setupHUD(player)
         text = "",
         number = 0xFFFFFF,
         position = startPos,
-        offset = {x = 0, y = 120},
+        offset = {x = 10, y = -20},
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })

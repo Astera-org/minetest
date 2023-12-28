@@ -124,7 +124,7 @@ local function brain(self)
 
 							--we are randy
 							mobkit.remember(self,'sexual',true)
-							local mate = animals.mate_assess(self, 'animals:pegasun_male')
+							local mate = animals.mate_assess(self, 'animals:cow_male')
 							if mate then
 								--go get him!
 								--mobkit.make_sound(self,'mating')
@@ -276,7 +276,7 @@ local function brain_male(self)
 						--set status as randy
 						--find nearby prospect and try to mate
 						mobkit.remember(self, 'sexual', true)
-						local mate = animals.mate_assess(self, 'animals:pegasun')
+						local mate = animals.mate_assess(self, 'animals:cow')
 
 						if mate then
 							--go get her!

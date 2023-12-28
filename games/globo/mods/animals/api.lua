@@ -311,20 +311,20 @@ function animals.hq_roam_dark(self,prty)
     end
 
     if mobkit.is_queue_empty_low(self) and self.isonground then
-       local pos = mobkit.get_stand_pos(self)
-       local neighbor = random(8)
+      local pos = mobkit.get_stand_pos(self)
+      local neighbor = random(8)
 
-       local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self,neighbor)
+      local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self,neighbor)
 
-       if height and not liquidflag then
-       local light = minetest.get_node_light(pos, 0.5) or 0
-       local lightn = minetest.get_node_light(tpos, 0.5) or 0
-       if lightn <= light then
-         mobkit.dumbstep(self,height,tpos,0.3)
-       else
-         return true
-       end
-     end
+      if height and not liquidflag then
+        local light = minetest.get_node_light(pos, 0.5) or 0
+        local lightn = minetest.get_node_light(tpos, 0.5) or 0
+        if lightn <= light then
+          mobkit.dumbstep(self,height,tpos,0.3)
+        else
+          return true
+        end
+      end
 		end
 	end
 	mobkit.queue_high(self,func,prty)
@@ -400,6 +400,76 @@ function animals.hq_roam_surface_group(self, group, prty)
   mobkit.queue_high(self,func,prty)
 end
 
+
+local function yaw_to_neighbor(yaw)
+  local angle = yaw % (2 * math.pi)  -- Normalize yaw to [0, 2π)
+  local increment= math.pi / 8
+
+  local index=1
+
+  if angle >= (3 * increment) and angle < (5*increment) then
+      index = 5  -- West  
+  elseif angle >= (increment) and angle < (3 * increment) then
+      index = 4  -- Northwest 
+  elseif angle >= (15 * increment) or angle < (increment) then
+      index = 3  -- North
+  elseif angle >= (13 * increment) and angle < (15 * increment) then
+      index = 2  -- Northeast
+  elseif angle >= (11 * increment) and angle < (13 * increment) then
+      index = 1  -- East
+  elseif angle >= (9 * increment) and angle < (11 * increment) then
+      index = 8  -- Southeast
+  elseif angle >= (7 * increment) and angle < (9 * increment) then
+      index = 7  -- South
+  elseif angle >= (5 * increment) and angle < (7 * increment) then
+      index = 6  -- Southwest
+  else
+    minetest.log("action", "yaw_to_neighbor: angle="..angle.." index="..index)
+  end
+
+
+  return index
+end
+
+function animals.hq_roam_far(self,priority)
+  local func=function(self)
+    if mobkit.is_queue_empty_low(self) and self.isonground then
+			local pos = mobkit.get_stand_pos(self)
+      local yaw = self.object:get_yaw()
+
+      local r=math.random()
+      if r < 0.08 then
+        minimal.log("turn left ")
+        yaw = yaw + .78 
+      elseif r < 0.18 then
+        minimal.log("turn right ")
+        yaw = yaw - .78
+      end
+
+      local neighbor = yaw_to_neighbor(yaw)
+
+			local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self,neighbor)
+      if tpos == nil then
+        local hStr=height or "nil"
+        local lStr=liquidflag or "nil"
+        --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." height:"..hStr.." liq:".. dump(lStr))
+      else 
+        --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." tpos:"..tpos.x..","..tpos.y..","..tpos.z.." height:"..height)
+      end
+
+      --if target == self then minetest.chat_send_all("height:"..dump(height).." liquidflag:"..dump(liquidflag)) end
+			if height and not liquidflag then 
+        mobkit.dumbstep(self,height,tpos,1,0) 
+        return
+      else
+        minimal.log("turning "..yaw+.78)
+        mobkit.turn2yaw(self,yaw+.78)
+      end
+		end
+  end
+
+  mobkit.queue_high(self,func,priority)
+end
 
 ----------------------------------------------
 --roam to a walkable (by group) i.e. walk into the node itself c.f. under
@@ -774,6 +844,7 @@ function animals.predator_avoid(self, prty, chance)
     local thr = mobkit.get_closest_entity(self,pred)
     if thr then
       animals.fight_or_flight(self, thr, prty, chance)
+      mobkit.remember(self,"action","run from predator")
       return thr
     end
   end
@@ -799,6 +870,7 @@ function animals.prey_hunt(self, prty)
     local tgtobj = mobkit.get_closest_entity(self,prey)
     if tgtobj then
       animals.hq_attack_eat(self,prty,tgtobj)
+      mobkit.remember(self,"action","attack eat")
       return true
     end
   end
@@ -1270,12 +1342,7 @@ function animals.hq_flock_water(self,prty,tgtobj, min_dist, speed)
 
   end
   mobkit.queue_high(self,func,prty)
- end
-
-
-
-
-
+end
 
 
 function animals.flock(self, prty, min_dist, aqua_speed)

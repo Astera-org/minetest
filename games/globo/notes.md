@@ -1,4 +1,10 @@
 TODO:
+- debugging for mobs
+    - command to mark the closest mob as the target
+    - command to dump the stats of the target
+
+- make pregnant a timer rather than a bool
+
 - health efects are being cleared instantly
 - will drift at last speed once at energy 0
 

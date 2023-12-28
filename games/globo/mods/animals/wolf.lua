@@ -19,11 +19,13 @@ local egg_timer  = 60*60
 local young_per_egg = 1		--will get this/energy_egg starting energy
 
 local lifespan = energy_max * 10
-local lifespan_male = lifespan * 1.2 --if the flock male dies they go extinct
+local lifespan_male = lifespan * 1.2 
 
 
 -----------------------------------
 local function brain(self)
+
+	-- mobkit.remember(self,"action","")
 
 	--die from damage
 	if not animals.core_hp(self) then
@@ -57,6 +59,7 @@ local function brain(self)
 			local player = mobkit.get_nearby_player(self)
 			if player then
 				animals.fight_or_flight_plyr(self, player, 55, 0.2)
+				mobkit.remember(self,"action","fight player")
 			end
 
 			animals.predator_avoid(self, 55, 0.01)
@@ -83,29 +86,33 @@ local function brain(self)
 				if not animals.prey_hunt(self, 25) then
 					--random search
 					mobkit.animate(self,'walk')
-					mobkit.hq_roam(self,10)
+					animals.hq_roam_far(self,10)
+					mobkit.remember(self,"action","hungry wander")
 				end
 			elseif random() < chanceExplore then
 				if random() < 0.9 then
 					--wander random
 					mobkit.animate(self,'walk')
 					mobkit.hq_roam(self,10)
+					mobkit.remember(self,"action","explore wander")
 				else
 					--wander temp
 					mobkit.animate(self,'walk')
 					animals.hq_roam_comfort_temp(self,12, 21)
+					mobkit.remember(self,"action","temp wander")
 				end
 			else
 				--social
 				if random()< 0.3 then
 					animals.flock(self, 25, 3)
+					mobkit.remember(self,"action","flock")
 				elseif random()< 0.01 then
 					animals.territorial(self, energy, false)
+					mobkit.remember(self,"action","territorial")
 				elseif random() < 0.05 then
-
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max - 100 then
+					and energy >= energy_max - (energy_max*.3) then
 
 						--are we already pregnant?
 						local preg = mobkit.recall(self,'pregnant') or false
@@ -125,6 +132,7 @@ local function brain(self)
 								--go get him!
 								--mobkit.make_sound(self,'mating')
 								if random() < 0.5 then
+									mobkit.remember(self,"action","mating")
 									animals.hq_mate(self, 25, mate)
 								end
 							end
@@ -141,7 +149,8 @@ local function brain(self)
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
-			mobkit.hq_roam(self,10)
+			mobkit.hq_roam_far(self,10)
+			mobkit.remember(self,"action","default wander")
 		end
 
 		-----------------
@@ -374,7 +383,7 @@ minetest.register_entity("animals:wolf_male",{
 	springiness=0,
 	buoyancy = 1.01,
 	max_speed = 2.5,					-- m/s
-	jump_height = 1.5,				-- nodes/meters
+	jump_height = 2,				-- nodes/meters
 	view_range = 7,					-- nodes/meters
 
 	--attack
@@ -445,7 +454,7 @@ minetest.register_entity("animals:wolf",{
 	springiness=0,
 	buoyancy = 1.01,
 	max_speed = 2,					-- m/s
-	jump_height = 1.2,				-- nodes/meters
+	jump_height = 2,				-- nodes/meters
 	view_range = 7,					-- nodes/meters
 
 	--attack

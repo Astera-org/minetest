@@ -272,20 +272,24 @@ end
 function mobkit.turn2yaw(self,tyaw,rate)
 	tyaw = tyaw or 0 --temp
 	rate = rate or 6
-		local yaw = self.object:get_yaw()
-		yaw = yaw+pi
-		tyaw=(tyaw+pi)%(pi*2)
-		
-		local step=min(self.dtime*rate,abs(tyaw-yaw)%(pi*2))
-		
-		local dir = abs(tyaw-yaw)>pi and -1 or 1
-		dir = tyaw>yaw and dir*1 or dir * -1
-		
-		local nyaw = (yaw+step*dir)%(pi*2)
-		self.object:set_yaw(nyaw-pi)
-		
-		if nyaw==tyaw then return true, nyaw-pi
-		else return false, nyaw-pi end
+
+	local yaw = self.object:get_yaw()
+	
+	--minimal.log("turn2yaw t: "..tyaw..", yaw:"..yaw..","..rate)
+
+	yaw = yaw+pi
+	tyaw=(tyaw+pi)%(pi*2)
+	
+	local step=min(self.dtime*rate,abs(tyaw-yaw)%(pi*2))
+	
+	local dir = abs(tyaw-yaw)>pi and -1 or 1
+	dir = tyaw>yaw and dir*1 or dir * -1
+	
+	local nyaw = (yaw+step*dir)%(pi*2)
+	self.object:set_yaw(nyaw-pi)
+	
+	if nyaw==tyaw then return true, nyaw-pi
+	else return false, nyaw-pi end
 end
 
 function mobkit.dir_to_rot(v,rot)
