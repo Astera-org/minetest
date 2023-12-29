@@ -56,8 +56,6 @@ public:
 			 b = keyIsDown[keycache.key[KeyType::BACKWARD]],
 			 l = keyIsDown[keycache.key[KeyType::LEFT]],
 			 r = keyIsDown[keycache.key[KeyType::RIGHT]];
-		infostream << "f: " << f << " b: " << b << " l: " << l << " r: " << r
-				   << std::endl;
 		if (f || b || l || r) {
 			// if contradictory keys pressed, stay still
 			if (f && b && l && r)

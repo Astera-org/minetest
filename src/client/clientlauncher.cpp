@@ -333,12 +333,14 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	random_input = g_settings->getBool("random_input")
 			|| cmd_args.getFlag("random-input");
-	if (!g_settings->get("remote_input").empty() || !cmd_args.get("remote-input").empty()){
+	// setting is defaulted to empty string
+	bool isRemote = !g_settings->get("remote_input").empty() || cmd_args.exists("remote-input");
+	if (isRemote){
 		// cmd args have priority over settings
-		if (!cmd_args.get("remote-input").empty())
+		if (cmd_args.exists("remote-input"))
 			remote_input_socket = cmd_args.get("remote-input");
 		else
-			remote_input_socket = g_settings->get("remote-input");
+			remote_input_socket = g_settings->get("remote_input");
 		if (remote_input_socket.find(':') == std::string::npos) {
 			errorstream << "Invalid remote input socket: " << remote_input_socket << std::endl;
 			remote_input_socket.clear();
