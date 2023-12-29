@@ -620,7 +620,6 @@ function mobkit.get_closest_entity(self,name)	-- returns closest entity of name 
 end
 
 function mobkit.get_closest_other_entity(self)	-- returns closest entity or nil
-	minimal.log("Self: "..dump(self))
 	local cobj = nil
 	local dist = abr*64
 	local pos = mobkit.get_stand_pos(self)

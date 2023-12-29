@@ -206,6 +206,7 @@ minetest.register_entity("animals:sneachan",{
 
 	--damage
 	max_hp = 10,
+	heal_rate=0.25,
 	lung_capacity = 10,
 	min_temp = -28,
 	max_temp = 48,

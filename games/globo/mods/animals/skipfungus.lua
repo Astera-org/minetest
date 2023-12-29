@@ -7,6 +7,8 @@ Blows up on death. Damaging things nearby and destroying blocks
 
 Moves by jumping
 
+-- Any carcass has x% chance of spawning a skip fungus egg per unit time
+
 ]]
 ---------------------------------------------------------------------
 
@@ -29,17 +31,14 @@ local lifespan_male = lifespan * 1.2
 local function brain(self)
 
 	-- mobkit.remember(self,"action","")
-
+    local pos = mobkit.get_stand_pos(self)
 	--die from damage
 	if not animals.core_hp(self) then
+        explode(pos)
 		return
 	end
 
 	if mobkit.timer(self,1) then
-
-        
-		local pos = mobkit.get_stand_pos(self)
-
 		local age, energy = animals.core_life(self, lifespan, pos)
 		--die from exhaustion or age
 		if not age then
@@ -47,7 +46,8 @@ local function brain(self)
 		end
 
         if isNearOther(pos, 2) then
-            -- TODO: explode
+            self.object:remove()
+            explode(pos)
             minimal.log("EXPLODE!")
             return
         end
@@ -106,6 +106,47 @@ local function brain(self)
 		mobkit.remember(self,'age',age)
 
 	end
+end
+
+function explode(pos)
+    local radius = 4
+    local damage = 100
+
+    -- Hurt all nearby mobs and players
+    local objects = minetest.get_objects_inside_radius(pos, radius)
+    for _, obj in ipairs(objects) do
+        if obj:is_player() then
+            obj:set_hp(obj:get_hp() - damage)
+        elseif mobkit.is_alive(obj) then
+            local mob=obj:get_luaentity()
+            if mob== nil then
+                minimal.log("non mob bite")
+                obj:punch(obj, 1.0, {full_punch_interval=1.0, damage_groups={fleshy=damage}}, nil)
+            else
+                mob.on_punch(mob,obj,1,{full_punch_interval=1.0, damage_groups={fleshy=damage}})
+            end
+        end
+    end
+
+    -- Destroy all nearby blocks
+    for x = -radius, radius do
+        for y = -radius, radius do
+            for z = -radius, radius do
+                local posI = {x = pos.x + x, y = pos.y + y, z = pos.z + z}
+                local dist = vector.distance(pos, posI)
+                
+                if dist <= radius then
+                    local node = minetest.get_node(posI)
+                    local node_name = node.name
+
+                    if node_name ~= "air" and node_name ~= "ignore" then
+                        minetest.remove_node(posI)
+                        minetest.add_item(posI, node_name)
+                    end
+                end
+            end
+        end
+    end
 end
 
 function isNearOther(pos,range)

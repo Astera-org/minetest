@@ -61,10 +61,10 @@ minetest.register_chatcommand("d", {
                 minetest.chat_send_player(name,"Hiber:"..h)
             end
             if s ~= nil then
-                minetest.chat_send_player(name,"Sexual:"..s)
+                minetest.chat_send_player(name,"Sexual:"..dump(s))
             end
             if p ~= nil then
-                minetest.chat_send_player(name,"Preg:"..p)
+                minetest.chat_send_player(name,"Preg:"..dump(p))
             end
             if a ~= nil then
                 minetest.chat_send_player(name,"Action:"..a)

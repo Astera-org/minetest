@@ -269,6 +269,7 @@ function mobkit.lq_dumbjump(self,height,anim)
 	local jump = true
 	local func=function(self)
 		local yaw = self.object:get_yaw()
+		if yaw == nil then return true end  -- TODO: should probably fix somewhere else
 		--minimal.log("lq_dumbjump: "..height.." g:"..dump(self.isonground))
 		if self.isonground then
 			if jump then
@@ -334,6 +335,7 @@ function mobkit.lq_jumpattack(self,height,target)
 	local timer=0.5
 	local tgtbox = target:get_properties().collisionbox
 	local func=function(self)
+		--minimal.log("lq_jumpattack")
 		if not mobkit.is_alive(target) then return true end
 		if self.isonground then
 			if init then	-- collision bug workaround
@@ -353,13 +355,21 @@ function mobkit.lq_jumpattack(self,height,target)
 			local pos = self.object:get_pos()
 			-- calculate attack spot
 			local yaw = self.object:get_yaw()
-			local dir = minetest.yaw_to_dir(yaw)
 			local apos = mobkit.pos_translate2d(pos,yaw,self.attack.range)
 
+			--minimal.log("bite :"..self.attack.range)
 			if mobkit.is_pos_in_box(apos,tgtpos,tgtbox) then	--bite
-				target:punch(self.object,1,self.attack)
+				--minimal.log("bite 1")
+				local mob=target:get_luaentity(target)
+				if mob== nil then
+					minimal.log("non mob bite")
+					target:punch(self.object,1,self.attack)
+				else
+					mob.on_punch(mob,self.object,1,self.attack)
+				end
 					-- bounce off
 				local vy = self.object:get_velocity().y
+				local dir = minetest.yaw_to_dir(yaw)
 				self.object:set_velocity({x=dir.x*-3,y=vy,z=dir.z*-3})	
 					-- play attack sound if defined
 				--mobkit.make_sound(self,'attack')

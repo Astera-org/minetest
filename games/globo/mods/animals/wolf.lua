@@ -378,14 +378,15 @@ local baseWolf={
 	view_range = 15,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=5}},
+	attack={range=0.8, damage_groups={fleshy=5}},
 	armor_groups = {fleshy=100},
 
 	--on actions
 	drops = {
-		{name = "animals:carcass_bird_small", chance = 1, min = 1, max = 1,},
+		{name = "animals:carcass_vert_large", chance = 1, min = 1, max = 1,},
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
+		minimal.log("wolf punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)

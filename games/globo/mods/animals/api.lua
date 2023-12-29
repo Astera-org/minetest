@@ -71,6 +71,9 @@ function animals.handle_drops(self)
        --leave time for death animation to end
        minetest.after(5, function()
          minetest.add_item(pos, item.name.." "..tostring(amount))
+         if item.name =="animals:carcass_vert_large" or item.name=="animals:carcass_vert_small" then
+           addCarcass(pos)
+         end
        end)
      end
 
@@ -1045,90 +1048,6 @@ function animals.hq_aqua_attack_eat(self,prty,tgtobj,speed)
 end
 
 
-
-
-
----------------------------------------------------
---like mobkit version, but including removal of prey and gaining energy
---to hit is to catch... for predators, where the chewing does the killing
-local function lq_jumpattack_eat(self,height,target)
-	local phase=1
-	local tgtbox = target:get_properties().collisionbox
-
-	local func=function(self)
-		if not mobkit.is_alive(target) then return true end
-
-		if self.isonground then
-			if phase==1 then	-- collision bug workaround
-				local vel = self.object:get_velocity()
-				vel.y = -mobkit.gravity*sqrt(height*2/-mobkit.gravity)
-				self.object:set_velocity(vel)
-				--mobkit.make_sound(self,'charge')
-				phase=2
-			else
-				mobkit.lq_idle(self,0.3)
-				return true
-			end
-		elseif phase==2 then
-			local dir = minetest.yaw_to_dir(self.object:get_yaw())
-			local vy = self.object:get_velocity().y
-			dir=vector.multiply(dir,6)
-			dir.y=vy
-			self.object:set_velocity(dir)
-			phase=3
-		elseif phase==3 then	-- in air
-			local tgtpos = target:get_pos()
-			local pos = self.object:get_pos()
-
-			-- calculate attack spot
-			local yaw = self.object:get_yaw()
-			local dir = minetest.yaw_to_dir(yaw)
-			local apos = mobkit.pos_translate2d(pos,yaw,self.attack.range)
-
-			if mobkit.is_pos_in_box(apos,tgtpos,tgtbox)
-      or (mobkit.isnear2d(pos,tgtpos,1) and random()<0.1) --makes up for issue with some boxes not working together
-      then	--bite
-				target:punch(self.object,1,self.attack)
-					-- bounce off
-				local vy = self.object:get_velocity().y
-				self.object:set_velocity({x=dir.x*-3,y=vy,z=dir.z*-3})
-					-- play attack sound if defined
-				--mobkit.make_sound(self,'attack')
-				phase=4
-        local ent = target:get_luaentity()
-        if ent == nil then minimal.log("Nil ent?") return true end
-     
-        local dmg = 1
-        if (type(self.attack) == "table") then
-          if (type(self.attack.damage_groups) == "table") then
-            dmg = self.attack.damage_groups.fleshy or 1  
-          end
-        end
-
-       
-        mobkit.hurt(ent,dmg) -- hurt opponent
-
-        minimal.log("Bite for:"..dmg.." hp:"..ent.hp)
-       
-        
-        if (ent.hp <= 0) then
-          local ent_e = (mobkit.recall(ent,'energy') or 1)
-          local self_e = (mobkit.recall(self,'energy') or 1)
-          minimal.log("Eating:"..ent_e)
-          local newEnergy=(ent_e*0.8) + self_e  -- only get 80% of the energy of the prey
-          if newEnergy > self.energy_max then newEnergy=self.energy_max end
-          mobkit.remember(self,'energy', newEnergy) 
-          ent.object:remove()
-          return true
-        end
-			end
-		end
-	end
-	mobkit.queue_low(self,func)
-end
-
-
-
 function animals.hq_attack_eat(self,prty,tgtobj)
   local timer = time() + 12
 
@@ -1149,7 +1068,7 @@ function animals.hq_attack_eat(self,prty,tgtobj)
           tgtheight = 0
         end
         local height = tgtobj:is_player() and 0.35 or tgtheight*0.6
-        lq_jumpattack_eat(self,tpos.y+height-pos.y,tgtobj)
+        mobkit.lq_jumpattack(self,tpos.y+height-pos.y,tgtobj)
 			else
         mobkit.goto_next_waypoint(self,tpos)
 			end

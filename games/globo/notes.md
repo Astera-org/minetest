@@ -1,4 +1,7 @@
 TODO:
+- wolf energy not decreasing
+- should drop out of "attack eat" when you lose sight of the prey
+- do carcasses spawn skip
 - make it where predators eat the carcass of the dead animals
 - make pregnant a timer rather than a bool
 - player should be no different than other animals to the mobs

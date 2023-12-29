@@ -75,10 +75,25 @@ local list = {
     box_small_invert,
     minimal.stack_max_medium,
     80,
+  
   },
   {
     "invert_large",
     S("Large Invertebrate"),
+    box_large_invert,
+    minimal.stack_max_medium/4,
+    70,
+  },
+  {
+    "vert_small",
+    S("Small Vertebrate"),
+    box_small_invert,
+    minimal.stack_max_medium,
+    80,
+  },
+  {
+    "vert_large",
+    S("Large Vertebrate"),
     box_large_invert,
     minimal.stack_max_medium/4,
     70,
@@ -89,6 +104,7 @@ local list = {
     box_small_bird,
     minimal.stack_max_medium/4,
     70,
+   
   },
   {
     "fish_small",
@@ -96,6 +112,7 @@ local list = {
     box_small_fish,
     minimal.stack_max_medium/4,
     70,
+   
   },
   {
     "fish_large",
@@ -103,6 +120,7 @@ local list = {
     box_large_fish,
     minimal.stack_max_bulky,
     65,
+  
   },
 }
 
@@ -162,4 +180,46 @@ for i in ipairs(list) do
   exile_add_food_hooks("animals:carcass_"..name)
   exile_add_food_hooks("animals:carcass_"..name.. "_cooked")
   exile_add_food_hooks("animals:carcass_"..name.. "_burned")
+end
+
+function carcassTimer(pos)
+  minimal.log("carcass timer")
+  -- TODO: check if there is a carcass item at the given position
+  
+
+  -- Check if the chance of spawning a skip fungus is met
+  if math.random() <= 0.5 then
+    -- Spawn skip fungus at the given position
+    animals.hatch_egg(pos, 'air', 'air', "animals:skip_fungus", 4000, 1)
+    return false
+  end
+
+  --[[ TODO: 
+  -- Check if the chance of removing the carcass is met
+  if math.random() <= 0.07 then
+    -- Remove the carcass at the given position
+    minetest.remove_node(pos)
+  end
+  ]]--
+  return true
+end
+
+
+local nextCarcassTime=os.time()
+local carcassList={}
+
+minetest.register_globalstep(function(dtime)
+  if nextCarcassTime < os.time() then
+    nextCarcassTime = os.time() + 30
+    -- iterate through carcassList and call carcass_timer on each
+    for i = #carcassList, 1, -1 do
+      if not carcassTimer(carcassList[i]) then
+          table.remove(carcassList, i)
+      end
+    end
+  end
+end)
+
+function addCarcass(pos)
+  table.insert(carcassList,pos)
 end
