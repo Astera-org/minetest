@@ -186,6 +186,7 @@ minetest.register_entity("animals:impethu",{
 	_VH1_barheight = 1,
 	-- animal stats
 	max_hp = 3,
+	heal_rate=0.25,
 	lung_capacity = 10,
 	min_temp = -15,
 	max_temp = 50,

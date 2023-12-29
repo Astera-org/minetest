@@ -159,7 +159,7 @@ local function brain(self)
 					end
 				elseif random()< 0.75 then
 					--veg
-					if animals.eat_flora(pos, 0.005) == true then
+					if animals.eat_flora(self,pos, 0.005) == true then
 						energy = energy + 20
 					else
 						--wander random
@@ -330,7 +330,7 @@ local function brain_male(self)
 					end
 				elseif random()< 0.5 then
 					--veg
-					if animals.eat_flora(pos, 0.005) == true then
+					if animals.eat_flora(self,pos, 0.005) == true then
 						energy = energy + 20
 					else
 						--wander random
@@ -425,6 +425,7 @@ minetest.register_entity("animals:pegasun_male",{
 
 	--damage
 	max_hp = 45,
+	heal_rate=0.25,
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
@@ -543,6 +544,7 @@ minetest.register_entity("animals:pegasun",{
 
 	--damage
 	max_hp = 40,
+	heal_rate=0.25,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,

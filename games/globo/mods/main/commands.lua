@@ -91,15 +91,28 @@ minetest.register_chatcommand("mob", {
         local pos = player:get_pos()
 		local newpos = {x = pos.x + dir.x, y = pos.y+dir.y, z = pos.z + dir.z}
         minimal.log("mob:"..param)
-        animals.hatch_egg(newpos, 'air', 'air', "animals:"..param, 4000, 1)
+        animals.hatch_egg(newpos, 'air', 'air', "animals:"..param, 2000, 1)
         local entity=nearest(newpos)
 		if entity ~= nil then
             target=entity:get_luaentity()
-            minetest.chat_send_player(name,"Marking"..target.name)
+            minetest.chat_send_player(name,"Marking "..target.name)
 			return
         else
             minetest.chat_send_player(name,"Failed to create "..param)
         end
+    end,
+})
+
+minetest.register_chatcommand("max", {
+    description = "give you the max stats again",
+    params = "<mob name>",  
+    privs = {fly = true},
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        local meta = player:get_meta()
+        meta:set_int("hunger", 1000)
+        meta:set_int("thirst", 1000)
+        meta:set_int("energy", 1000)
     end,
 })
 

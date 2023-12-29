@@ -75,6 +75,16 @@ function setupHUD(player)
     end
 
     local startPos = {x = 0, y = 1} 
+    hud_ids.score = player:hud_add({
+        hud_elem_type = "text",
+        text = "",
+        number = 0xFFFFFF,
+        position = startPos,
+        offset = {x = 10, y = -160},
+        alignment = {x = 1, y = 0},
+        scale = {x = 100, y = 100},
+    })
+
     hud_ids.air = player:hud_add({
         hud_elem_type = "text",
         text = "Air: ",
@@ -144,6 +154,7 @@ function setupHUD(player)
         alignment = {x = 1, y = 0},
         scale = {x = 100, y = 100},
     })
+    
 
     player:get_meta():set_string("hud_ids", minetest.serialize(hud_ids))
 end
@@ -159,6 +170,8 @@ local function updateHUD(player)
     local energy_cur = math.floor(tonumber(meta:get_string("energy")))
     local energy_max = math.floor(tonumber(meta:get_string("energy_max")))
     local internal_temp=math.floor(tonumber(meta:get_string("temperature")))
+    local score=math.floor(tonumber(meta:get_string("score")))
+
     local air=1000
     local health=math.floor(tonumber(player:get_hp()))
 
@@ -175,6 +188,7 @@ local function updateHUD(player)
     local hud_ids = meta:get("hud_ids")
     hud_ids = minetest.deserialize(hud_ids)
 
+    player:hud_change(hud_ids.score, "text", "Score: " .. score)
     player:hud_change(hud_ids.air, "text", "Air: " .. air)
     player:hud_change(hud_ids.health, "text", "Health: " .. health)
     player:hud_change(hud_ids.hunger_id, "text", "Hunger: " .. hunger_level)
@@ -183,19 +197,6 @@ local function updateHUD(player)
     player:hud_change(hud_ids.temp, "text", "Temp: " .. internal_temp .. " / " .. external_temp)
     player:hud_change(hud_ids.status, "text", effectListStr(player))
 
-    --[[ debug HUD
-   
-    local pointed_thing = player:get_pointed_thing()
-    if pointed_thing.type == "node" then
-        local pos = pointed_thing.under
-        local node = minetest.get_node(pos)
-        local node_name = node.name
-
-        player:hud_change(hud_ids.debug, "text", node_name .. "(" .. node.param1 .. "," .. node.param2 .. ") pos:" .. minetest.pos_to_string(pos))
-    else
-        player:hud_change(hud_ids.debug, "text", "")
-    end
-    ]]--
 end
 
 
@@ -205,45 +206,12 @@ minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
         if stepPlayerSleep(player,dtime) then
             stepPlayerWalkRun(player)
-            -- stepPlayerEnergy(player,dtime)
+            checkEggLay(player)
         end
-        -- stepPlayerHunger(player,dtime)
         updateHUD(player)
     end
 end)
 
-function stepPlayerHunger(player,dtime)
-    local health = player:get_hp()
-    if health > 0 then
-        local meta = player:get_meta()
-        local h=tonumber( meta:get_string("hunger") )
-        local t=tonumber(meta:get_string("thirst"))
-        local coe=1
-        if meta:get_string("sleeping")  ~= "" then
-            coe=SLEEP_STARVE_COE
-        end
-        h = h-dtime*STARVE_1_MUL*coe
-        t= t-dtime*STARVE_2_MUL*coe
-        if h<200 then
-            wakeUp(player,"So Hungry")
-            if h<0 then
-                h=0
-                changePlayerHP(player,-dtime*PLAYER_STARVE_RATE)
-            end
-        end
-
-        if t<200 then
-            wakeUp(player,"So Thirsty")
-            if t<0 then
-                t=0
-                changePlayerHP(player,-dtime*PLAYER_DEHYDRATION_RATE)
-            end
-        end
-
-        meta:set_string("hunger",h)
-        meta:set_string("thirst",t)
-    end
-end
 
 function initializePlayerMeta(player)
     local meta = player:get_meta()
@@ -258,6 +226,9 @@ function initializePlayerMeta(player)
     end
     if meta:get_string("thirst") == "" then
         meta:set_string("thirst", 1000)
+    end
+    if meta:get_string("score") == "" then
+        meta:set_string("score", 0)
     end
 end
 
@@ -288,6 +259,9 @@ minetest.register_on_respawnplayer(function(player)
     meta:set_string("hunger", 1000)
     meta:set_string("thirst", 1000)
     meta:set_string("sleeping","")
+    local score=meta:get_string("score") or 0
+    score = score - 1
+    meta:set_string("score", score)
 
     return false
 end)
@@ -313,6 +287,27 @@ function wakeUp(player,msg)
         meta:set_string("sleeping","")
         minetest.chat_send_player(player:get_player_name(), msg)
         player:set_physics_override({speed = player_definition.walk_velocity})
+    end
+end
+
+function checkEggLay(player)
+    local controls = player:get_player_control()
+    if controls.left and controls.right then
+        minimal.log("player trying to lay egg")
+        local meta = player:get_meta()
+        local energy = tonumber(meta:get_string("energy"))
+        local hunger = tonumber(meta:get_string("hunger"))
+        if hunger > 500 and energy > 500 then
+            local pos = player:get_pos()
+            pos.y = pos.y + 0.5
+            local node = minetest.get_node(pos)
+            if node.name == "air" then
+                minetest.add_node(pos, {name = "main:player_egg"})
+                minetest.get_meta(pos):set_string("owner", player:get_player_name())
+                addNutrient(player,"hunger",-500)
+                addNutrient(player,"energy",-500)
+            end
+        end
     end
 end
 

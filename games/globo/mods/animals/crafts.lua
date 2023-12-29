@@ -75,6 +75,7 @@ local list = {
     box_small_invert,
     minimal.stack_max_medium,
     80,
+    10,
   
   },
   {
@@ -83,6 +84,7 @@ local list = {
     box_large_invert,
     minimal.stack_max_medium/4,
     70,
+    20,
   },
   {
     "vert_small",
@@ -90,6 +92,7 @@ local list = {
     box_small_invert,
     minimal.stack_max_medium,
     80,
+    30,
   },
   {
     "vert_large",
@@ -97,6 +100,7 @@ local list = {
     box_large_invert,
     minimal.stack_max_medium/4,
     70,
+    60,
   },
   {
     "bird_small",
@@ -104,7 +108,7 @@ local list = {
     box_small_bird,
     minimal.stack_max_medium/4,
     70,
-   
+    30,
   },
   {
     "fish_small",
@@ -112,7 +116,7 @@ local list = {
     box_small_fish,
     minimal.stack_max_medium/4,
     70,
-   
+    25,
   },
   {
     "fish_large",
@@ -120,7 +124,7 @@ local list = {
     box_large_fish,
     minimal.stack_max_bulky,
     65,
-  
+    35,
   },
 }
 
@@ -131,10 +135,11 @@ for i in ipairs(list) do
 	local box = list[i][3]
 	local stack = list[i][4]
 	local heat = list[i][5]
+  local food_value = list[i][6]
 
   --raw
   minetest.register_node("animals:carcass_"..name, {
-	description = S('@1 Carcass', desc),
+	  description = S('@1 Carcass', desc),
     tiles = {"animals_carcass.png"},
     drawtype = "nodebox",
   	paramtype = "light",
@@ -142,9 +147,14 @@ for i in ipairs(list) do
   		type = "fixed",
   		fixed = box
   	},
+    food_value = food_value,
   	stack_max = stack/2,
   	groups = {snappy = 3, dig_immediate = 3, falling_node = 1, temp_pass = 1, heatable = heat},
-  	sounds = nodes_nature.node_sound_defaults(),
+  	on_use = function(itemstack, user, pointed_thing)
+      addNutrient(user,"hunger",food_value) 
+      itemstack:take_item()
+      return itemstack
+    end,
   })
 
   --cooked
@@ -188,7 +198,7 @@ function carcassTimer(pos)
   
 
   -- Check if the chance of spawning a skip fungus is met
-  if math.random() <= 0.5 then
+  if math.random() <= 0.05 then
     -- Spawn skip fungus at the given position
     animals.hatch_egg(pos, 'air', 'air', "animals:skip_fungus", 4000, 1)
     return false

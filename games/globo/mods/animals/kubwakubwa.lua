@@ -183,6 +183,7 @@ minetest.register_entity("animals:kubwakubwa",{
 
 	--damage
 	max_hp = 80,
+	heal_rate=0.25,
 	lung_capacity = 20,
 	min_temp = -15,
 	max_temp = 50,

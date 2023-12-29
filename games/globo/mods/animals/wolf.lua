@@ -44,6 +44,8 @@ local function brain(self)
 		if not age then
 			return
 		end
+		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'age',age)
 
 		------------------
 		--Emergency actions
@@ -59,12 +61,6 @@ local function brain(self)
 		--High priority actions
 		if priority < 50 then
 			--Threats
-			local player = mobkit.get_nearby_player(self)
-			if player then
-				animals.fight_or_flight_plyr(self, player, 55, 0.2)
-				mobkit.remember(self,"action","fight player")
-			end
-
 			animals.predator_avoid(self, 55, 0.01)
 		end
 
@@ -86,11 +82,13 @@ local function brain(self)
 			end
 
 			if energy < (self.energy_max-self.energy_max*.2) then
-				if not animals.prey_hunt(self, 25) then
-					--random search
-					mobkit.animate(self,'walk')
-					animals.hq_roam_far(self,10)
-					mobkit.remember(self,"action","hungry wander")
+				if not animals.eat_carcass(self,25) then
+					if not animals.prey_hunt(self, 25) then
+						--random search
+						mobkit.animate(self,'walk')
+						animals.hq_roam_far(self,10)
+						mobkit.remember(self,"action","hungry wander")
+					end
 				end
 			elseif random() < chanceExplore then
 				if random() < 0.9 then
@@ -159,8 +157,7 @@ local function brain(self)
 		-----------------
 		--housekeeping
 		--save energy, age
-		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'age',age)
+		
 
 	end
 end
@@ -187,6 +184,8 @@ local function brain_male(self)
 		if not age then
 			return
 		end
+		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'age',age)
 
 
 		------------------
@@ -203,13 +202,7 @@ local function brain_male(self)
 		--High priority actions
 		if priority < 50 then
 			--Threats
-			local player = mobkit.get_nearby_player(self)
-			if player then
-				animals.fight_or_flight_plyr(self, player, 55, 0.6)
-			end
-
 			animals.predator_avoid(self, 55, 0.6)
-
 		end
 
 
@@ -231,10 +224,12 @@ local function brain_male(self)
 			end
 
 			if energy < (self.energy_max-self.energy_max*.2) then
-				if not animals.prey_hunt(self, 25) then
-					--random search
-					mobkit.animate(self,'walk')
-					mobkit.hq_roam(self,10)
+				if not animals.eat_carcass(self,25) then
+					if not animals.prey_hunt(self, 25) then
+						mobkit.animate(self,'walk')
+						animals.hq_roam_far(self,10)
+						mobkit.remember(self,"action","hungry wander")
+					end
 				end
 			elseif random() < chanceExplore then
 				if random() < 0.9 then
@@ -290,8 +285,7 @@ local function brain_male(self)
 		-----------------
 		--housekeeping
 		--save energy, age
-		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'age',age)
+		
 
 	end
 end
@@ -350,7 +344,7 @@ local baseWolf={
 
 	--interaction
 	predators = {},
-    prey={"animals:cow","animals:cow_male"},
+    prey={"animals:cow","animals:cow_male","player"},
 	friends = {"animals:wolf", "animals:wolf_male"},
 	rivals = {},
 

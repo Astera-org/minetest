@@ -161,6 +161,7 @@ minetest.register_entity("animals:sarkamos",{
 
 	--damage
 	max_hp = 200,
+	heal_rate=0.25,
 	lung_capacity = 40,
 	min_temp = 1,
 	max_temp = 35,

@@ -5,33 +5,6 @@ function start_node_timer(pos)
 end
 
 
-minetest.register_node("main:corpse", {
-	description = "Corpse".."\n"..
-		"Punch: Eat (+5)",
-	drawtype = "plantlike",
-	tiles = {"corpse.png"},
-	inventory_image = "corpse.png",
-	wield_image = "corpse.png",
-	paramtype = "light",
-	is_ground_content = false,
-	sunlight_propagates = true,
-	walkable = false,
-	groups = {dig_immediate=3},
-	on_timer = function(pos, elapsed)
-		minetest.set_node(pos, {name = "main:bones"})
-	end,
-	on_construct = function(pos)
-		local timer = minetest.get_node_timer(pos)
-		timer:start(180) -- time in seconds until the corpse turns into bones
-	end,
-	-- Eating the Corpse will reduce hunger
-	on_use = function(itemstack, user, pointed_thing)
-		addNutrient(user,"hunger",200) -- hunger reduction value may be changed as needed.
-		itemstack:take_item()
-		return itemstack
-	end,
-})
-
 minetest.register_node("main:bones", {
 	description = "Bones",
 	drawtype = "plantlike",
@@ -82,12 +55,6 @@ minetest.register_node("main:apple", {
 
 	-- Make eatable because why not?
 	on_use = minetest.item_eat(2),
-})
-
-minetest.register_node("main:snowblock", {
-	description = "Snow Block",
-	tiles ={"default_snow.png"},
-	groups = {crumbly=3},
 })
 
 minetest.register_node("main:brambles", {
@@ -171,6 +138,47 @@ minetest.register_node("main:pulse_blossom_on", {
 		return true
     end,
 })
+
+minetest.register_node("main:player_egg", {
+	description = 'Player Egg',
+	tiles = {"animals_gundu_eggs.png"},
+	stack_max = minimal.stack_max_medium,
+	drawtype = "nodebox",
+	paramtype = "light",
+	node_box = {
+		type = "fixed",
+		fixed = {-0.125, -0.5, -0.125,  0.125, -0.125, 0.125},
+	},
+	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 1,  temp_pass = 1, edible = 1, egg=1},
+	on_construct = function(pos)
+		minimal.log("player egg on construct")
+		minetest.get_node_timer(pos):start(600*GAME_SPEED)
+	end,
+	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		minimal.log("player egg after_place_node")
+		minetest.get_meta(pos):set_string("owner", placer:get_player_name())
+	end,
+	on_timer =function(pos, elapsed)
+		local playerName=minetest.get_meta(pos):get_string("owner")
+		minimal.log("player egg on timer "..dump(playerName))
+
+		if playerName ~= "" then
+			local player=minetest.get_player_by_name(playerName)
+			if player ~= nil then
+				local meta=player:get_meta()
+				local score=meta:get_int("score") or 0
+				score=score+1
+				meta:set_int("score",score)
+			end
+		end
+		-- remove egg
+		minetest.remove_node(pos)
+		return false
+	end,
+})
+
+
+
 
 
 minetest.register_node("main:thorns", {

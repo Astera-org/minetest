@@ -607,7 +607,16 @@ function mobkit.get_closest_entity(self,name)	-- returns closest entity of name 
 	local pos = self.object:get_pos()
 	for _,obj in ipairs(self.nearby_objects) do
 		local luaent = obj:get_luaentity()
-		if mobkit.is_alive(obj) and not obj:is_player() and luaent and luaent.name == name then
+		if name == "player" then
+			if obj:is_player() and mobkit.is_alive(obj) then
+				local opos = obj:get_pos()
+				local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
+				if odist < dist then
+					dist=odist
+					cobj=obj
+				end
+			end
+		elseif mobkit.is_alive(obj) and not obj:is_player() and luaent and luaent.name == name then
 			local opos = obj:get_pos()
 			local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
 			if odist < dist then

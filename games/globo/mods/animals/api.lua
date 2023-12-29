@@ -28,23 +28,6 @@ local use_vh1 = minetest.get_modpath("visual_harm_1ndicators")
 --------------------------------------------------------------------------
 
 
--- returns 2D angle from self to target in radians
-local function get_yaw_to_object(pos, opos)
-  local ankat = pos.x - opos.x
-  local gegkat = pos.z - opos.z
-  local yaw = math.atan2(ankat, gegkat)
-  return yaw
-end
-
-
---flee sound (has to be in water!)
-local function flee_sound(self)
-	if not self.isinliquid then
-		return
-	end
-	--mobkit.make_sound(self,'flee')
-end
-
 --------------------------------------------------------------------------
 --Life and death
 --------------------------------------------------------------------------
@@ -128,34 +111,6 @@ if not energy then energy = 0 end
   else
     return true
   end
-end
-
-
-local function get_mean_temp(pos) -- this could be put somewhere else like in climate or minimal
-  local temps = {}
-  
-  if (type(pos) ~= "table") then -- no pos table is given then
-    return 15
-  elseif (type(pos.x) ~= "number" or type(pos.y) ~= "number" or type(pos.z) ~= "number") then -- incase an invalid pos is given
-    return 15
-  end
-  
-  for x = -1, 1, 1 do -- create matrix of possible positions
-    for y = -1, 1, 1 do
-      for z = -1, 1, 1 do
-        local npos = {x = (pos.x - x), y = (pos.y - y), z = (pos.z - z)} -- matrix the pos :D
-        
-        temps[#temps + 1] = climate.get_point_temp(npos, true)
-      end
-    end
-  end
-  
-  local mtemp = 0 -- start with a number so it can be calculated
-  for _,num in pairs(temps) do
-    mtemp = mtemp + num
-  end
-  
-  return mtemp / #temps -- return the "mean" of the matrix'd temps
 end
 
 ----------------------------------------------------
@@ -288,6 +243,10 @@ function animals.hatch_egg(pos, medium_name, replace_name, name, energy_egg, you
     local ent = minetest.add_entity(ran_pos, name)
     -- minetest.sound_play("animals_hatch_egg", {pos = pos, gain = 0.2, max_hear_distance = 6})
     ent = ent:get_luaentity()
+    if ent == nil then
+      minimal.log("Failed to hatch_egg "..name)
+      return false
+    end
     mobkit.remember(ent,'energy', start_e)
     mobkit.remember(ent,'age',0)
     objcount = objcount + 1
@@ -405,35 +364,6 @@ function animals.hq_roam_surface_group(self, group, prty)
 end
 
 
-local function yaw_to_neighbor(yaw)
-  local angle = yaw % (2 * math.pi)  -- Normalize yaw to [0, 2π)
-  local increment= math.pi / 8
-
-  local index=1
-
-  if angle >= (3 * increment) and angle < (5*increment) then
-      index = 5  -- West  
-  elseif angle >= (increment) and angle < (3 * increment) then
-      index = 4  -- Northwest 
-  elseif angle >= (15 * increment) or angle < (increment) then
-      index = 3  -- North
-  elseif angle >= (13 * increment) and angle < (15 * increment) then
-      index = 2  -- Northeast
-  elseif angle >= (11 * increment) and angle < (13 * increment) then
-      index = 1  -- East
-  elseif angle >= (9 * increment) and angle < (11 * increment) then
-      index = 8  -- Southeast
-  elseif angle >= (7 * increment) and angle < (9 * increment) then
-      index = 7  -- South
-  elseif angle >= (5 * increment) and angle < (7 * increment) then
-      index = 6  -- Southwest
-  else
-    minetest.log("action", "yaw_to_neighbor: angle="..angle.." index="..index)
-  end
-
-
-  return index
-end
 
 function animals.hq_roam_far(self,priority)
   local func=function(self)
@@ -868,14 +798,58 @@ end
 
 ----------------------------------------------------------------
 --Find and hunt prey
-function animals.prey_hunt(self, prty)
 
+function animals.eat_eggs(self,priority)
+  --minimal.log("looking for eggs")
+  local egg=closest_node_in_group(self.object:get_pos(),self.view_range,"egg")
+  if egg ~= nil then
+      minimal.log("eat_eggs")
+      animals.hq_eat_node(self,priority,egg)
+      mobkit.remember(self,"action","eat eggs")
+      return true
+  end
+  return false
+end
+
+
+function animals.get_closest_carcass(self)
+  local cobj = nil
+	local dist = 3*64
+	local pos = self.object:get_pos()
+	for _,obj in ipairs(self.nearby_objects) do
+		local dropName=get_dropped_item_name(obj)
+		if dropName ~= nil then
+      if dropName=="animals:carcass_vert_large" or dropName=="animals:carcass_vert_small" then
+        local opos = obj:get_pos()
+        local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
+        if odist < dist then
+          dist=odist
+          cobj=obj
+        end
+      end
+		end
+	end
+	return cobj
+end
+
+function animals.eat_carcass(self,priority)
+    local carcass=animals.get_closest_carcass(self)
+    if carcass ~= nil then
+        minimal.log("eat_carcass")
+        animals.hq_eat_carcass(self,priority,carcass)
+        mobkit.remember(self,"action","eat carcass")
+        return true
+    end
+    return false
+end
+
+function animals.prey_hunt(self, prty)
   for  _, prey in ipairs(self.prey) do
     local tgtobj = mobkit.get_closest_entity(self,prey)
     if tgtobj then
       minimal.log("prey_hunt")
       animals.hq_attack_eat(self,prty,tgtobj)
-      mobkit.remember(self,"action","attack eat")
+      mobkit.remember(self,"action","prey hunt")
       return true
     end
   end
@@ -954,7 +928,7 @@ end
 ----------------------------------------------------
 --eating any flora
 
-function animals.eat_flora(pos, chance)
+function animals.eat_flora(self,pos, chance)
   local p = mobkit.get_node_pos(pos)
   local node = minetest.get_node(p).name
 
@@ -962,6 +936,12 @@ function animals.eat_flora(pos, chance)
     and minetest.get_item_group(node, "cane_plant") == 0
   then
     --gain energy
+    local energygain = 100
+    local self_e = (mobkit.recall(self,'energy') or 1)
+    self_e = self_e + energygain
+    if self_e > self.energy_max then self_e = self.energy_max end
+
+    mobkit.remember(self,'energy', self_e)
     if random()< chance then
       --destroy the plant
       minetest.set_node(p, {name = 'air'})
@@ -1049,7 +1029,7 @@ end
 
 
 function animals.hq_attack_eat(self,prty,tgtobj)
-  local timer = time() + 12
+  local timer = time() + 20 -- stop attacking after this long
 
 	local func = function(self)
     if time() > timer then
@@ -1063,17 +1043,81 @@ function animals.hq_attack_eat(self,prty,tgtobj)
 			local tpos = mobkit.get_stand_pos(tgtobj)
 			local dist = vector.distance(pos,tpos)
 			if dist < 1.01 then
-        local tgtheight = tgtobj:get_luaentity().height
-        if tgtheight == nil then
-          tgtheight = 0
-        end
-        local height = tgtobj:is_player() and 0.35 or tgtheight*0.6
+        local height = tgtobj:is_player() and 0.35 or tgtobj:get_luaentity().height*0.6
         mobkit.lq_jumpattack(self,tpos.y+height-pos.y,tgtobj)
 			else
         mobkit.goto_next_waypoint(self,tpos)
 			end
 		end
 	end
+	mobkit.queue_high(self,func,prty)
+end
+
+function animals.hq_eat_node(self,priority,node_pos)
+  local timer = time() + 20 -- stop after this long
+
+	local func = function(self)
+    if time() > timer then
+      return true
+    end
+
+		if mobkit.is_queue_empty_low(self) then
+      local pos = mobkit.get_stand_pos(self)
+			
+      --if tpos ~= nil then minimal.log("tpos:"..tpos.x..","..tpos.y..","..tpos.z) end
+			local dist = vector.distance(pos,node_pos)
+			if dist < 0.8 then
+        local name=get_dropped_item_name(carcass)
+        local energygain = 300  -- TODO make this vary
+        local self_e = (mobkit.recall(self,'energy') or 1)
+        self_e = self_e + energygain
+        if self_e > self.energy_max then self_e = self.energy_max end
+
+        mobkit.remember(self,'energy', self_e) 
+        -- where node was should become air
+        minetest.set_node(node_pos, {name = 'air'})
+        return true
+			else
+        mobkit.goto_next_waypoint(self,node_pos)
+			end
+		end
+	end
+
+	mobkit.queue_high(self,func,priority)
+end
+
+function animals.hq_eat_carcass(self,prty,carcass)
+  local timer = time() + 20 -- stop after this long
+
+	local func = function(self)
+    if time() > timer then
+      return true
+    end
+
+		if mobkit.is_queue_empty_low(self) then
+      local pos = mobkit.get_stand_pos(self)
+			local tpos = carcass:get_pos()
+      --if tpos ~= nil then minimal.log("tpos:"..tpos.x..","..tpos.y..","..tpos.z) end
+			local dist = vector.distance(pos,tpos)
+			if dist < 0.8 then
+        local name=get_dropped_item_name(carcass)
+        local energygain = 1000
+        if name == "animals:carcass_vert_large" then
+          energygain = 2000
+        end
+        local self_e = (mobkit.recall(self,'energy') or 1)
+        self_e = self_e + energygain
+        if self_e > self.energy_max then self_e = self.energy_max end
+
+        mobkit.remember(self,'energy', self_e) 
+        carcass:remove()
+        return true
+			else
+        mobkit.goto_next_waypoint(self,tpos)
+			end
+		end
+	end
+
 	mobkit.queue_high(self,func,prty)
 end
 

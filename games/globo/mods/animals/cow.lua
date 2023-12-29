@@ -40,6 +40,9 @@ local function brain(self)
 			return
 		end
 
+		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'age',age)
+
 		------------------
 		--Emergency actions
 
@@ -147,9 +150,7 @@ local function brain(self)
 						animals.hq_roam_surface_group(self, 'spreading', 20)
 				else
 					--veg
-					if animals.eat_flora(pos, 0.5) == true then
-						energy = energy + 20
-					else
+					if not animals.eat_flora(self,pos, 0.5) then
 						--wander random
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
@@ -166,13 +167,6 @@ local function brain(self)
 			mobkit.animate(self,'walk')
 			animals.hq_roam_far(self,10)
 		end
-
-		-----------------
-		--housekeeping
-		--save energy, age
-		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'age',age)
-
 	end
 end
 
@@ -198,6 +192,9 @@ local function brain_male(self)
 		if not age then
 			return
 		end
+
+		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'age',age)
 
 
 		------------------
@@ -282,7 +279,7 @@ local function brain_male(self)
 							--go get her!
 							--mobkit.make_sound(self,'mating')
 							if random() < 0.5 then
-                mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
+                				mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
 								animals.hq_mate(self, 25, mate)
 							end
 						end
@@ -300,9 +297,7 @@ local function brain_male(self)
 					animals.hq_roam_surface_group(self, 'spreading', 20)
 				else
 					--veg
-					if animals.eat_flora(pos, 0.5) == true then
-						energy = energy + 20
-					else
+					if not animals.eat_flora(self,pos, 0.5) then
 						--wander random
 						mobkit.animate(self,'walk')
 						animals.hq_roam_walkable_group(self, 'flora', 10)
@@ -318,13 +313,6 @@ local function brain_male(self)
 			mobkit.animate(self,'walk')
 			animals.hq_roam_far(self,10)
 		end
-
-		-----------------
-		--housekeeping
-		--save energy, age
-		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'age',age)
-
 	end
 end
 
