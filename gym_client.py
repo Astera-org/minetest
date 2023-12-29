@@ -3,6 +3,7 @@ import pygame
 from dataclasses import dataclass
 import numpy as np
 from minetester.minetest_env import KEY_MAP, INVERSE_KEY_MAP
+import signal
 
 
 KEY_TO_KEYTYPE = {
@@ -75,7 +76,14 @@ def game_loop():
             running = False
 
 
+def signal_handler(sig, frame):
+    env.close()
+    pygame.quit()
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)
+
     key_cache = set()
     mouse = Mouse(0, 0)
     # Initialize Pygame
@@ -86,6 +94,7 @@ if __name__ == "__main__":
         "minetest",
         minetest_executable="/Users/siboehm/repos/minetest/build/macos/minetest.app/Contents/MacOS/minetest",
         render_mode="human",
+        display_size=(1600, 1200),
     )
     env.reset()
     game_loop()
