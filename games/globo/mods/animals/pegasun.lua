@@ -149,7 +149,7 @@ local function brain(self)
 				--feed via a method
 				if random()< 0.85 then
 					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
+					if animals.eat_spreading_under(self,pos, 0.001) == true then
 						energy = energy + 6
 					else
 						--wander to food source
@@ -159,9 +159,7 @@ local function brain(self)
 					end
 				elseif random()< 0.75 then
 					--veg
-					if animals.eat_flora(self,pos, 0.005) == true then
-						energy = energy + 20
-					else
+					if not animals.eat_flora(self,pos, 0.005) then	
 						--wander random
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
@@ -218,6 +216,8 @@ local function brain_male(self)
 		if not age then
 			return
 		end
+		mobkit.remember(self,'energy',energy)
+		mobkit.remember(self,'age',age)
 
 
 		------------------
@@ -320,9 +320,7 @@ local function brain_male(self)
 				--feed via a method
 				if random()< 0.75 then
 					--scratch dirt
-					if animals.eat_spreading_under(pos, 0.001) == true then
-						energy = energy + 6
-					else
+					if not animals.eat_spreading_under(self,pos, 0.001) then
 						--wander random
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
@@ -330,9 +328,7 @@ local function brain_male(self)
 					end
 				elseif random()< 0.5 then
 					--veg
-					if animals.eat_flora(self,pos, 0.005) == true then
-						energy = energy + 20
-					else
+					if not animals.eat_flora(self,pos, 0.005) then
 						--wander random
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
@@ -361,8 +357,7 @@ local function brain_male(self)
 		-----------------
 		--housekeeping
 		--save energy, age
-		mobkit.remember(self,'energy',energy)
-		mobkit.remember(self,'age',age)
+		
 
 	end
 end
@@ -373,6 +368,32 @@ end
 ---------------
 -- the CREATURE
 ---------------
+
+minetest.register_node("animals:pegasun_spawn", {
+	description = S('Pegasun Egg'),
+	tiles = {"animals_gundu_eggs.png"},
+	stack_max = minimal.stack_max_medium,
+	drawtype = "nodebox",
+	paramtype = "light",
+	node_box = {
+		type = "fixed",
+		fixed = {-0.125, -0.5, -0.125,  0.125, -0.125, 0.125},
+	},
+	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 1,  temp_pass = 1, edible = 1},
+	sounds = nodes_nature.node_sound_defaults(),
+	on_construct = function(pos)
+		minetest.get_node_timer(pos):start(1)
+	end,
+	on_timer =function(pos, elapsed)
+		if random()<=0.4 then -- 40% for female, 60% for male
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun", energy_egg, young_per_egg)
+		else
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun_male", energy_egg, young_per_egg)
+		end
+
+	end,
+})
+
 
 --eggs
 minetest.register_node("animals:pegasun_eggs", {
@@ -429,7 +450,8 @@ minetest.register_entity("animals:pegasun_male",{
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+  	energy_loss = 1,
+	energy_max=8000,
 
 	--interaction
 	predators = {"animals:kubwakubwa", "animals:darkasthaan"},
@@ -548,7 +570,8 @@ minetest.register_entity("animals:pegasun",{
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
-  energy_loss = 1,
+	energy_loss = 1,
+	energy_max=8000,
 
 	--interaction
 	predators = {"animals:kubwakubwa", "animals:darkasthaan"},

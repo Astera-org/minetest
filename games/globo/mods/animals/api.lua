@@ -803,7 +803,7 @@ function animals.eat_eggs(self,priority)
   --minimal.log("looking for eggs")
   local egg=closest_node_in_group(self.object:get_pos(),self.view_range,"egg")
   if egg ~= nil then
-      minimal.log("eat_eggs")
+      --minimal.log("eat_eggs")
       animals.hq_eat_node(self,priority,egg)
       mobkit.remember(self,"action","eat eggs")
       return true
@@ -835,7 +835,7 @@ end
 function animals.eat_carcass(self,priority)
     local carcass=animals.get_closest_carcass(self)
     if carcass ~= nil then
-        minimal.log("eat_carcass")
+        --minimal.log("eat_carcass")
         animals.hq_eat_carcass(self,priority,carcass)
         mobkit.remember(self,"action","eat carcass")
         return true
@@ -847,7 +847,7 @@ function animals.prey_hunt(self, prty)
   for  _, prey in ipairs(self.prey) do
     local tgtobj = mobkit.get_closest_entity(self,prey)
     if tgtobj then
-      minimal.log("prey_hunt")
+      --minimal.log("prey_hunt")
       animals.hq_attack_eat(self,prty,tgtobj)
       mobkit.remember(self,"action","prey hunt")
       return true
@@ -874,7 +874,7 @@ end
 
 ----------------------------------------------------
 --for things that eat spreading surface
-function animals.eat_spreading_under(pos, chance)
+function animals.eat_spreading_under(self, pos, chance)
   local p = mobkit.get_node_pos(pos)
   local posu = {x = p.x, y = p.y - 1, z = p.z}
   local under = minetest.get_node(posu).name
@@ -890,6 +890,12 @@ function animals.eat_spreading_under(pos, chance)
       -- minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
     end
 
+    local energygain = 6
+    local self_e = mobkit.recall(self,'energy')
+    self_e = self_e + energygain
+    if self_e > self.energy_max then self_e = self.energy_max end
+    mobkit.remember(self,'energy', self_e)
+    
     return true
 
   else

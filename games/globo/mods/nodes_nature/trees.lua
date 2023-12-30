@@ -337,7 +337,7 @@ minetest.override_item("nodes_nature:sasaran_cone",{
 			     end
 
 			     --hp_change, thirst_change, hunger_change, energy_change, temp_change, replace_with_item
-			     return HEALTH.use_item(itemstack, user, 0, 0, 1, 0, 0)
+			     return HEALTH.use_item(itemstack, user, 0, 0, 5, 0, 5)
 
 			  end,
 })
@@ -347,6 +347,6 @@ local kagum_groups = table.copy(minetest.registered_nodes["nodes_nature:kagum_po
 kagum_groups.bioluminescent = 1
 
 minetest.override_item("nodes_nature:kagum_pod",{
- light_source = 2,
+ light_source = 8,
  groups = kagum_groups,
 })

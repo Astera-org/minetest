@@ -380,7 +380,7 @@ local baseWolf={
 		{name = "animals:carcass_vert_large", chance = 1, min = 1, max = 1,},
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		minimal.log("wolf punched. hp:"..self.hp)
+		--minimal.log("wolf punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)

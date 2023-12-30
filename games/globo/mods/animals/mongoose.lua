@@ -181,7 +181,7 @@ local baseMongoose={
 		{name = "animals:carcass_vert_small", chance = 1, min = 1, max = 1,},
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		minimal.log("mongoose punched. hp:"..self.hp)
+		--minimal.log("mongoose punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)

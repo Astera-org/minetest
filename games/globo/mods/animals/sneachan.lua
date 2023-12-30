@@ -154,6 +154,34 @@ end
 -- the CREATURE
 ---------------
 
+minetest.register_node("animals:sneachan_spawn", {
+	description = S('Sneachan Eggs'),
+	tiles = {"animals_gundu_eggs.png"},
+	stack_max = minimal.stack_max_medium,
+	drawtype = "nodebox",
+	paramtype = "light",
+	node_box = {
+		type = "fixed",
+		fixed = {-0.08, -0.5, -0.08,  0.08, -0.4375, 0.08},
+	},
+	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 1, temp_pass = 1, edible = 1},
+	sounds = nodes_nature.node_sound_defaults(),
+	on_construct = function(pos)
+		minetest.get_node_timer(pos):start(1)
+	end,
+	on_timer =function(pos, elapsed)
+		local light = (minetest.get_node_light(pos) or 0)
+		if light <= 10 then
+			return animals.hatch_egg(pos, 'air', 'air', "animals:sneachan", energy_egg, young_per_egg)
+		else
+			if random()<0.3 then
+				return animals.hatch_egg(pos, 'air', 'air', "animals:sneachan", energy_egg, young_per_egg)
+			end
+			return true
+		end
+	end,
+})
+
 --eggs
 minetest.register_node("animals:sneachan_eggs", {
 	description = S('Sneachan Eggs'),
@@ -210,6 +238,8 @@ minetest.register_entity("animals:sneachan",{
 	lung_capacity = 10,
 	min_temp = -28,
 	max_temp = 48,
+	energy_loss = 1,
+	energy_max=5000,
 
 	--interaction
 	predators = animals.get_interactors("sneachan","predators"),

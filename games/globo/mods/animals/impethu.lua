@@ -190,6 +190,8 @@ minetest.register_entity("animals:impethu",{
 	lung_capacity = 10,
 	min_temp = -15,
 	max_temp = 50,
+	energy_loss = 1,
+	energy_max=5000,
 
 	--interaction
 	predators = {"animals:kubwakubwa", "animals:darkasthaan", "animals:pegasun"},

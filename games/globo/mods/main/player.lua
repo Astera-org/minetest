@@ -293,7 +293,7 @@ end
 function checkEggLay(player)
     local controls = player:get_player_control()
     if controls.left and controls.right then
-        minimal.log("player trying to lay egg")
+        --minimal.log("player trying to lay egg")
         local meta = player:get_meta()
         local energy = tonumber(meta:get_string("energy"))
         local hunger = tonumber(meta:get_string("hunger"))
@@ -304,7 +304,7 @@ function checkEggLay(player)
             if node.name == "air" then
                 minetest.add_node(pos, {name = "main:player_egg"})
                 minetest.get_meta(pos):set_string("owner", player:get_player_name())
-                addNutrient(player,"hunger",-500)
+                addNutrient(player,"hunger",-200)
                 addNutrient(player,"energy",-500)
             end
         end

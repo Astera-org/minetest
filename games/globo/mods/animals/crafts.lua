@@ -193,7 +193,7 @@ for i in ipairs(list) do
 end
 
 function carcassTimer(pos)
-  minimal.log("carcass timer")
+  --minimal.log("carcass timer")
   -- TODO: check if there is a carcass item at the given position
   
 

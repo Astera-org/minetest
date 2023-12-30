@@ -116,4 +116,44 @@ minetest.register_chatcommand("max", {
     end,
 })
 
+minetest.register_chatcommand("pop", {
+    description = "Show population of each type of mob",
+    params = "<mob type>",  
+    privs = {fly = true},
+    func = function(name, param)
+        -- if <mob type> is set then show the stats for each mob that exists of that type
+        minimal.log("pop: "..param)
+        local nearby_objects = minetest.get_objects_inside_radius({x=0,y=0,z=0}, 1000)
+        if param == "" then    
+            local pop = {} 
+            for _,obj in ipairs(nearby_objects) do
+                local luaent = obj:get_luaentity()
+                if mobkit.is_alive(obj) and not obj:is_player() and luaent then
+                    local name = luaent.name
+                    if pop[name] == nil then
+                        pop[name] = 1
+                    else
+                        pop[name] = pop[name] + 1
+                    end
+                end
+            end
+            for k,v in pairs(pop) do
+                minimal.log(k..":"..v)
+            end
+        else
+            for _,obj in ipairs(nearby_objects) do
+                local luaent = obj:get_luaentity()
+                if mobkit.is_alive(obj) and not obj:is_player() and luaent then
+                    local name = luaent.name
+                    if name == "animals:"..param then  
+                        minimal.log(" hp:"..luaent.hp.." energy:"..mobkit.recall(luaent,'energy').." age:"..mobkit.recall(luaent,'age'))
+                    end
+                end
+            end
+        end
+    end,
+})
+
+
+
 

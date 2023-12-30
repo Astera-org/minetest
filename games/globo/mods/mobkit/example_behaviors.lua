@@ -362,7 +362,7 @@ function mobkit.lq_jumpattack(self,height,target)
 				--minimal.log("bite 1")
 				local mob=target:get_luaentity(target)
 				if mob== nil then
-					minimal.log("non mob bite")
+					--minimal.log("non mob bite")
 					target:punch(self.object,1,self.attack)
 				else
 					mob.on_punch(mob,self.object,1,self.attack)

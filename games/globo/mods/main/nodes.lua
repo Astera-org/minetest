@@ -31,13 +31,14 @@ minetest.register_node("main:glow_stone", {
 	on_punch = function(pos, node, player, pointed_thing)
 		-- move this node 1 space in the direction the player is facing if possibl
 		local dir = player:get_look_dir()
-		minetest.chat_send_player(player:get_player_name()," " .. dir.x .. " " .. dir.y .. " " .. dir.z)
+		--minetest.chat_send_player(player:get_player_name()," " .. dir.x .. " " .. dir.y .. " " .. dir.z)
 		local newpos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
 		if minetest.get_node(newpos).name ~= "air" then
 			return
 		end
 		minetest.set_node(newpos, {name = "main:glow_stone"})
 		minetest.remove_node(pos)
+		minetest.check_for_falling(newpos)
 	end,
 })
 
@@ -151,11 +152,11 @@ minetest.register_node("main:player_egg", {
 	},
 	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 1,  temp_pass = 1, edible = 1, egg=1},
 	on_construct = function(pos)
-		minimal.log("player egg on construct")
+		--minimal.log("player egg on construct")
 		minetest.get_node_timer(pos):start(600*GAME_SPEED)
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
-		minimal.log("player egg after_place_node")
+		--minimal.log("player egg after_place_node")
 		minetest.get_meta(pos):set_string("owner", placer:get_player_name())
 	end,
 	on_timer =function(pos, elapsed)
@@ -231,7 +232,8 @@ minetest.register_node("main:potatoes", {
 	walkable = false,
 	groups = {snappy = 3, flammable = 2, flora=1},
 	on_construct = function(pos)
-        start_node_timer(pos) 
+		local timer = minetest.get_node_timer(pos)
+		timer:start(60*1*GAME_SPEED) 
     end,
 	on_timer = function(pos, elapsed)
 		local node = minetest.get_node(pos)
@@ -244,15 +246,16 @@ minetest.register_node("main:potatoes", {
 			end
 			if p1 > 30 then
 				if potatoes_spred(pos) then
-					p1=10
-				end
+					p1=0
+					p2=0
+				else p1=20 end
 			end
 		end
 		minetest.swap_node(pos, {name = "main:potatoes", param1 = p1, param2=p2})
 		return true -- Continue the cycle
     end,
 	on_use = function(itemstack, player, pointed_thing)
-		addNutrient(player,"hunger",100)
+		addNutrient(player,"hunger",20)
 		itemstack:take_item()
 		return itemstack
 	end,
@@ -280,9 +283,9 @@ function potatoes_spred(pos)
 	local newPos=positions[math.random(#positions)]
 
 	local node_under = minetest.get_node({x = newPos.x, y = newPos.y - 1, z = newPos.z})
-	if node_under.name == "basenodes:dirt" or node_under.name == "basenodes:dirt_with_grass" then
+	if node_under.name == "nodes_nature:silt" or node_under.name == "nodes_nature:loam" or node_under.name == "nodes_nature:clay" then
 		if minetest.get_node(newPos).name == "air" then
-			print("spread potatoes")
+			--print("spread potatoes")
 			minetest.set_node(newPos, {name = "main:potatoes"})
 			return true
 		end
@@ -375,7 +378,7 @@ function grib_spread(pos)
 	for _, p in ipairs(positions) do
 		if math.random(1, 1000) <= 20 then
 			local node_under = minetest.get_node({x = p.x, y = p.y - 1, z = p.z})
-			if node_under.name == "basenodes:dirt" or node_under.name == "basenodes:dirt_with_grass" then
+			if node_under.name == "nodes_nature:clay" or node_under.name == "nodes_nature:silt" then
 				if minetest.get_node(p).name == "air" or minetest.get_node(p).name:find("group:flora") then
 					--minetest.log("action", "spread_grib_weed")
 					minetest.set_node(p, {name = "main:grib_weed"})

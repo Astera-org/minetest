@@ -339,10 +339,10 @@ minetest.register_node("animals:cow_spawn", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-        print("cow hatched")
 		if random()<=0.5 then -- 50% for female, 50% for male
 			return animals.hatch_egg(pos, 'air', 'air', "animals:cow", energy_egg, young_per_egg)
 		else
+			minimal.log("male cow")
 			return animals.hatch_egg(pos, 'air', 'air', "animals:cow_male", energy_egg, young_per_egg)
 		end
 	end,
@@ -407,7 +407,7 @@ local baseCow = {
 		{name = "animals:carcass_vert_large", chance = 1, min = 2, max = 2,},
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		minimal.log("cow punched. hp:"..self.hp)
+		--minimal.log("cow punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
 	end,
 	on_rightclick = function(self, clicker)

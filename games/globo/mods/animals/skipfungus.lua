@@ -120,7 +120,7 @@ function explode(pos)
         elseif mobkit.is_alive(obj) then
             local mob=obj:get_luaentity()
             if mob== nil then
-                minimal.log("non mob bite")
+                --minimal.log("non mob bite")
                 obj:punch(obj, 1.0, {full_punch_interval=1.0, damage_groups={fleshy=damage}}, nil)
             else
                 mob.on_punch(mob,obj,1,{full_punch_interval=1.0, damage_groups={fleshy=damage}})
