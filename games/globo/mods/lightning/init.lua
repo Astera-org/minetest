@@ -175,7 +175,7 @@ lightning.strike = function(pos, cosmetic)
 			end
 			-- very rarely, potentially cause a fire
 			if rng:next(1,200) == 1 then
-				minetest.set_node(pos2, {name = "inferno:hungry_flame"})
+				minetest.set_node(pos2, {name = "main:flame"})  --TODO fix
 			end
 		end
 	end

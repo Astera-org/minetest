@@ -17,6 +17,7 @@ player_definition = {
     view_range = 10,
     walk_velocity = 2,
     run_velocity = 5, 
+    hp_max = 40,
 }
 
 minetest.register_entity("main:player", player_definition)
@@ -199,7 +200,19 @@ local function updateHUD(player)
 
 end
 
-
+local invTime=os.time()
+local function inventoryEffects(player)
+    if invTime < os.time() then
+        invTime = os.time() + 1
+        local inv = player:get_inventory()
+  
+        for _, stack in ipairs(inv:get_list("main")) do
+            if stack:get_name() == "main:ember" then
+                player:set_hp(player:get_hp() - 1)
+            end
+        end
+    end
+end
 
 
 minetest.register_globalstep(function(dtime)
@@ -209,6 +222,7 @@ minetest.register_globalstep(function(dtime)
             checkEggLay(player)
         end
         updateHUD(player)
+        inventoryEffects(player)
     end
 end)
 
@@ -240,6 +254,7 @@ minetest.register_on_joinplayer(function(player)
     privs.fly = true
     privs.fast = true
     privs.settime = true
+    privs.give=true
     minetest.set_player_privs("singleplayer", privs)
 
     local inv = player:get_inventory()

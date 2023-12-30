@@ -140,7 +140,7 @@ for i in ipairs(tree_list) do
 	local hardness = tree_list[i][7]
 	local dyecandidate = tree_list[i][8]
 	local dominantcolor = tree_list[i][9] or "none"
-	local flamesusceptibility = hardness * -2
+	local flamesusceptibility = hardness * 10
 
 	if not selbox_fruit then
 		selbox_fruit = {-3 / 16, -7 / 16, -3 / 16, 3 / 16, 4 / 16, 3 / 16}
@@ -161,8 +161,9 @@ for i in ipairs(tree_list) do
 		paramtype = "light",
 		paramtype2 = "facedir",
 		is_ground_content = false,
+		burn_time = 6,
 		groups = {tree = 1, choppy = hardness,
-			  flammable = 10 - flamesusceptibility },
+			  flammable = 35 - flamesusceptibility },
 		sounds = nodes_nature.node_sound_wood_defaults(),
 		on_place = minetest.rotate_node,
 		after_place_node = function(pos, placer, itemstack)
@@ -205,7 +206,7 @@ for i in ipairs(tree_list) do
 		paramtype2 = "facedir",
 		is_ground_content = false,
 		groups = {log = 1, choppy = hardness,
-			  flammable = 10 - flamesusceptibility},
+			  flammable = 40 - flamesusceptibility},
 		sounds = nodes_nature.node_sound_wood_defaults(),
 		on_place = minetest.rotate_node,
 	})
@@ -216,7 +217,7 @@ for i in ipairs(tree_list) do
 		"nodes_nature:"..treename.."_log",
 		"chopping_block",
 		"false",
-		{choppy = hardness, flammable = 8 - flamesusceptibility,
+		{choppy = hardness, flammable = 45 - flamesusceptibility,
 		 woodslab = 1},
 		{
 			"nodes_nature_"..treename.."_log_top.png",
@@ -244,7 +245,7 @@ for i in ipairs(tree_list) do
 		place_param2 = 4,
 		walkable = false,
 		climbable = true,
-		groups = {choppy = 3, flammable = 2, woody_plant = 1, leafdecay = 1, leafdecay_drop = 1},
+		groups = {choppy = 3, flammable = 35, woody_plant = 1, leafdecay = 1, leafdecay_drop = 1},
 		sounds = nodes_nature.node_sound_leaves_defaults(),
 		after_place_node = function(pos, placer, itemstack)
 			minetest.set_node(pos, {name = "nodes_nature:"..treename.."_leaves", param2 = 0})
@@ -281,7 +282,7 @@ for i in ipairs(tree_list) do
 				type = "fixed",
 				fixed = selbox_fruit
 			},
-			groups = {dig_immediate=3, flammable=2, leafdecay = 3, leafdecay_drop = 1, ncrafting_dye_candidate = dyecandidate },
+			groups = {dig_immediate=3, flammable=20, leafdecay = 3, leafdecay_drop = 1, ncrafting_dye_candidate = dyecandidate },
 			sounds = nodes_nature.node_sound_defaults(),
 			_ncrafting_dye_dcolor = dominantcolor,
 			after_place_node = function(pos, placer, itemstack)

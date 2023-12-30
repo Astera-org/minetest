@@ -293,32 +293,32 @@ for i in ipairs(plantlist) do
 
 	local g
 	local gs = {snappy = 3, herbaceous_plant = 1, attached_node = 1,
-		    flammable = 2, seedling = 1, temp_pass = 1} --seedlings
-	local g_seed = {snappy = 3, dig_immediate = 2, flammable = 2,
+		    flammable = 30, seedling = 1, temp_pass = 1} --seedlings
+	local g_seed = {snappy = 3, dig_immediate = 2, flammable = 20,
 			attached_node = 1, seed = 1, temp_pass = 1}
 
 	if type == "crumbly" then		--moss, dirt mat-like things
 	   g = {crumbly = 3, herbaceous_plant = 1, falling_node = 1,
-		attached_node = 1, flammable = 5, flora = 1, temp_pass = 1}
+		attached_node = 1, flammable = 10, flora = 1, temp_pass = 1}
 	elseif type == "woody_plant" then
 	   g = {choppy = 3, woody_plant = 1, attached_node = 1,
-		flammable = 2, flora = 1, temp_pass = 1}
+		flammable = 30, flora = 1, temp_pass = 1}
 		s = nodes_nature.node_sound_wood_defaults()
 	elseif type == "herbaceous_plant" then
 	   g = {snappy = 3, herbaceous_plant = 1, attached_node = 1,
-		flammable = 3, flora = 1, temp_pass = 1}
+		flammable = 30, flora = 1, temp_pass = 1}
 	elseif type == "fibrous_plant" then
 	   g = {snappy = 3, fibrous_plant = 1, attached_node = 1,
-		flammable = 1, flora = 1, temp_pass = 1}
+		flammable = 40, flora = 1, temp_pass = 1}
 	elseif type == "mushroom" then
-	   g = {snappy = 3, attached_node = 1, flammable = 3,
+	   g = {snappy = 3, attached_node = 1, flammable = 10,
 		mushroom = 1, temp_pass = 1}
-	   gs = {snappy = 3, attached_node = 1, flammable = 3,
+	   gs = {snappy = 3, attached_node = 1, flammable = 10,
 		 mushroom = 1, seedling = 1, temp_pass = 1}
-	   g_seed = {snappy = 3, attached_node = 1, flammable = 3,
+	   g_seed = {snappy = 3, attached_node = 1, flammable = 10,
 		     mushroom = 1, seed = 1, temp_pass = 1}
 	else
-	   g = {snappy = 3, attached_node = 1, flammable = 2,
+	   g = {snappy = 3, attached_node = 1, flammable = 30,
 		flora = 1, temp_pass = 1}
 	end
 
@@ -609,7 +609,7 @@ minetest.register_node("nodes_nature:gemedi", {
 		type = "fixed",
 		fixed = {-0.1875, -0.5, -0.1875, 0.1875, 0.5, 0.1875},
 	},
-	groups = {snappy = 3, fibrous_plant = 1, flammable = 1, flora = 1,
+	groups = {snappy = 3, fibrous_plant = 1, flammable = 30, flora = 1,
 		  cane_plant = 1, temp_pass = 1, ncrafting_dye_candidate = 1},
 	sounds = nodes_nature.node_sound_leaves_defaults(),
 	_ncrafting_dye_dcolor = "yellow",
@@ -636,7 +636,7 @@ minetest.register_node("nodes_nature:cana", {
 		type = "fixed",
 		fixed = {-0.1875, -0.5, -0.1875, 0.1875, 0.5, 0.1875},
 	},
-	groups = {snappy = 3, fibrous_plant = 1, flammable = 1, flora = 1, cane_plant = 1, temp_pass = 1},
+	groups = {snappy = 3, fibrous_plant = 1, flammable = 40, flora = 1, cane_plant = 1, temp_pass = 1},
 	sounds = nodes_nature.node_sound_leaves_defaults(),
 
 	after_dig_node = function(pos, node, metadata, digger)
@@ -663,7 +663,7 @@ minetest.register_node("nodes_nature:tiken", {
 		type = "fixed",
 		fixed = {-0.1875, -0.5, -0.1875, 0.1875, 0.5, 0.1875},
 	},
-	groups = {choppy = 3, woody_plant = 1, flammable = 1, flora = 1,
+	groups = {choppy = 3, woody_plant = 1, flammable = 35, flora = 1,
 		  cane_plant = 1, temp_pass = 1, ncrafting_dye_candidate = 1},
 	sounds = nodes_nature.node_sound_wood_defaults(),
 
@@ -840,7 +840,7 @@ minetest.register_node("nodes_nature:chalin", {
 			     type = "fixed",
 			     fixed = {-0.1875, -0.5, -0.1875, 0.1875, 0.5, 0.1875},
 			  },
-			  groups = {choppy = 3, woody_plant = 1, flammable = 1,
+			  groups = {choppy = 3, woody_plant = 1, flammable = 30,
 				    flora = 1, cane_plant = 1, temp_pass = 1,
 				    ncrafting_dye_candidate = 1},
 			  sounds = nodes_nature.node_sound_wood_defaults(),
@@ -919,7 +919,7 @@ minetest.register_node("nodes_nature:glow_worm", {
 --glowing mushroom
 minetest.override_item("nodes_nature:merki",{
 	light_source = 2,
-	groups = {snappy = 3, attached_node = 1, flammable = 3, mushroom = 1, temp_pass = 1, bioluminescent= 1}
+	groups = {snappy = 3, attached_node = 1, flammable = 20, mushroom = 1, temp_pass = 1, bioluminescent= 1}
 })
 
 

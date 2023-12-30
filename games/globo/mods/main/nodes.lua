@@ -67,7 +67,7 @@ minetest.register_node("main:brambles", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flora=1},
+	groups = {snappy = 3, flammable = 40, flora=1},
     damage_per_second = 1,
 })
 
@@ -80,7 +80,7 @@ minetest.register_node("main:pulse_blossom", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 1},
+	groups = {snappy = 1,flammable = 20, flora=1},
 	on_construct = function(pos)
         local timer = minetest.get_node_timer(pos)
 		local t=(math.random(60,270)+math.random(60,270))/2
@@ -102,7 +102,7 @@ minetest.register_node("main:pulse_blossom_on", {
 	light_source= 10,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 1},
+	groups = {snappy = 1,flammable = 20, flora=1},
 	on_construct = function(pos)
         local timer = minetest.get_node_timer(pos)
 		timer:start(10*GAME_SPEED)  
@@ -150,7 +150,7 @@ minetest.register_node("main:player_egg", {
 		type = "fixed",
 		fixed = {-0.125, -0.5, -0.125,  0.125, -0.125, 0.125},
 	},
-	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 1,  temp_pass = 1, edible = 1, egg=1},
+	groups = {snappy = 3, falling_node = 1, dig_immediate = 3, flammable = 10,  temp_pass = 1, edible = 1, egg=1},
 	on_construct = function(pos)
 		--minimal.log("player egg on construct")
 		minetest.get_node_timer(pos):start(600*GAME_SPEED)
@@ -192,7 +192,7 @@ minetest.register_node("main:thorns", {
 	damage_per_second = 1,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 1},
+	groups = {snappy = 1,flammable = 30, flora=1},
 	on_construct = function(pos)
         start_node_timer(pos) 
     end,
@@ -214,7 +214,7 @@ minetest.register_node("main:thorns_fruit", {
 	damage_per_second = 1,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 1},
+	groups = {snappy = 1, flammable = 30, flora=1},
 	on_punch = function(pos, node, player, pointed_thing)
 		addNutrient(player,"hunger",100)
 		minetest.set_node(pos, {name = "main:thorns"})
@@ -230,7 +230,7 @@ minetest.register_node("main:potatoes", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=1},
 	on_construct = function(pos)
 		local timer = minetest.get_node_timer(pos)
 		timer:start(60*1*GAME_SPEED) 
@@ -304,7 +304,7 @@ minetest.register_node("main:sumac", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=1},
 	on_punch = function(pos, node, player, pointed_thing)
 		changePlayerHP(player,-2)
 	end,
@@ -320,7 +320,7 @@ minetest.register_node("main:sun_berry", {
 	light_source=4,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=1},
 })
 
 minetest.register_node("main:coffee", {
@@ -332,7 +332,7 @@ minetest.register_node("main:coffee", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=1},
 	on_punch = function(pos, node, player, pointed_thing)
 		changePlayerEnergy(player,200)
 	end,
@@ -347,7 +347,7 @@ minetest.register_node("main:grib_weed", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora = 1}, 
+	groups = {snappy = 3, flammable = 35, flora = 1}, 
     on_timer = function(pos, elapsed)
         grib_spread(pos)
         return true -- Continue the cycle
@@ -398,6 +398,6 @@ minetest.register_node("main:corn", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 2, flora=1},
+	groups = {snappy = 3, flammable = 35, flora=1},
 	on_use = minetest.item_eat(3),  
 })

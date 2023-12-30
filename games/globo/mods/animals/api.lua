@@ -143,7 +143,7 @@ function animals.core_life(self, lifespan, pos)
 
   --die from exhaustion, old age
   if energy <=0 or age > lifespan then
-    minimal.log("Die from exhaustion")
+    minimal.log("Die from exhaustion: "..self.name)
     mobkit.clear_queue_high(self)
     animals.handle_drops(self)
     mobkit.hq_die(self)

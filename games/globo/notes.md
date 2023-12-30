@@ -1,6 +1,12 @@
 TODO:
 - make playable
     - make breeding
+        - make pregnant a timer rather than a bool
+    - fire
+        * make sure fire spreads
+        - dropped items should burn
+        - Lava pool that spits out embers occasionally 
+        * Embers have a chance of catching nearby things
     - temperature should effect you
         - eggs need to be a certain temperature to hatch
 
@@ -8,7 +14,6 @@ TODO:
 
 - you shouldn't be able to swim long distances (maybe just really saps your energy)
 - should drop out of "attack eat" when you lose sight of the prey
-- make pregnant a timer rather than a bool
 - player should be no different than other animals to the mobs
 - if pulse blossom is in your inventory it should hurt you
 - plants spread
@@ -43,12 +48,11 @@ TODO:
 - Conveyor belt: Placed on terrain. Any item on it is conveyed along to the end of the belt
 - Launcher: anything that stands on this is launched in the air in the direction it was going
 
-- make sure fire works
-    - dropped items should burn
 
 - water should make pools 
 
 BUGS:
+- sneachens aren't eating?
 - wolf energy not decreasing
 - health efects are being cleared instantly
 
@@ -57,6 +61,7 @@ to test
 
 
 Later:
+- Wind that effects the direction that fire spreads
 - Do we want to be able to dig clay or cut trees?
 - need a way to throw things away
 - potatoes only spread under the right conditions
@@ -80,6 +85,17 @@ Motion detector
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 Fountain: Will spray water over the nearby blocks.
 Slug: takes up a block. Will move in a direction pushed. Picks up the first block in its path and becomes this when it comes to a stop.
+Tangler ; lays conveyors from it
+Willow wisp
+Throw rocks. Do a small amount of damage
+
+Flower that only blossoms at dawn. You can eat it then
+
+
+Changes to Minetest
+----
+Allow you to send other commands
+
 
 Notes
 ----
