@@ -401,3 +401,29 @@ minetest.register_node("main:corn", {
 	groups = {snappy = 3, flammable = 35, flora=1},
 	on_use = minetest.item_eat(3),  
 })
+
+minetest.register_node("main:pond", {
+	on_construct = function(pos)
+		-- TODO: hack since mts files seem annoying
+		
+		for x = -1,1 do
+			for z = -1,1 do
+				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
+				minetest.set_node(p,{name="air"})
+			end
+		end
+		pos.y=pos.y-1
+		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
+
+		minetest.set_node(pos,{name="nodes_nature:freshwater_source"}) 
+		pos.x=pos.x-1
+		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
+		pos.x=pos.x+2
+		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
+		
+
+		pos.x=pos.x-1
+		pos.y=pos.y-1
+		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})  
+	end,
+})

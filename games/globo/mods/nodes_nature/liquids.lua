@@ -12,7 +12,7 @@ local c_alpha = minimal.compat_alpha
 --Water
 local list = {
 	{"salt_water", S("Salt Water"), 2, 230, 140, true},
-	{"freshwater", S("Freshwater"), 1, 180, 100, false},
+	{"freshwater", S("Freshwater"), 1, 180, 100, true}, -- JED was false
 
 }
 
@@ -148,7 +148,7 @@ minetest.override_item("nodes_nature:freshwater_source",{
 
         meta:set_int("thirst", thirst)
         --remove so don't get infinity water supply
-        minetest.set_node(pos, {name = "air"})
+        -- JED: minetest.set_node(pos, {name = "air"})
         --minetest.sound_play("nodes_nature_slurp",	{pos = pos, max_hear_distance = 3, gain = 0.25})
 
         --food poisoning
@@ -311,6 +311,16 @@ minetest.register_node("nodes_nature:lava_source", {
 	damage_per_second = 4 * 2,
 	post_effect_color = {a = 191, r = 255, g = 64, b = 0},
 	groups = {igniter = 1, temp_effect = 1, temp_pass = 1},
+	on_construct = function(pos)
+		-- TODO: hack since mts files seem annoying
+		pos.y=pos.y-1
+		for x = -1,1 do
+			for z = -1,1 do
+				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
+				minetest.set_node(p,{name="air"})
+			end
+		end
+	end,
 })
 
 minetest.register_node("nodes_nature:lava_flowing", {

@@ -1103,6 +1103,7 @@ function animals.hq_eat_carcass(self,prty,carcass)
 		if mobkit.is_queue_empty_low(self) then
       local pos = mobkit.get_stand_pos(self)
 			local tpos = carcass:get_pos()
+      if tpos == nil then return true end
       --if tpos ~= nil then minimal.log("tpos:"..tpos.x..","..tpos.y..","..tpos.z) end
 			local dist = vector.distance(pos,tpos)
 			if dist < 0.8 then

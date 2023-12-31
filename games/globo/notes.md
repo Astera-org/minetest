@@ -3,10 +3,7 @@ TODO:
     - make breeding
         - make pregnant a timer rather than a bool
     - fire
-        * make sure fire spreads
         - dropped items should burn
-        - Lava pool that spits out embers occasionally 
-        * Embers have a chance of catching nearby things
     - temperature should effect you
         - eggs need to be a certain temperature to hatch
 

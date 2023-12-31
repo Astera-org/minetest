@@ -474,7 +474,7 @@ local sediment_list = {
 			fertility = 3, sound = sounds.dirt,
 			sound_wet = sounds.dirt_wet}),
    clay = sediment.new({name = "clay",
-			description = S("Clay"), hardness = hardness.medium,
+			description = S("Clay"), hardness = hardness.medium,  
 			fertility = 2, sound = sounds.dirt,
 			sound_wet = sounds.dirt_wet}),
    gravel = sediment.new({name = "gravel",
