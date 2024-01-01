@@ -15,40 +15,61 @@ If laid next to an existing no direction track, both will assume that the direct
 
 local dirMap={
     { north= 0, south= 0, east= 0, west= 0}, -- 1 no direction set
-    { north= 1, south=-1, east= 0, west= 0}, -- 2 north in, south out
-    { north= 1, south= 0, east=-1, west= 0}, -- 3 north in, east out
-    { north= 1, south= 0, east= 0, west=-1}, -- 4 north in, west out
-    { north=-1, south= 1, east= 0, west= 0}, -- 5 south in, north out
-    { north= 0, south= 1, east=-1, west= 0}, -- 6 south in, east out
-    { north= 0, south= 1, east= 0, west=-1}, -- 7 south in, west out
-    { north=-1, south= 0, east= 1, west= 0}, -- 8 east in, north out
-    { north= 0, south=-1, east= 1, west= 0}, -- 9 east in, south out
-    { north= 0, south= 0, east= 1, west=-1}, -- 10 east in, west out
-    { north=-1, south= 0, east= 0, west= 1}, -- 11 west in, north out
-    { north= 0, south=-1, east= 0, west= 1}, -- 12 west in, south out
-    { north= 0, south= 0, east=-1, west= 1}, -- 13 west in, east out
-    { north= 1, south=-1, east= 1, west=-1}, -- 14 crossroads, in north out south, in east out west
-    { north= 1, south=-1, east=-1, west= 1}, -- 15 crossroads, in north out south, in west out east
-    { north=-1, south= 1, east= 1, west=-1}, -- 16 crossroads, in south out north, in east out west
-    { north=-1, south= 1, east=-1, west= 1}, -- 17 crossroads, in south out north, in west out east
-    { north= 1, south= 0, east=-1, west=-1}, -- 18 Spilt north in, east or west out
-    { north= 0, south= 1, east=-1, west=-1}, -- 19 Spilt south in, east or west out
-    { north=-1, south=-1, east= 1, west= 0}, -- 20 Spilt east in, north or south out
-    { north=-1, south=-1, east= 0, west= 1}, -- 21 Spilt west in, north or south out
-    { north= 1, south= 1, east=-1, west= 0}, -- 22 merge north or south in, east out
-    { north= 1, south= 1, east= 0, west=-1}, -- 23 merge north or south in, west out
-    { north=-1, south= 0, east= 1, west= 1}, -- 24 merge east or west in, north out
-    { north= 0, south=-1, east= 1, west= 1}, -- 25 merge west or east in, south out
+    { north=-1, south= 0, east= 0, west= 0}, -- 2 north out only
+    { north= 0, south=-1, east= 0, west= 0}, -- 3 south out only
+    { north= 0, south= 0, east=-1, west= 0}, -- 4 east out only
+    { north= 0, south= 0, east= 0, west=-1}, -- 5 west out only
+    { north= 1, south= 0, east= 0, west= 0}, -- 6 north in only
+    { north= 0, south= 1, east= 0, west= 0}, -- 7 south in only
+    { north= 0, south= 0, east= 1, west= 0}, -- 8 east in only
+    { north= 0, south= 0, east= 0, west= 1}, -- 9 west in only
+    { north= 1, south=-1, east= 0, west= 0}, -- 10 north in, south out
+    { north= 1, south= 0, east=-1, west= 0}, -- 11 north in, east out
+    { north= 1, south= 0, east= 0, west=-1}, -- 12 north in, west out
+    { north=-1, south= 1, east= 0, west= 0}, -- 13 south in, north out
+    { north= 0, south= 1, east=-1, west= 0}, -- 14 south in, east out
+    { north= 0, south= 1, east= 0, west=-1}, -- 15 south in, west out
+    { north=-1, south= 0, east= 1, west= 0}, -- 16 east in, north out
+    { north= 0, south=-1, east= 1, west= 0}, -- 17 east in, south out
+    { north= 0, south= 0, east= 1, west=-1}, -- 18 east in, west out
+    { north=-1, south= 0, east= 0, west= 1}, -- 19 west in, north out
+    { north= 0, south=-1, east= 0, west= 1}, -- 20 west in, south out
+    { north= 0, south= 0, east=-1, west= 1}, -- 21 west in, east out
+    { north= 1, south=-1, east= 1, west=-1}, -- 22 crossroads, in north out south, in east out west
+    { north= 1, south=-1, east=-1, west= 1}, -- 23 crossroads, in north out south, in west out east
+    { north=-1, south= 1, east= 1, west=-1}, -- 24 crossroads, in south out north, in east out west
+    { north=-1, south= 1, east=-1, west= 1}, -- 25 crossroads, in south out north, in west out east
+    { north= 1, south= 0, east=-1, west=-1}, -- 26 Spilt north in, east or west out
+    { north= 0, south= 1, east=-1, west=-1}, -- 27 Spilt south in, east or west out
+    { north=-1, south=-1, east= 1, west= 0}, -- 28 Spilt east in, north or south out
+    { north=-1, south=-1, east= 0, west= 1}, -- 29 Spilt west in, north or south out
+    { north= 1, south= 1, east=-1, west= 0}, -- 20 merge north or south in, east out
+    { north= 1, south= 1, east= 0, west=-1}, -- 31 merge north or south in, west out
+    { north=-1, south= 0, east= 1, west= 1}, -- 32 merge east or west in, north out
+    { north= 0, south=-1, east= 1, west= 1}, -- 33 merge west or east in, south out
+    { north= 1, south=-1, east= 1, west= 0}, -- 34 merge north or east in, south out
+    { north= 1, south= 0, east= 1, west=-1}, -- 35 merge north or east in, west out
+    { north= 1, south=-1, east= 0, west= 1}, -- 36 merge north or west in, south out
+    { north= 1, south= 0, east=-1, west= 1}, -- 37 merge north or west in, east out
+    { north=-1, south= 1, east= 1, west= 0}, -- 38 merge south or east in, north out
+    { north= 0, south= 1, east= 1, west=-1}, -- 39 merge south or east in, west out
+    { north=-1, south= 1, east= 0, west= 1}, -- 40 merge south or west in, north out
+    { north= 0, south= 1, east=-1, west= 1}, -- 41 merge south or west in, east out
 }
 
 
-local function get_conveyor_dir(pos,offset)
+local function getNeighborValue(pos,offset)
+    local nPos=shallowCopy(pos)
+    nPos.x=nPos.x+offset.x
+    nPos.z=nPos.z+offset.z
+
     for y = -1,1 do
-        local neighbor_pos = vector.add(pos, {x = offset.x, y = y, z = offset.z})
-        local neighbor_node = minetest.get_node(neighbor_pos)
+        nPos.y=pos.y+y
+        local neighbor_node = minetest.get_node(nPos)
         if neighbor_node.name == "main:conveyor" then
-            -- Found a neighboring conveyor belt, return its direction
-            return neighbor_node.param1, neighbor_pos
+            -- Found a neighboring conveyor belt, return its param
+            local param=minetest.get_meta(nPos):get_int("param")
+            return param, nPos
         end
     end
 
@@ -67,35 +88,6 @@ local function getDirMapIndex(dir)
     return 0
 end
 
-local function repairDir(dir)
-    if dir.north == 0 and dir.south == 0 and dir.east==0 and dir.west==0 then return dir end
-
-    local hasIn=false
-    local hasOut=false
-    if dir.north == 1 or dir.south == 1 or dir.east==1 or dir.west==1 then hasIn=true end
-    if dir.north == -1 or dir.south == -1 or dir.east==-1 or dir.west==-1 then hasOut=true end
-    if hasIn and not hasOut then
-        if dir.north == 1 then dir.south=-1 
-        elseif dir.south == 1 then dir.north=-1
-        elseif dir.east == 1 then dir.west=-1
-        elseif dir.west == 1 then dir.east=-1 end
-
-        return dir
-    end
-
-    if hasOut and not hasIn then
-        if dir.north == -1 then dir.south=1 
-        elseif dir.south == -1 then dir.north=1
-        elseif dir.east == -1 then dir.west=1
-        elseif dir.west == -1 then dir.east=1 end
-
-        return dir
-    end
-
-    return dir
-end
-
---todo this seems broken
 local function makeValidDir(dir)
     -- loop through the dirMap and see if any match yours
     -- keep track of the closest match
@@ -108,7 +100,7 @@ local function makeValidDir(dir)
         if d.east == dir.east then matchCount=matchCount+1 end
         if d.west == dir.west then matchCount=matchCount+1 end
 
-        if matchCount == 4 then return dir end
+        if matchCount == 4 then return end
 
         if matchCount > numMatches then
             numMatches=matchCount
@@ -116,97 +108,65 @@ local function makeValidDir(dir)
         end
     end
 
+    minimal.log("makeValidDir closestIndex:"..closestIndex.." numMatches:"..numMatches)
     dir.north=dirMap[closestIndex].north
     dir.south=dirMap[closestIndex].south
     dir.east=dirMap[closestIndex].east
     dir.west=dirMap[closestIndex].west
-
-    return dir
-    --return dirMap[closestIndex]
 end
 
-local function connectNorth(yourDir,neighborDir)
-    if neighborDir==0 then
-        local testDir=copyDir(yourDir)
-        testDir.south=-1
-        if getDirMapIndex(testDir)>0 then return -1 end
-        testDir.south=1
-        if getDirMapIndex(testDir)>0 then return 1 end
-        return -1  
-    else
-        local nDir=dirMap[neighborDir]
-        if nDir.south == 0 then 
-            local testDir=copyDir(nDir)
-            testDir.south=-1
-            if getDirMapIndex(testDir)>0 then return -1 end
-            testDir.south=1
-            if getDirMapIndex(testDir)>0 then return 1 end
-            return -1
-        else return -nDir.south end
+
+
+local function connectRawNeighbor(yourDir,neighbor,yc,nc)
+    local nDir=shallowCopy(dirMap[neighbor.param])
+    yourDir[yc]=-1
+    nDir[nc]=1
+    if getDirMapIndex(yourDir)==0 then  
+        yourDir[yc]=1
+        nDir[nc]=-1
+        if getDirMapIndex(yourDir)==0 then 
+            yourDir[yc]=-1 
+            nDir[nc]=-1
+            minimal.log("connect still invalid:"..dump(yourDir))
+        end
     end
-end
-local function connectSouth(yourDir,neighborDir)
-    if neighborDir==0 then
-        local testDir=copyDir(yourDir)
-        testDir.north=-1
-        if getDirMapIndex(testDir)>0 then return -1 end
-        testDir.north=1
-        if getDirMapIndex(testDir)>0 then return 1 end
-        return -1  
-    else
-        local nDir=dirMap[neighborDir]
-        if nDir.north == 0 then 
-            local testDir=copyDir(nDir)
-            testDir.north=-1
-            if getDirMapIndex(testDir)>0 then return -1 end
-            testDir.north=1
-            if getDirMapIndex(testDir)>0 then return 1 end
-            return -1
-        else return -nDir.north end
-    end
-end
-local function connectEast(yourDir,neighborDir)
-    if neighborDir==0 then
-        local testDir=copyDir(yourDir)
-        testDir.west=-1
-        if getDirMapIndex(testDir)>0 then return -1 end
-        testDir.west=1
-        if getDirMapIndex(testDir)>0 then return 1 end
-        return -1  
-    else
-        local nDir=dirMap[neighborDir]
-        if nDir.west == 0 then 
-            local testDir=copyDir(nDir)
-            testDir.west=-1
-            if getDirMapIndex(testDir)>0 then return -1 end
-            testDir.west=1
-            if getDirMapIndex(testDir)>0 then return 1 end
-            return -1
-        else return -nDir.west end
-    end
-end
-local function connectWest(yourDir,neighborDir)
-    if neighborDir==0 then
-        local testDir=copyDir(yourDir)
-        testDir.east=-1
-        if getDirMapIndex(testDir)>0 then return -1 end
-        testDir.east=1
-        if getDirMapIndex(testDir)>0 then return 1 end
-        return -1  
-    else
-        local nDir=dirMap[neighborDir]
-        if nDir.east == 0 then 
-            local testDir=copyDir(nDir)
-            testDir.east=-1
-            if getDirMapIndex(testDir)>0 then return -1 end
-            testDir.east=1
-            if getDirMapIndex(testDir)>0 then return 1 end
-            return -1
-        else return -nDir.east end
-    end
+    minimal.log("connectRawNeighbor yourDir"..dump(yourDir))
+    
+   
+    neighbor.param=getDirMapIndex(nDir)
+
+    minimal.log("connectRawNeighbor nDir: "..neighbor.param..dump(nDir))
 end
 
-local function set_conveyor_direction(pos)
+local function connectExistingNeighbor(yourDir,neighbor,yc,nc)
+    local nDir=shallowCopy(dirMap[neighbor.param])
+   
+    if nDir[nc] == 0 then 
+        yourDir[yc]=-1
+        nDir[nc]=1
+        if getDirMapIndex(nDir)==0 then 
+            yourDir[yc]=1
+            nDir[nc]=-1
+            if getDirMapIndex(nDir)==0 then 
+                yourDir[yc]=-1 
+                nDir[nc]=-1
+                minimal.log("connectNeighbor still invalid*"..dump(nDir)) 
+            end
+        end
+    else 
+        yourDir[yc]=-nDir[nc]
+    end
+
+    minimal.log("connectExistingNeighbor yourDir"..dump(yourDir))
+
+    neighbor.param=getDirMapIndex(nDir)
+    minimal.log("connectExistingNeighbor nDir: "..neighbor.param..dump(nDir))
+end
+
+
+
+
+local function setConveyorParam(pos)
     -- Directions to check (assuming a 2D grid, add more for a 3D setup)
 
     local neighbors={ {param=0,pos=nil}, {param=0,pos=nil}, {param=0,pos=nil}, {param=0,pos=nil} }
@@ -219,84 +179,53 @@ local function set_conveyor_direction(pos)
     }
 
     for i,offset in ipairs(offsets) do
-       neighbors[i].param , neighbors[i].pos = get_conveyor_dir(pos,offset)
+       neighbors[i].param , neighbors[i].pos = getNeighborValue(pos,offset)
        --minimal.log(""..i..") dir:"..neighbors[i].dir.." pos:"..dump(neighbors[i].pos))
     end
 
     local yourDir={ north=0, south=0, east=0, west=0}
-    minimal.log("0 dir:"..getDirMapIndex(yourDir))
+    --minimal.log("0 dir:"..getDirMapIndex(yourDir))
+    --minimal.log("yourDir 0: "..getDirMapIndex(yourDir).." "..dump(yourDir))
 
-    minimal.log("yourDir 0: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-
-    if neighbors[1].param >= 0 then  --  east neighbor
-        yourDir.east= connectEast(yourdir,neighbors[1].dir)
+    -- must connect to the existing ones first so we match the raw guys based on what is already laid
+    if neighbors[1].param > 1 then  --  east neighbor
+        connectExistingNeighbor(yourDir,neighbors[1],"east","west")
     end
 
-    if neighbors[2].dir >= 0 then -- west neighbor
-        yourDir.west= connectSouth(yourdir,neighbors[2].dir)
+    if neighbors[2].param > 1 then -- west neighbor
+        connectExistingNeighbor(yourDir,neighbors[2],"west","east")
     end
 
-    if neighbors[3].dir >= 0 then -- north neighbor
-        yourDir.west= connectSouth(yourdir,neighbors[3].dir)
+    if neighbors[3].param > 1 then -- north neighbor
+        connectExistingNeighbor(yourDir,neighbors[3],"north","south")
     end
 
-    if neighbors[4].dir >= 0 then -- south neighbor
-        yourDir.south=connectSouth(yourdir,neighbors[4].dir)
+    if neighbors[4].param > 1 then -- south neighbor
+        connectExistingNeighbor(yourDir,neighbors[4],"south","north")
     end
 
-    minimal.log("1 dir:"..getDirMapIndex(yourDir))
-    yourDir=repairDir(yourDir)
-    yourDir=makeValidDir(yourDir)
-    minimal.log("1.5 dir:"..getDirMapIndex(yourDir))
-
-    -- check for not set neighbors
-    if neighbors[1].dir == 0 or neighbors[1].dir == 1  then  --  east neighbor
-        -- see if it works with east in, if not then east must be out
-        yourDir.east= -1
-        if getDirMapIndex(yourDir) == 0 then
-            yourDir.east= 1
-        end
-        yourDir=repairDir(yourDir)
-        minimal.log("yourDir5: "..dump(yourDir))
-        minimal.log("yourDir5: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-        minimal.log("1 neigbor not set")
+    if neighbors[1].param == 1 then  --  east neighbor
+        connectRawNeighbor(yourDir,neighbors[1],"east","west")
     end
 
-    if neighbors[2].dir == 0 or neighbors[2].dir == 1 then -- west neighbor
-        -- see if it works with west in, if not then west must be out
-        yourDir.west= -1
-        if getDirMapIndex(yourDir) == 0 then
-            yourDir.west= 1
-        end
-        yourDir=repairDir(yourDir)
-        minimal.log("yourDir6: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-        minimal.log("2 neigbor not set")
+    if neighbors[2].param == 1 then -- west neighbor
+        connectRawNeighbor(yourDir,neighbors[2],"west","east")
     end
 
-    if neighbors[3].dir == 0 or neighbors[3].dir == 1 then -- north neighbor
-        -- see if it works with north in, if not then north must be out
-        yourDir.north= -1
-        if getDirMapIndex(yourDir) == 0 then
-            yourDir.north= 1
-        end
-        yourDir=repairDir(yourDir)
-        minimal.log("yourDir7: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-        minimal.log("3 neigbor not set")
+    if neighbors[3].param == 1 then -- north neighbor
+        connectRawNeighbor(yourDir,neighbors[3],"north","south")
     end
 
-    if neighbors[4].dir == 0 or neighbors[4].dir == 1 then -- south neighbor
-        -- see if it works with south in, if not then south must be out
-        yourDir.south= -1
-        if getDirMapIndex(yourDir) == 0 then
-            yourDir.south= 1
-        end
-        yourDir=repairDir(yourDir)
-        minimal.log("yourDir8: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-        minimal.log("4 neigbor not set")
+    if neighbors[4].param == 1 then -- south neighbor
+        connectRawNeighbor(yourDir,neighbors[4],"south","north")
     end
 
 
-    minimal.log("2 dir:"..getDirMapIndex(yourDir).." "..dump(yourDir))
+
+    --minimal.log("1 yourDir:"..getDirMapIndex(yourDir))
+    --repairDir(yourDir)
+    makeValidDir(yourDir)
+    
 
     local newParamValue=getDirMapIndex(yourDir)
     if newParamValue == 0 then
@@ -304,23 +233,13 @@ local function set_conveyor_direction(pos)
         return
     end
 
-    local existingNeedUpdate=false
-    -- must update your param1 before you update the non set neighbors
-    local node = minetest.get_node(pos)
-    if node.name == "main:conveyor" then
-        if node.param1 ~= newParamValue then
-            existingNeedUpdate=true
-            minimal.log("Updating param1:"..node.param1.." to "..newParamValue)
-            minetest.set_node(pos, {name = "main:conveyor", param1 = newParamValue})
-        end
-    else 
-        minimal.log("set_conveyor_direction node not a conveyor")
-    end
+    minimal.log("yourDir:("..pos.x..","..pos.z..") param:"..newParamValue)
+    minetest.get_meta(pos):set_int("param",newParamValue)
 
     for i = 1,4 do
-        if neighbors[i].dir == 1 or (neighbors[i].dir>1 and existingNeedUpdate) then 
-            minimal.log("re-setting neighbor "..i)
-            set_conveyor_direction(neighbors[i].pos)
+        if neighbors[i].param>0 then 
+            minimal.log("neighbor ("..neighbors[i].pos.x..","..neighbors[i].pos.z..") param:"..neighbors[i].param)
+            minetest.get_meta(neighbors[i].pos):set_int("param",neighbors[i].param)
         end
     end    
 end
@@ -333,7 +252,7 @@ minetest.register_node("main:conveyor", {
     is_ground_content = false,
 	inventory_image = "conveyor1.png",
 	wield_image = "conveyor1.png",
-	--paramtype = "light",
+	paramtype = "light",
     paramtype2 = "facedir",
 	walkable = false,
     selection_box = {
@@ -359,18 +278,18 @@ minetest.register_node("main:conveyor", {
 	
 
 	on_construct = function(pos)
-        
-        minimal.log("conveyor on_construct")
-        local node = minetest.get_node(pos)
-        if node.param1 == 0 then
-            set_conveyor_direction(pos)
-        end  
+        minimal.log("conveyor on_construct("..pos.x..","..pos.z..")")
+        setConveyorParam(pos)
     end,
 
     after_place_node = function(pos, placer, itemstack, pointed_thing)
         
     end,
 })
+
+function messWithDir(dir)
+    dir.north=12
+end
 
 function tanglerTest()
     for i,dir in ipairs(dirMap) do
@@ -401,18 +320,19 @@ function tanglerTest()
         minimal.log("tanglerTest expected 0 got "..ret)
     end
 
-    dir=repairDir(dir)
+    repairDir(dir)
     ret=getDirMapIndex(dir)
     if ret ~= 13  then
         minimal.log("tanglerTest expected 13 got "..ret)
     end
 
+   -- messWithDir(dir)
+   -- minimal.log("Mess result "..dir.north)
+
     minimal.log("tangler Test over")
 end
 
 
-
---[[
 
 -- Define the ABM (Active Block Modifier) for moving objects
 minetest.register_abm({
@@ -471,7 +391,7 @@ minetest.register_abm({
     end, 
 })
 
-]]--
+
 
 
 

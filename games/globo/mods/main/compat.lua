@@ -102,3 +102,12 @@ function minimal.math_clamp(num,min,max) -- math.clamp implementation from my fu
    minetest.chat_send_all(message)
    minetest.log("action", message)
  end
+
+
+ function shallowCopy(orig)
+   local copy = {}
+   for key, value in pairs(orig) do
+       copy[key] = value
+   end
+   return copy
+end
