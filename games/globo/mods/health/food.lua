@@ -136,33 +136,6 @@ local eat_redef = {
 		return exile_eatdrink(itemstack, user, pointed_thing)
 end}
 
-local function bake_error(pos, selfname)
-   local posstr = minetest.pos_to_string(pos)
-   minetest.log("error", "Warning, attempting to use a bake timer at "..
-		"pos: "..posstr..", set on a non-bakeable node:"..selfname)
-end
-
-local bake_redef = {
-   on_construct = function(pos)
-      local selfname = minetest.get_node(pos).name
-      selfname = selfname:gsub("_cooked","") -- ensure we have the base name
-      if bake_table[selfname] == nil then
-	 bake_error(pos, selfname)
-	 return true
-      end
-      ncrafting.start_bake(pos, bake_table[selfname][2])
-   end,
-   on_timer = function(pos, elapsed)
-      local selfname = minetest.get_node(pos).name
-      selfname = selfname:gsub("_cooked","") -- ensure we have the base name
-      if bake_table[selfname] == nil then
-	 bake_error(pos, selfname)
-	 return true
-      end
-      return ncrafting.do_bake(pos, elapsed,
-			       bake_table[selfname][1],
-			       bake_table[selfname][2])
-end}
 
 function exile_add_food(table)
    --Add new foods, mod must send a table in the food_data.lua format
@@ -173,15 +146,7 @@ function exile_add_food(table)
       end
    end
 end
-function exile_add_bake(table)
-   --Add new bakables, mod must send a table in the food_data.lua format
-   for k, v in pairs(table) do
-      bake_table[k] = v
-      if minetest.registered_nodes[k] then
-	 minetest.override_item(k, bake_redef)
-      end
-   end
-end
+
 function exile_add_harm(table)
    --Add new food harm, mod must send a table in the food_data.lua format
    for k, v in pairs(table) do
@@ -192,12 +157,6 @@ end
 function exile_add_food_hooks(name)
    if (minetest.get_item_group(name,'edible') > 0) or food_table[name] then
       minetest.override_item(name, eat_redef)
-   end
-   if bake_table[name] then
-      minetest.override_item(name, bake_redef)
-   end
-   if string.match(name, "_cooked") then
-	 minetest.override_item(name, bake_redef)
    end
 end
 

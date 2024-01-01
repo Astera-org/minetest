@@ -185,11 +185,11 @@ minetest.register_abm({
 	label = "Lava sparks embers",
 	nodenames = {"nodes_nature:lava_source"},
 	neighbors = {"air"},
-	interval = 10, -- 20
-	chance = 1, -- 12
+	interval = 20, 
+	chance = 12, 
 	catch_up = false,
 	action = function(pos, node)
-		if math.random() < 0.9 then  -- .1
+		if math.random() < 0.1 then  
 			minimal.log("lava spark")
 			-- put ember on top of random space within 2 nodes of the lava
 			local p = minetest.find_node_near(pos, 2, {"air",
@@ -198,6 +198,18 @@ minetest.register_abm({
 			minetest.set_node(p, {name = "main:ember"})
 		end
 
+		check_fire_spread(pos,.25)
+	end,
+})
+
+minetest.register_abm({
+	label = "Flowing Lava Fire spread",
+	nodenames = {"nodes_nature:lava_flowing"},
+	neighbors = {"group:flammable"},
+	interval = 20, 
+	chance = 50,
+	catch_up = false,
+	action = function(pos, node)
 		check_fire_spread(pos,.25)
 	end,
 })

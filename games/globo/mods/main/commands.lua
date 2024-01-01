@@ -126,22 +126,17 @@ minetest.register_chatcommand("node", {
         local dir = player:get_look_dir()
         local pos = player:get_pos()
 
-        local pos1={x=pos.x-1,y=pos.y-1,z=pos.z-1}
-        local pos2={x=pos.x+1,y=pos.y+1,z=pos.z+1}
-        local f = minetest.find_nodes_in_area(pos1,pos2,'group:flammable')
-	    minimal.log("found: "..#f..dump(f))
-        --[[
         local newpos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
         local node = minetest.get_node(newpos)
-        minimal.log("node:"..node.name)
+        minimal.log("node:"..node.name.." p1:"..dump(node.param1).." p2:"..dump(node.param2))
         local node_def = minetest.registered_nodes[node.name]
         if node_def and node_def.groups then
             for group, value in pairs(node_def.groups) do
-                minimal.log(group..":"..dump(value))
+        --        minimal.log(group..":"..dump(value))
             end
         else
             minimal.log("no groups")
-        end ]]--
+        end 
     end,
 })
 
@@ -180,6 +175,16 @@ minetest.register_chatcommand("pop", {
                 end
             end
         end
+    end,
+})
+
+
+minetest.register_chatcommand("test", {
+    description = "run test functions",
+    params = "",  
+    privs = {fly = true},
+    func = function(name, param)
+       tanglerTest()
     end,
 })
 

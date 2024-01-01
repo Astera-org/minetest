@@ -405,25 +405,31 @@ minetest.register_node("main:corn", {
 minetest.register_node("main:pond", {
 	on_construct = function(pos)
 		-- TODO: hack since mts files seem annoying
-		
-		for x = -1,1 do
-			for z = -1,1 do
-				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
-				minetest.set_node(p,{name="air"})
+
+		local pondDepth=math.random(-11,-5)
+		local pondDepth2=math.random(-11,-5)
+		pondDepth=math.max(pondDepth,pondDepth2)
+
+		for x = -2,2 do
+			for z = -2,2 do
+				if x==-2 or x==2 or z==-2 or z==2 and math.random()<.5 then
+					-- skip this column
+				else
+					for y=pondDepth+1,1 do
+						local p = {x=pos.x+x,y=pos.y+y,z=pos.z+z}
+						minetest.set_node(p,{name="air"})
+					end
+
+					if x==-2 or x==2 or z==-2 or z==2 and math.random()<.5 then
+						-- skip this column
+					else
+						for y=pondDepth-3,pondDepth do
+							local p = {x=pos.x+x,y=pos.y+y,z=pos.z+z}
+							minetest.set_node(p,{name="nodes_nature:freshwater_source"})
+						end
+					end
+				end
 			end
 		end
-		pos.y=pos.y-1
-		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
-
-		minetest.set_node(pos,{name="nodes_nature:freshwater_source"}) 
-		pos.x=pos.x-1
-		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
-		pos.x=pos.x+2
-		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})
-		
-
-		pos.x=pos.x-1
-		pos.y=pos.y-1
-		minetest.set_node(pos,{name="nodes_nature:freshwater_source"})  
 	end,
 })

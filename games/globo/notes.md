@@ -2,13 +2,20 @@ TODO:
 - make playable
     - make breeding
         - make pregnant a timer rather than a bool
-    - fire
-        - dropped items should burn
     - temperature should effect you
+        - hides that keep you warm
         - eggs need to be a certain temperature to hatch
+    - Tangler ; lays conveyors from it
+        - Conveyor belt: Placed on terrain. Any item on it is conveyed along to the end of the belt
+        - Tangler
+
+
 
 - wolves are often getting killed by cows
-
+- dropped items should burn in fire
+- flowing water should push you
+- you heal too fast
+- something should heal you faster
 - you shouldn't be able to swim long distances (maybe just really saps your energy)
 - should drop out of "attack eat" when you lose sight of the prey
 - player should be no different than other animals to the mobs
@@ -42,7 +49,7 @@ TODO:
 
 
 
-- Conveyor belt: Placed on terrain. Any item on it is conveyed along to the end of the belt
+
 - Launcher: anything that stands on this is launched in the air in the direction it was going
 
 

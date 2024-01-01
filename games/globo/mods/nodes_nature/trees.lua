@@ -282,9 +282,7 @@ for i in ipairs(tree_list) do
 				type = "fixed",
 				fixed = selbox_fruit
 			},
-			groups = {dig_immediate=3, flammable=20, leafdecay = 3, leafdecay_drop = 1, ncrafting_dye_candidate = dyecandidate },
-			sounds = nodes_nature.node_sound_defaults(),
-			_ncrafting_dye_dcolor = dominantcolor,
+			groups = {dig_immediate=3, flammable=20, leafdecay = 3, leafdecay_drop = 1 },
 			after_place_node = function(pos, placer, itemstack)
 				minetest.set_node(pos, {name = "nodes_nature:"..fruitname, param2 = 0})
 			end,
