@@ -5,79 +5,42 @@ TODO:
     - temperature should effect you
         - hides that keep you warm
         - eggs need to be a certain temperature to hatch
-    - Tangler 
-        - Determine better starting places for conveyors
-        - more chance of branching the further you are away 
-        - less likely to cross an existing vine
-        - make the things that hurt around it
-            - just pain in radius?
-            - thorns?
-            - vines that grab you?
+    - predators in the swamps
+    - more stuff in swamps
 
-
-- Block that moves through the air at a particular elevation until it hits something.  Anything on top of it will ride along. Spawns randomly
-- wolves are often getting killed by cows
+-make cows favor things you eat
 - dropped items should burn in fire
 - flowing water should push you
 - you heal too fast
-- something should heal you faster
 - you shouldn't be able to swim long distances (maybe just really saps your energy)
-- should drop out of "attack eat" when you lose sight of the prey
 - player should be no different than other animals to the mobs
 - if pulse blossom is in your inventory it should hurt you
 - plants spread
-
-- kangal pods should glow
-
-- will drift at last speed once at energy 0
-
+- normalize mobs
+- normalize food/water/damage
 - make animals sleep
 - animals run from fire
-- make sure animals can be in equalibrim
-- normalize mobs
-
-
-- Lava Ox
-- Chaos Hawk
-- badger
-- Ogre
-- Snagon
-- Frost mephit
-- Giant Moth
-- Sand Slug
-- ensure the maps aren't too crazy
 - adjust the exile energy system to have a max energy and regain your current energy when you are still
-- sleep
-    - wake you up if too hungry when sleeping
-    - wake up if you take damage
+- ensure the maps aren't too crazy
+
+CHECK:
+- wolves are often getting killed by cows
+- should drop out of "attack eat" when you lose sight of the prey
+- make sure animals can be in equalibrim
+- not raining anymore?
 
 
 
 
-
-- Launcher: anything that stands on this is launched in the air in the direction it was going
-
-
-- water should make pools 
 
 BUGS:
 - sneachens aren't eating?
 - wolf energy not decreasing
 - health efects are being cleared instantly
-
-to test
-- do potatoes spread properly
+- will drift at last speed once at energy 0
 
 
-Later:
-- Wind that effects the direction that fire spreads
-- Do we want to be able to dig clay or cut trees?
-- need a way to throw things away
-- potatoes only spread under the right conditions
-- Kill grib_weed if it is too cold for too long
-- sun berry: plant that glows when it is in dry soil.
-- Each block type has a chance of becoming an item or just disappearing when you break it.
-- Corn: needs to be a plant for awhile and then becomes food
+
 
 - Temperature
     you start to die if not kept in a certain temperature range. It is colder at night. Certain parts of the map are colder. Some days are colder than others. If you are too hot you will lose energy faster and get thirsty faster.
@@ -86,10 +49,22 @@ Later:
     Your core temp goes toward this temperature over time
 
 
--   Corpse: provides food. Turns to bones
 
-Ideas
-----
+IDEAS:
+- Lava Ox
+- Chaos Hawk
+- badger
+- Ogre
+- Snagon
+- Frost mephit
+- Giant Moth
+- Sand Slug
+- Block that moves through the air at a particular elevation until it hits something.  Anything on top of it will ride along. Spawns randomly
+- something should heal you faster
+- Launcher: anything that stands on this is launched in the air in the direction it was going
+- Corn: needs to be a plant for awhile and then becomes food
+    - corn should grow a stalk and you must reach the top to eat it
+- tar
 Motion detector
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 Fountain: Will spray water over the nearby blocks.
@@ -101,9 +76,22 @@ Throw rocks. Do a small amount of damage
 Flower that only blossoms at dawn. You can eat it then
 
 
+Later:
+- Wind that effects the direction that fire spreads
+- Do we want to be able to dig clay or cut trees?
+- need a way to throw things away
+- potatoes only spread under the right conditions
+- Kill grib_weed if it is too cold for too long
+- sun berry: plant that glows when it is in dry soil.
+- Each block type has a chance of becoming an item or just disappearing when you break it.
+
+
+
+
 Changes to Minetest
 ----
 Allow you to send other commands
+Allow you to generate the whole map and reject those that don't meet some criteria
 
 
 Notes

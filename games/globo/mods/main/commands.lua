@@ -139,7 +139,7 @@ minetest.register_chatcommand("node", {
         local node_def = minetest.registered_nodes[node.name]
         if node_def and node_def.groups then
             for group, value in pairs(node_def.groups) do
-        --        minimal.log(group..":"..dump(value))
+                minimal.log(group..":"..dump(value))
             end
         else
             minimal.log("no groups")
@@ -192,6 +192,33 @@ minetest.register_chatcommand("test", {
     privs = {fly = true},
     func = function(name, param)
        tanglerTest()
+
+       local player = minetest.get_player_by_name(name)
+        local dir = player:get_look_dir()
+        local pos = player:get_pos()
+
+        local nodePos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
+       grib_spread(nodePos)
+    end,
+})
+
+minetest.register_chatcommand("egg", {
+    description = "Drop an egg",
+    params = "",  
+    privs = {},
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        playerLayEgg(player)
+    end,
+})
+
+minetest.register_chatcommand("sleep", {
+    description = "Go to Sleep",
+    params = "",  
+    privs = {},
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        playerSleep(player)
     end,
 })
 

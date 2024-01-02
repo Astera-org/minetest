@@ -177,7 +177,7 @@ for i in ipairs(tree_list) do
 				meta:set_string("saved_param2", 0)
 				meta:set_string("leaf_name", "nodes_nature:"..treename.."_leaves")
 				meta:set_string("tree_name", "nodes_nature:"..treename.."_tree")
-				minetest.get_node_timer(pos):start(math.random(tree_base_tree_growth/2, tree_base_tree_growth))
+				minetest.get_node_timer(pos):start(math.random(tree_base_tree_growth/2, tree_base_tree_growth)*GAME_SPEED)
 			end
 		end,
 	})
@@ -258,7 +258,7 @@ for i in ipairs(tree_list) do
 				meta:set_string("saved_param2", oldnode.param2)
 				meta:set_string("leaf_name", "nodes_nature:"..treename.."_leaves")
 				meta:set_string("tree_name", "nodes_nature:"..treename.."_tree")
-				minetest.get_node_timer(pos):start(math.random(tree_base_leaf_growth/2, tree_base_leaf_growth))
+				minetest.get_node_timer(pos):start(math.random(tree_base_leaf_growth/2, tree_base_leaf_growth)*GAME_SPEED)
 			end
 		end,
 	})
@@ -294,7 +294,7 @@ for i in ipairs(tree_list) do
 					meta:set_string("saved_param2", p2_fruit)
 					meta:set_string("leaf_name", "nodes_nature:"..treename.."_leaves")
 					meta:set_string("tree_name", "nodes_nature:"..treename.."_tree")
-					minetest.get_node_timer(pos):start(math.random(tree_base_fruit_growth/2, tree_base_fruit_growth))
+					minetest.get_node_timer(pos):start(math.random(tree_base_fruit_growth/2, tree_base_fruit_growth)*GAME_SPEED)
 				end
 			end,
 		})
@@ -336,7 +336,7 @@ minetest.override_item("nodes_nature:sasaran_cone",{
 			     end
 
 			     --hp_change, thirst_change, hunger_change, energy_change, temp_change, replace_with_item
-			     return HEALTH.use_item(itemstack, user, 0, 0, 5, 0, 5)
+			     return HEALTH.use_item(itemstack, user, 0, 0, 7, 0, 4)
 
 			  end,
 })
@@ -346,6 +346,6 @@ local kagum_groups = table.copy(minetest.registered_nodes["nodes_nature:kagum_po
 kagum_groups.bioluminescent = 1
 
 minetest.override_item("nodes_nature:kagum_pod",{
- light_source = 8,
+ light_source = 7,
  groups = kagum_groups,
 })

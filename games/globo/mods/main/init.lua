@@ -42,7 +42,10 @@ ENERGY_JUMP_COST = 20     -- Cost of energy per jump
 SLEEP_STARVE_COE=0.3 
 TIRED_RATE=0.5
 
-GAME_SPEED = 1
+GAME_SPEED=minetest.settings:get('GAME_SPEED')
+GAME_LENGTH=minetest.settings:get('GAME_LENGTH')
+
+
 
 
 local default_path = minetest.get_modpath("main")
@@ -58,3 +61,4 @@ dofile(default_path.."/commands.lua")
 dofile(default_path.."/inferno.lua")
 dofile(default_path.."/conveyor.lua")
 dofile(default_path.."/tangler.lua")
+dofile(default_path.."/main.lua")

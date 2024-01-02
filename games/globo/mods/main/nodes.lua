@@ -95,7 +95,7 @@ minetest.register_node("main:pulse_blossom", {
 minetest.register_node("main:pulse_blossom_on", {
 	description = "Pulse Blossom",
 	drawtype = "plantlike",
-	tiles = {"pulse_blossom.png"},
+	tiles = {"pulse_blossom_on.png"},
 	inventory_image = "pulse_blossom.png",
 	wield_image = "pulse_blossom.png",
 	paramtype = "light",
@@ -128,10 +128,10 @@ minetest.register_node("main:pulse_blossom_on", {
 		for _, obj in ipairs(objects) do
 			if obj:is_player() then
 				minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a pulse blossom")
-				changePlayerHP(obj, -1)
+				changePlayerHP(obj, -3)
 			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
-				mobkit.hurt(mob,1)
+				mobkit.hurt(mob,3)
 			end
 		end
 
@@ -233,25 +233,19 @@ minetest.register_node("main:potatoes", {
 	groups = {snappy = 3, flammable = 30, flora=1},
 	on_construct = function(pos)
 		local timer = minetest.get_node_timer(pos)
-		timer:start(60*1*GAME_SPEED) 
+		timer:start(600*GAME_SPEED) 
+		minetest.get_meta(pos):set_int("potato",0)
     end,
 	on_timer = function(pos, elapsed)
-		local node = minetest.get_node(pos)
-		local p1=node.param1+1
-		local p2=node.param2
-	
-		if p1 > 10 then
-			if p2 == 0 then  -- Check if potato
-				p2=1 -- Set potato state
-			end
-			if p1 > 30 then
-				if potatoes_spred(pos) then
-					p1=0
-					p2=0
-				else p1=20 end
+		local meta=minetest.get_meta(pos)
+		local pCount=meta:get_int("potato")+1
+		if pCount>2 then
+			if potatoes_spred(pos) then
+				pCount=0
 			end
 		end
-		minetest.swap_node(pos, {name = "main:potatoes", param1 = p1, param2=p2})
+		meta:set_int("potato",pCount)
+
 		return true -- Continue the cycle
     end,
 	on_use = function(itemstack, player, pointed_thing)
@@ -260,12 +254,14 @@ minetest.register_node("main:potatoes", {
 		return itemstack
 	end,
 	on_punch = function(pos, node, player, pointed_thing)
-		if node.param2 == 1 then  -- Check if potato
+		local meta=minetest.get_meta(pos)
+		local pCount=meta:get_int("potato")
+		if pCount > 0 then  -- Check if potato
 			local inv=player:get_inventory()
 			if inv:room_for_item("main", "main:potatoes") then
 				--minetest.chat_send_player("singleplayer", "potato harvest taken")
 				inv:add_item("main", "main:potatoes")
-				minetest.swap_node(pos, {name = "main:potatoes", param1 = 0, param2 = 0}) -- Set potato state
+				meta:set_int("potato",0)
 			end
 		end
 	end,
@@ -274,21 +270,17 @@ minetest.register_node("main:potatoes", {
 
 function potatoes_spred(pos)	
 	-- Chance of spreading potatoes to adjacent positions
-	local positions = minetest.find_nodes_in_area(
+	local positions = minetest.find_nodes_in_area_under_air(
 		{x = pos.x - 2, y = pos.y - 1, z = pos.z - 2},
 		{x = pos.x + 2, y = pos.y + 1, z = pos.z + 2},
-		{"air"}
+		{"group:spreading"}
 	)
 
-	local newPos=positions[math.random(#positions)]
-
-	local node_under = minetest.get_node({x = newPos.x, y = newPos.y - 1, z = newPos.z})
-	if node_under.name == "nodes_nature:silt" or node_under.name == "nodes_nature:loam" or node_under.name == "nodes_nature:clay" then
-		if minetest.get_node(newPos).name == "air" then
-			--print("spread potatoes")
-			minetest.set_node(newPos, {name = "main:potatoes"})
-			return true
-		end
+	if #positions > 0 then
+		local newPos=positions[math.random(#positions)]
+		newPos.y=newPos.y+1
+		minetest.set_node(newPos, {name = "main:potatoes"})
+		return true
 	end
 	return false
 end
@@ -349,42 +341,42 @@ minetest.register_node("main:grib_weed", {
 	walkable = false,
 	groups = {snappy = 3, flammable = 35, flora = 1}, 
     on_timer = function(pos, elapsed)
-        grib_spread(pos)
-        return true -- Continue the cycle
+        if math.random() < .1 then grib_spread(pos) end
+        return true 
     end,
-	after_place_node = function(pos, placer, itemstack, pointed_thing)
-		--print("place grib")
-        start_node_timer(pos) 
-    end,
+	
     on_construct = function(pos)
 		--minetest.log("action", "on_construct grib")
         start_node_timer(pos) 
     end,
 })
 
-
-function grib_kill(pos)
-    -- Replaces grib weed with air, effectively "killing" it
-    minetest.set_node(pos, {name = "air"})
-end
-
 function grib_spread(pos)	
 	-- Chance of spreading grib weed to adjacent positions
-	local positions = minetest.find_nodes_in_area(
+	local positions = minetest.find_nodes_in_area_under_air(
 		{x = pos.x - 1, y = pos.y - 1, z = pos.z - 1},
 		{x = pos.x + 1, y = pos.y + 1, z = pos.z + 1},
-		{"group:flora", "air"}
+		{"group:flora"}
 	)
-	for _, p in ipairs(positions) do
-		if math.random(1, 1000) <= 20 then
-			local node_under = minetest.get_node({x = p.x, y = p.y - 1, z = p.z})
-			if node_under.name == "nodes_nature:clay" or node_under.name == "nodes_nature:silt" then
-				if minetest.get_node(p).name == "air" or minetest.get_node(p).name:find("group:flora") then
-					--minetest.log("action", "spread_grib_weed")
-					minetest.set_node(p, {name = "main:grib_weed"})
-				end
-			end
+
+	if #positions > 0 then
+		local newPos=positions[math.random(#positions)]
+		if minetest.get_node(newPos).name ~= "main:grib_weed" then
+			minetest.set_node(newPos, {name = "main:grib_weed"})
+			return
 		end
+	end
+
+	positions = minetest.find_nodes_in_area_under_air(
+		{x = pos.x - 1, y = pos.y - 1, z = pos.z - 1},
+		{x = pos.x + 1, y = pos.y + 1, z = pos.z + 1},
+		{"group:spreading"}
+	)
+
+	if #positions > 0 then
+		local newPos=positions[math.random(#positions)]
+		newPos.y=newPos.y+1
+		minetest.set_node(newPos, {name = "main:grib_weed"})
 	end
 end
 

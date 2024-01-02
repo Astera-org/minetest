@@ -401,7 +401,6 @@ function tanglerTest()
         minimal.log("tanglerTest expected 0 got "..ret)
     end
 
-    repairDir(dir)
     ret=getDirMapIndex(dir)
     if ret ~= 13  then
         minimal.log("tanglerTest expected 13 got "..ret)

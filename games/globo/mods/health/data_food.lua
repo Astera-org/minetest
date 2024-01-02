@@ -33,7 +33,7 @@ food_table = {
 	["nodes_nature:zufani"]             = { 0,  0,   6,  0,  0 },
 	["nodes_nature:galanta"]            = { 0,  1,   3,  0,  0 },
 	["nodes_nature:lambakap"]           = { 0, 10,  10,  0,  0 },
-	["nodes_nature:tangkal_fruit"]      = { 0,  5,  10, 10,  0 },
+	["nodes_nature:tangkal_fruit"]      = { 0, 10,  15, 10,  0 },
 	["nodes_nature:momo"]               = { 0,  1,  12,  0,  0 },
 	["nodes_nature:snow"]               = { 0, 50,  0,-100, -1 },
 	["nodes_nature:snow_block"]         = { 0,100,  0,-200, -2 },
@@ -69,7 +69,7 @@ food_table = {
 	-- Maraka nut is dangerous poisonous until processed,
 	-- causes photosensitivity, and risk of hepatotoxicity.
 	-- You can eat it raw if you want to take the risk... famine food for the desperate.
-	["nodes_nature:maraka_nut"]         = { 0,  0,   5,  5,  0 },
+	["nodes_nature:maraka_nut"]         = { 0,  0,   7,  5,  0 },
 	--medicine                              hp  th   hu  en  te
 	["nodes_nature:hakimi"]             = { 1,  0,   0,  -5,  0 },
 	["nodes_nature:merki"]              = { 1,  0,   0,  -5,  0 },

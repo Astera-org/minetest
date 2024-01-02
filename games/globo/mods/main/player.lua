@@ -219,7 +219,6 @@ minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
         if stepPlayerSleep(player,dtime) then
             stepPlayerWalkRun(player)
-            checkEggLay(player)
         end
         updateHUD(player)
         inventoryEffects(player)
@@ -255,6 +254,7 @@ minetest.register_on_joinplayer(function(player)
     privs.fast = true
     privs.settime = true
     privs.give=true
+    privs.set_weather=true
     minetest.set_player_privs("singleplayer", privs)
 
     local inv = player:get_inventory()
@@ -263,7 +263,6 @@ minetest.register_on_joinplayer(function(player)
 
     initializePlayerMeta(player)
     setupHUD(player)
-
 end)
 
 
@@ -275,7 +274,7 @@ minetest.register_on_respawnplayer(function(player)
     meta:set_string("thirst", 1000)
     meta:set_string("sleeping","")
     local score=meta:get_string("score") or 0
-    score = score - 1
+    score = score - 4
     meta:set_string("score", score)
 
     return false
@@ -298,30 +297,33 @@ end
 function wakeUp(player,msg)
     local meta = player:get_meta()
     if meta:get_string("sleeping")  ~= "" then
-        print("Wake up: "..msg)
         meta:set_string("sleeping","")
-        minetest.chat_send_player(player:get_player_name(), msg)
+        minetest.log(msg)
         player:set_physics_override({speed = player_definition.walk_velocity})
     end
 end
 
-function checkEggLay(player)
-    local controls = player:get_player_control()
-    if controls.left and controls.right then
-        --minimal.log("player trying to lay egg")
-        local meta = player:get_meta()
-        local energy = tonumber(meta:get_string("energy"))
-        local hunger = tonumber(meta:get_string("hunger"))
-        if hunger > 500 and energy > 500 then
-            local pos = player:get_pos()
-            pos.y = pos.y + 0.5
-            local node = minetest.get_node(pos)
-            if node.name == "air" then
-                minetest.add_node(pos, {name = "main:player_egg"})
-                minetest.get_meta(pos):set_string("owner", player:get_player_name())
-                addNutrient(player,"hunger",-200)
-                addNutrient(player,"energy",-500)
-            end
+function playerStartSleep(player)
+    local meta = player:get_meta()
+    meta:set_string("sleeping","1")
+    player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
+    minetest.log("You go to sleep.")
+end
+
+function playerLayEgg(player)
+    --minimal.log("player trying to lay egg")
+    local meta = player:get_meta()
+    local energy = tonumber(meta:get_string("energy"))
+    local hunger = tonumber(meta:get_string("hunger"))
+    if hunger > 500 and energy > 500 then
+        local pos = player:get_pos()
+        pos.y = pos.y + 0.5
+        local node = minetest.get_node(pos)
+        if node.name == "air" then
+            minetest.add_node(pos, {name = "main:player_egg"})
+            minetest.get_meta(pos):set_string("owner", player:get_player_name())
+            addNutrient(player,"hunger",-200)
+            addNutrient(player,"energy",-500)
         end
     end
 end
@@ -356,16 +358,6 @@ function stepPlayerSleep(player,dtime)
         if eCur == 1000 then
             wakeUp(player,"You wake up feeling rested.")
         else 
-            return false
-        end
-        
-    else
-        local controls = player:get_player_control()
-        if controls.sneak then
-            print("player going to sleep")
-            meta:set_string("sleeping","1")
-            player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
-            minetest.chat_send_player(player:get_player_name(), "You go to sleep.")
             return false
         end
     end

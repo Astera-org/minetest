@@ -204,7 +204,7 @@ minetest.register_node("main:tangler", {
         straightVine(2,eastPos,0)
         straightVine(3,southPos,0)
         straightVine(4,westPos,0)
-
+--[[
         for y=0,3 do
             local p=shallowCopy(northPos)
             p.y=p.y+y
@@ -219,7 +219,7 @@ minetest.register_node("main:tangler", {
             p.y=p.y+y
             minetest.set_node(p, {name = "main:glow_stone"})
         end  
-
+]]--
         minetest.after(2, function()
             minetest.set_node(pos, {name="main:tangler_heart"})
         end)
