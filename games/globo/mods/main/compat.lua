@@ -111,3 +111,19 @@ function minimal.math_clamp(num,min,max) -- math.clamp implementation from my fu
    end
    return copy
 end
+
+function posToStr(pos)
+   return "("..pos.x..","..pos.y..","..pos.z..")"
+end
+
+function strToPos(str)
+   local x, y, z = str:match("%((%-?%d+),(%-?%d+),(%-?%d+)%)")
+   if x and y and z then
+       return {x = tonumber(x), y = tonumber(y), z = tonumber(z)}
+   else
+       minimal.log("Invalid position string: " .. str)
+       return {x=0,y=0,z=0}
+   end
+end
+
+

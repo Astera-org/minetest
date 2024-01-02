@@ -5,12 +5,17 @@ TODO:
     - temperature should effect you
         - hides that keep you warm
         - eggs need to be a certain temperature to hatch
-    - Tangler ; lays conveyors from it
-        - Conveyor belt: Placed on terrain. Any item on it is conveyed along to the end of the belt
-        - Tangler
+    - Tangler 
+        - Determine better starting places for conveyors
+        - more chance of branching the further you are away 
+        - less likely to cross an existing vine
+        - make the things that hurt around it
+            - just pain in radius?
+            - thorns?
+            - vines that grab you?
 
 
-
+- Block that moves through the air at a particular elevation until it hits something.  Anything on top of it will ride along. Spawns randomly
 - wolves are often getting killed by cows
 - dropped items should burn in fire
 - flowing water should push you

@@ -1,400 +1,227 @@
 
 --[[
-How conveyors work:
-When a track is first laid down, it checks for neighboring tracks and sets its direction accordingly.
-When a minecart is on a track, it checks for neighboring tracks and moves in that direction.
-When a track is destroyed, it checks for minecarts on it and forces them to execute their "floating" check.
+    starting from this position we want the vies to roll out along the ground. 
 
-A newly laid track will try to match the directions of the tracks alreay there
-If laid next to an existing no direction track, both will assume that the direction is toward the older track
+    directions: north east south west
+]]
 
-]]--
+local function isValidVineSpot(pos)
+    local node=minetest.get_node(pos)
+    if node.name=="main:conveyor" then return false end
 
-
--- neighbor on your left has the dir of i what possible dirs can you have. Any that are going in or out to the west
-
-local dirMap={
-    { north= 0, south= 0, east= 0, west= 0}, -- 1 no direction set
-    { north=-1, south= 0, east= 0, west= 0}, -- 2 north out only
-    { north= 0, south=-1, east= 0, west= 0}, -- 3 south out only
-    { north= 0, south= 0, east=-1, west= 0}, -- 4 east out only
-    { north= 0, south= 0, east= 0, west=-1}, -- 5 west out only
-    { north= 1, south= 0, east= 0, west= 0}, -- 6 north in only
-    { north= 0, south= 1, east= 0, west= 0}, -- 7 south in only
-    { north= 0, south= 0, east= 1, west= 0}, -- 8 east in only
-    { north= 0, south= 0, east= 0, west= 1}, -- 9 west in only
-    { north= 1, south=-1, east= 0, west= 0}, -- 10 north in, south out
-    { north= 1, south= 0, east=-1, west= 0}, -- 11 north in, east out
-    { north= 1, south= 0, east= 0, west=-1}, -- 12 north in, west out
-    { north=-1, south= 1, east= 0, west= 0}, -- 13 south in, north out
-    { north= 0, south= 1, east=-1, west= 0}, -- 14 south in, east out
-    { north= 0, south= 1, east= 0, west=-1}, -- 15 south in, west out
-    { north=-1, south= 0, east= 1, west= 0}, -- 16 east in, north out
-    { north= 0, south=-1, east= 1, west= 0}, -- 17 east in, south out
-    { north= 0, south= 0, east= 1, west=-1}, -- 18 east in, west out
-    { north=-1, south= 0, east= 0, west= 1}, -- 19 west in, north out
-    { north= 0, south=-1, east= 0, west= 1}, -- 20 west in, south out
-    { north= 0, south= 0, east=-1, west= 1}, -- 21 west in, east out
-    { north= 1, south=-1, east= 1, west=-1}, -- 22 crossroads, in north out south, in east out west
-    { north= 1, south=-1, east=-1, west= 1}, -- 23 crossroads, in north out south, in west out east
-    { north=-1, south= 1, east= 1, west=-1}, -- 24 crossroads, in south out north, in east out west
-    { north=-1, south= 1, east=-1, west= 1}, -- 25 crossroads, in south out north, in west out east
-    { north= 1, south= 0, east=-1, west=-1}, -- 26 Spilt north in, east or west out
-    { north= 0, south= 1, east=-1, west=-1}, -- 27 Spilt south in, east or west out
-    { north=-1, south=-1, east= 1, west= 0}, -- 28 Spilt east in, north or south out
-    { north=-1, south=-1, east= 0, west= 1}, -- 29 Spilt west in, north or south out
-    { north= 1, south= 1, east=-1, west= 0}, -- 20 merge north or south in, east out
-    { north= 1, south= 1, east= 0, west=-1}, -- 31 merge north or south in, west out
-    { north=-1, south= 0, east= 1, west= 1}, -- 32 merge east or west in, north out
-    { north= 0, south=-1, east= 1, west= 1}, -- 33 merge west or east in, south out
-    { north= 1, south=-1, east= 1, west= 0}, -- 34 merge north or east in, south out
-    { north= 1, south= 0, east= 1, west=-1}, -- 35 merge north or east in, west out
-    { north= 1, south=-1, east= 0, west= 1}, -- 36 merge north or west in, south out
-    { north= 1, south= 0, east=-1, west= 1}, -- 37 merge north or west in, east out
-    { north=-1, south= 1, east= 1, west= 0}, -- 38 merge south or east in, north out
-    { north= 0, south= 1, east= 1, west=-1}, -- 39 merge south or east in, west out
-    { north=-1, south= 1, east= 0, west= 1}, -- 40 merge south or west in, north out
-    { north= 0, south= 1, east=-1, west= 1}, -- 41 merge south or west in, east out
-}
-
-
-local function getNeighborValue(pos,offset)
-    local nPos=shallowCopy(pos)
-    nPos.x=nPos.x+offset.x
-    nPos.z=nPos.z+offset.z
-
-    for y = -1,1 do
-        nPos.y=pos.y+y
-        local neighbor_node = minetest.get_node(nPos)
-        if neighbor_node.name == "main:conveyor" then
-            -- Found a neighboring conveyor belt, return its param
-            local param=minetest.get_meta(nPos):get_int("param")
-            return param, nPos
+    -- Check if this node is air or flora
+    if node.name == "air" or minetest.get_item_group(node.name, "flora") > 0 then
+        -- Check the node below
+        local below_pos = {x = pos.x, y = pos.y - 1, z = pos.z}
+        local below_node = minetest.get_node(below_pos)
+        local below_node_def = minetest.registered_nodes[below_node.name]
+        -- If the node below is walkable, return true
+        if below_node_def and below_node_def.walkable then
+            return true
         end
     end
-
-    return -1,nil -- no neighbor
-end
-
-local function getDirMapIndex(dir)
-    for i,d in ipairs(dirMap) do
-        --minimal.log("getDirMapIndex ",)
-        if d.north == dir.north and d.south == dir.south and 
-           d.east == dir.east and d.west == dir.west then
-            return i
-        end
-    end
-
-    return 0
-end
-
-local function makeValidDir(dir)
-    -- loop through the dirMap and see if any match yours
-    -- keep track of the closest match
-    local numMatches=0
-    local closestIndex=0
-    for i,d in ipairs(dirMap) do
-        local matchCount=0
-        if d.north == dir.north then matchCount=matchCount+1 end
-        if d.south == dir.south then matchCount=matchCount+1 end
-        if d.east == dir.east then matchCount=matchCount+1 end
-        if d.west == dir.west then matchCount=matchCount+1 end
-
-        if matchCount == 4 then return end
-
-        if matchCount > numMatches then
-            numMatches=matchCount
-            closestIndex=i
-        end
-    end
-
-    minimal.log("makeValidDir closestIndex:"..closestIndex.." numMatches:"..numMatches)
-    dir.north=dirMap[closestIndex].north
-    dir.south=dirMap[closestIndex].south
-    dir.east=dirMap[closestIndex].east
-    dir.west=dirMap[closestIndex].west
+    return false
 end
 
 
-
-local function connectRawNeighbor(yourDir,neighbor,yc,nc)
-    local nDir=shallowCopy(dirMap[neighbor.param])
-    yourDir[yc]=-1
-    nDir[nc]=1
-    if getDirMapIndex(yourDir)==0 then  
-        yourDir[yc]=1
-        nDir[nc]=-1
-        if getDirMapIndex(yourDir)==0 then 
-            yourDir[yc]=-1 
-            nDir[nc]=-1
-            minimal.log("connect still invalid:"..dump(yourDir))
-        end
+-- destroy flora to place vine
+-- make sure there is not already a vine here
+local function findVineSpot(pos)
+    local startY=pos.y
+    for y=-1,1 do
+        pos.y=startY+y
+        if isValidVineSpot(pos) then return true end
     end
-    minimal.log("connectRawNeighbor yourDir"..dump(yourDir))
-    
-   
-    neighbor.param=getDirMapIndex(nDir)
-
-    minimal.log("connectRawNeighbor nDir: "..neighbor.param..dump(nDir))
+    return false
 end
 
-local function connectExistingNeighbor(yourDir,neighbor,yc,nc)
-    local nDir=shallowCopy(dirMap[neighbor.param])
-   
-    if nDir[nc] == 0 then 
-        yourDir[yc]=-1
-        nDir[nc]=1
-        if getDirMapIndex(nDir)==0 then 
-            yourDir[yc]=1
-            nDir[nc]=-1
-            if getDirMapIndex(nDir)==0 then 
-                yourDir[yc]=-1 
-                nDir[nc]=-1
-                minimal.log("connectNeighbor still invalid*"..dump(nDir)) 
-            end
-        end
-    else 
-        yourDir[yc]=-nDir[nc]
+local function getPosInDir(dir,pos)
+    if dir==1 then pos.z=pos.z+1 
+    elseif dir==2 then pos.x=pos.x+1
+    elseif dir==3 then pos.z=pos.z-1
+    elseif dir==4 then pos.x=pos.x-1 end
+end
+
+local function isVineInSpace(pos)
+    local p=shallowCopy(pos)
+    for y=-1,1 do
+        local node=minetest.get_node(p)
+        if node.name=="main:conveyor" then return true end
     end
+    return false
+end
 
-    minimal.log("connectExistingNeighbor yourDir"..dump(yourDir))
+local function countNearVines(pos)
+    local p=shallowCopy(pos)
+    local ret=0
+    p.x=pos.x+1
+    if isVineInSpace(pos) then ret =ret+1 end
+    p.x=pos.x-1
+    if isVineInSpace(pos) then ret =ret+1 end
+    p.x=pos.x
+    p.z=pos.z+1
+    if isVineInSpace(pos) then ret =ret+1 end
+    p.z=pos.z-1
+    if isVineInSpace(pos) then ret =ret+1 end
 
-    neighbor.param=getDirMapIndex(nDir)
-    minimal.log("connectExistingNeighbor nDir: "..neighbor.param..dump(nDir))
+    return ret
 end
 
 
-
-
-local function setConveyorParam(pos)
-    -- Directions to check (assuming a 2D grid, add more for a 3D setup)
-
-    local neighbors={ {param=0,pos=nil}, {param=0,pos=nil}, {param=0,pos=nil}, {param=0,pos=nil} }
-
-    local offsets = {
-        {x = 1, z = 0}, -- East
-        {x = -1,  z = 0}, -- west
-        {x = 0,  z = 1}, -- north
-        {x = 0,  z = -1}, -- south
-    }
-
-    for i,offset in ipairs(offsets) do
-       neighbors[i].param , neighbors[i].pos = getNeighborValue(pos,offset)
-       --minimal.log(""..i..") dir:"..neighbors[i].dir.." pos:"..dump(neighbors[i].pos))
-    end
-
-    local yourDir={ north=0, south=0, east=0, west=0}
-    --minimal.log("0 dir:"..getDirMapIndex(yourDir))
-    --minimal.log("yourDir 0: "..getDirMapIndex(yourDir).." "..dump(yourDir))
-
-    -- must connect to the existing ones first so we match the raw guys based on what is already laid
-    if neighbors[1].param > 1 then  --  east neighbor
-        connectExistingNeighbor(yourDir,neighbors[1],"east","west")
-    end
-
-    if neighbors[2].param > 1 then -- west neighbor
-        connectExistingNeighbor(yourDir,neighbors[2],"west","east")
-    end
-
-    if neighbors[3].param > 1 then -- north neighbor
-        connectExistingNeighbor(yourDir,neighbors[3],"north","south")
-    end
-
-    if neighbors[4].param > 1 then -- south neighbor
-        connectExistingNeighbor(yourDir,neighbors[4],"south","north")
-    end
-
-    if neighbors[1].param == 1 then  --  east neighbor
-        connectRawNeighbor(yourDir,neighbors[1],"east","west")
-    end
-
-    if neighbors[2].param == 1 then -- west neighbor
-        connectRawNeighbor(yourDir,neighbors[2],"west","east")
-    end
-
-    if neighbors[3].param == 1 then -- north neighbor
-        connectRawNeighbor(yourDir,neighbors[3],"north","south")
-    end
-
-    if neighbors[4].param == 1 then -- south neighbor
-        connectRawNeighbor(yourDir,neighbors[4],"south","north")
-    end
-
-
-
-    --minimal.log("1 yourDir:"..getDirMapIndex(yourDir))
-    --repairDir(yourDir)
-    makeValidDir(yourDir)
-    
-
-    local newParamValue=getDirMapIndex(yourDir)
-    if newParamValue == 0 then
-        minimal.log("findConveyorDir no direction found")
-        return
-    end
-
-    minimal.log("yourDir:("..pos.x..","..pos.z..") param:"..newParamValue)
-    minetest.get_meta(pos):set_int("param",newParamValue)
-
-    for i = 1,4 do
-        if neighbors[i].param>0 then 
-            minimal.log("neighbor ("..neighbors[i].pos.x..","..neighbors[i].pos.z..") param:"..neighbors[i].param)
-            minetest.get_meta(neighbors[i].pos):set_int("param",neighbors[i].param)
-        end
-    end    
+local function leftVine(dir,pos,length)
+    dir=dir-1
+    if dir==0 then dir=4 end
+    local newPos=shallowCopy(pos)
+    getPosInDir(dir,newPos)
+    local count=countNearVines(newPos)
+    if math.random(1,4) < count then return end
+    if math.random(1,4) < count then return end
+    growVine(dir,newPos,length+1)
 end
 
+local function rightVine(dir,pos,length)
+    dir=dir+1
+    if dir==5 then dir=1 end
+    local newPos=shallowCopy(pos)
+    getPosInDir(dir,newPos)
+    local count=countNearVines(newPos)
+    if math.random(1,4) < count then return end
+    if math.random(1,4) < count then return end
+    growVine(dir,newPos,length+1)
+end
 
-minetest.register_node("main:conveyor", {
-    drawtype= "raillike",
-    tiles = {"conveyor1.png", "conveyor2.png", "conveyor3.png", "conveyor4.png"},
-    groups = {handy=1, attached_node=1,rail=1,  dig_by_water=0, destroy_by_lava_flow=0, transport=1}, -- connect_to_raillike=minetest.raillike_group("rail"),
-    is_ground_content = false,
-	inventory_image = "conveyor1.png",
-	wield_image = "conveyor1.png",
-	paramtype = "light",
-    paramtype2 = "facedir",
-	walkable = false,
-    selection_box = {
-        type = "fixed",
-        fixed = {-1/2, -1/2, -1/2, 1/2, -1/2+1/16, 1/2},
+local function straightVine(dir,pos,length)
+    local newPos=shallowCopy(pos)
+    getPosInDir(dir,newPos)
+    local count=countNearVines(newPos)
+    if math.random(1,4) < count then return end
+    if math.random(1,4) < count then return end
+    growVine(dir,newPos,length+1)
+end
+
+-- get the node in that direction
+-- if no node stop
+-- place new vine
+-- determine next directions if any
+function growVine(dir,pos,length)
+    local newPos=shallowCopy(pos)
+    if findVineSpot(newPos) then
+        minetest.set_node(newPos, {name = "main:conveyor"})
+        if length > 40 then return end -- cap vine length
+        local r=math.random(1,1000)
+        r = r- length*4
+        
+        if r < 10 then
+            leftVine(dir,newPos,length)
+            straightVine(dir,newPos,length)
+            rightVine(dir,newPos,length)    -- 0 to 10
+        elseif r<40 then
+            leftVine(dir,newPos,length)
+            straightVine(dir,newPos,length)  -- 10 to 40
+        elseif r<70 then
+            straightVine(dir,newPos,length)
+            rightVine(dir,newPos,length)  -- 40 to 70
+        elseif r<220 then
+            rightVine(dir,newPos,length)  -- 70 to 220
+        elseif r<370 then
+            leftVine(dir,newPos,length)  -- 220 to 370
+        else straightVine(dir,newPos,length) end
+    end
+end
+
+local function startVine(dir,pos)
+    -- find a starting location
+    -- call growVine
+end
+
+minetest.register_node("main:tangler_heart", {
+    tiles = {
+        "nodes_nature_sasaran_log_top.png",
+        "nodes_nature_sasaran_log_top.png",
+        "nodes_nature_sasaran_log.png"
     },
-	stack_max = 3,
-		
-    after_destruct = function(pos)
-        -- Scan for minecarts in this pos and force them to execute their "floating" check.
-        -- Normally, this will make them drop.
-        local objs = minetest.get_objects_inside_radius(pos, 1)
-        for o=1, #objs do
-            local le = objs[o]:get_luaentity()
-            if le then
-                -- All entities in this mod are minecarts, so this works
-                if string.sub(le.name, 1, 14) == "mcl_minecarts:" then
-                    le._last_float_check = mcl_minecarts.check_float_time
-                end
-            end
-        end
+
+    groups = {log = 1, choppy = 3, flammable = 25},
+
+    on_timer = function(pos, elapsed)
+      --minimal.log("main:tangler on_timer")
+       -- cause damage to any creature around
+		local objects = minetest.get_objects_inside_radius(pos, 10)
+		for _, obj in ipairs(objects) do
+			if obj:is_player() then
+				minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a tangler")
+				changePlayerHP(obj, -1)
+			elseif obj:get_luaentity() ~= nil then
+				local mob = obj:get_luaentity()
+				mobkit.hurt(mob,1)
+			end
+		end
+        return true -- Continue the cycle
     end,
-	
+
+    on_construct = function(pos)
+		minimal.log("main:tangler heart".. posToStr(pos))
+        local timer = minetest.get_node_timer(pos)
+		timer:start(2)
+    end
+
+})
+
+
+local function findGround(pos)
+    local startY=pos.y
+    for y=-3,3 do
+        pos.y=startY+y
+        if isValidVineSpot(pos) then return end
+    end
+    pos.y=startY
+end
+
+minetest.register_node("main:tangler", {
+    
 
 	on_construct = function(pos)
-        minimal.log("conveyor on_construct("..pos.x..","..pos.z..")")
-        setConveyorParam(pos)
-    end,
+		minimal.log("main:tangler".. posToStr(pos))
 
-    after_place_node = function(pos, placer, itemstack, pointed_thing)
+        pos.y=pos.y
+        local northPos=shallowCopy(pos)
+        northPos.z=pos.z+2
+        findGround(northPos)
         
-    end,
+        local southPos=shallowCopy(pos)
+        southPos.z=pos.z-2
+        findGround(southPos)
+
+        local eastPos=shallowCopy(pos)
+        eastPos.x=pos.x+2
+        findGround(eastPos)
+
+        local westPos=shallowCopy(pos)
+        westPos.x=pos.x-2
+        findGround(westPos)
+
+        straightVine(1,northPos,0)
+        straightVine(2,eastPos,0)
+        straightVine(3,southPos,0)
+        straightVine(4,westPos,0)
+
+        for y=0,3 do
+            local p=shallowCopy(northPos)
+            p.y=p.y+y
+            minetest.set_node(p, {name = "main:glow_stone"})
+            p=shallowCopy(southPos)
+            p.y=p.y+y
+            minetest.set_node(p, {name = "main:glow_stone"})
+            p=shallowCopy(eastPos)
+            p.y=p.y+y
+            minetest.set_node(p, {name = "main:glow_stone"})
+            p=shallowCopy(westPos)
+            p.y=p.y+y
+            minetest.set_node(p, {name = "main:glow_stone"})
+        end  
+
+        minetest.after(2, function()
+            minetest.set_node(pos, {name="main:tangler_heart"})
+        end)
+	end,
 })
-
-function messWithDir(dir)
-    dir.north=12
-end
-
-function tanglerTest()
-    for i,dir in ipairs(dirMap) do
-        if i ~= getDirMapIndex(dir) then
-            minimal.log("getDirMapIndex failed: "..i.." dir:".. dump(dir))
-        end
-    end
-
-    local dir={
-        north = -1,
-        south = -1,
-        east = 0,
-        west = 0
-    }
-    local ret=getDirMapIndex(dir)
-    if getDirMapIndex(dir) ~= 0  then
-        minimal.log("tanglerTest expected 0 got "..ret)
-    end
-
-    dir={
-        north = 0,
-        south = 0,
-        east = -1,
-        west = 0
-    }
-    local ret=getDirMapIndex(dir)
-    if ret ~= 0  then
-        minimal.log("tanglerTest expected 0 got "..ret)
-    end
-
-    repairDir(dir)
-    ret=getDirMapIndex(dir)
-    if ret ~= 13  then
-        minimal.log("tanglerTest expected 13 got "..ret)
-    end
-
-   -- messWithDir(dir)
-   -- minimal.log("Mess result "..dir.north)
-
-    minimal.log("tangler Test over")
-end
-
-
-
--- Define the ABM (Active Block Modifier) for moving objects
-minetest.register_abm({
-    nodenames = {"main:conveyor"}, -- The node this ABM applies to
-    interval = 1.0, -- Run every second
-    chance = 1, -- Always run
-
-    action = function(pos, node)
-        local objects = minetest.get_objects_inside_radius(pos, 0.5)
-        for _, obj in ipairs(objects) do
-            if obj:is_player() == false then
-                local dir = minetest.facedir_to_dir(node.param1)
-                local new_pos = vector.add(pos, dir)
-                local new_node = minetest.get_node(new_pos)
-                if new_node.name == "main:conveyor" then
-                    obj:set_pos(new_pos)
-                    obj:set_velocity(vector.new(0, 0, 0)) -- Stop the object from moving further
-    
-                    -- Schedule a move in the new direction on the next ABM cycle
-                    minetest.after(0, function()
-                        if obj then
-                            local new_dir = minetest.facedir_to_dir(new_node.param1)
-                            obj:set_velocity(vector.multiply(new_dir, 1))
-                        end
-                    end)
-                end
-            end
-        end
-    end,
-
-    action = function(pos, node)
-        local objects = minetest.get_objects_inside_radius(pos, 0.5)
-        for _, obj in ipairs(objects) do
-            if obj:is_player() == false then
-                local meta = minetest.get_meta(pos)
-                local dir = minetest.deserialize(meta:get_string("direction"))
-
-                local new_pos = vector.add(pos, dir)
-                local new_node = minetest.get_node(new_pos)
-                if new_node.name == "main:conveyor" then
-                    local new_meta = minetest.get_meta(new_pos)
-                    local new_dir = minetest.deserialize(new_meta:get_string("direction"))
-
-                    obj:set_pos(new_pos)
-                    obj:set_velocity(vector.new(0, 0, 0)) -- Stop the object from moving further
-
-                    -- Schedule a move in the new direction on the next ABM cycle
-                    minetest.after(0, function()
-                        if obj then
-                            obj:set_velocity(vector.multiply(new_dir, 1))
-                        end
-                    end)
-                end
-            end
-        end
-    end, 
-})
-
-
-
-
-
-
-
-

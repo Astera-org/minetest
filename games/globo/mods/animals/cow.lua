@@ -342,7 +342,7 @@ minetest.register_node("animals:cow_spawn", {
 		if random()<=0.5 then -- 50% for female, 50% for male
 			return animals.hatch_egg(pos, 'air', 'air', "animals:cow", energy_egg, young_per_egg)
 		else
-			minimal.log("male cow")
+			--minimal.log("male cow")
 			return animals.hatch_egg(pos, 'air', 'air', "animals:cow_male", energy_egg, young_per_egg)
 		end
 	end,

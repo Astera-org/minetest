@@ -121,13 +121,20 @@ minetest.register_chatcommand("node", {
     params = "",  
     privs = {fly = true},
     func = function(name, param)
-        -- get the node in front of the player
-        local player = minetest.get_player_by_name(name)
-        local dir = player:get_look_dir()
-        local pos = player:get_pos()
+        local nodePos
 
-        local newpos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
-        local node = minetest.get_node(newpos)
+        if param ~= "" then
+            nodePos=strToPos(param)
+        else
+            -- get the node in front of the player
+            local player = minetest.get_player_by_name(name)
+            local dir = player:get_look_dir()
+            local pos = player:get_pos()
+
+            nodePos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
+        end
+
+        local node = minetest.get_node(nodePos)
         minimal.log("node:"..node.name.." p1:"..dump(node.param1).." p2:"..dump(node.param2))
         local node_def = minetest.registered_nodes[node.name]
         if node_def and node_def.groups then
