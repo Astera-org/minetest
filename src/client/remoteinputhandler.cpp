@@ -3,6 +3,7 @@
 #include "client/keycode.h"
 #include "client/keys.h"
 #include "clientiface.h"
+#include "hud.h"
 #include "irr_v2d.h"
 #include "remoteclient.capnp.h"
 
@@ -14,7 +15,23 @@ void RemoteInputHandler::step(float dtime)
 
 	::capnp::MallocMessageBuilder obs_prot;
 	Observation::Builder obs_builder = obs_prot.initRoot<Observation>();
-	obs_builder.setReward(1.0);
+
+	// parse reward from hud
+	// during game startup, the hud is not yet initialized, so there'll be no reward
+	// for the first 1-2 steps
+	assert(m_player && "Player is null");
+	for(u32 i = 0; i < m_player->maxHudId(); ++i){
+		auto hudElement = m_player->getHud(i);
+		std::cout << hudElement->name << std::endl;
+		if (hudElement->name == "reward"){
+			// parse 'Reward: <reward>' from hud
+			std::string rewardString = hudElement->text;
+			rewardString.erase(0, 8);
+			obs_builder.setReward(stof(rewardString));
+			break;
+		}
+	}
+
 	obs_builder.initImage();
 	auto image_builder = obs_builder.getImage();
 	image_builder.setWidth(image->getDimension().Width);

@@ -1159,6 +1159,7 @@ bool Game::startup(bool *kill,
 
 	if (!createClient(start_data))
 		return false;
+	input->registerLocalPlayer(client->getEnv().getLocalPlayer());
 
 	m_rendering_engine->initialize(client, hud);
 
