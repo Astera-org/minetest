@@ -30,6 +30,7 @@ minetest.register_on_joinplayer(function(player)
 	playerReturnsHUD[player_name] = idxReturn
 end)
 
+-- Doesn't always increment consistently as expected, not sure what's wrong
 minetest.register_globalstep(function(dtime)
 	local players = minetest.get_connected_players()
 	for _, player in ipairs(players) do
