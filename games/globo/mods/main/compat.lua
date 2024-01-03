@@ -97,6 +97,26 @@ function minimal.math_clamp(num,min,max) -- math.clamp implementation from my fu
    return num
  end
 
+ -- Call in on_rightclick wrapper like this:
+-- on_rightclick = function (pos, node, clicker, itemstack, pointed_thing) 
+--     return minimal.slabs_combine(pos,node,itemstack,'tech:large_wood_fire_ext')
+-- end
+function minimal.slabs_combine(pos, node, itemstack, swap_node)
+	if itemstack:get_name() == node.name then
+	-- combine slabs
+		local stack_meta = itemstack:get_meta()
+		if stack_meta:contains("fuel") then
+			local fuel = stack_meta:get_int("fuel")
+			local pt_meta = minetest.get_meta(pos)
+			fuel = fuel + pt_meta:get_int("fuel")
+			pt_meta:set_int("fuel",fuel)
+		end
+		minimal.switch_node(pos,{name=swap_node})
+		itemstack:take_item()
+		return itemstack
+	end
+end
+
 
  function minimal.log(message)
    minetest.chat_send_all(message)

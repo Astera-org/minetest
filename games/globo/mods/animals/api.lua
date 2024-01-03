@@ -812,28 +812,30 @@ function animals.eat_eggs(self,priority)
 end
 
 
-function animals.get_closest_carcass(self)
-  local cobj = nil
-	local dist = 3*64
-	local pos = self.object:get_pos()
-	for _,obj in ipairs(self.nearby_objects) do
-		local dropName=get_dropped_item_name(obj)
-		if dropName ~= nil then
-      if dropName=="animals:carcass_vert_large" or dropName=="animals:carcass_vert_small" then
-        local opos = obj:get_pos()
-        local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
-        if odist < dist then
-          dist=odist
-          cobj=obj
+function animals.get_closest_carcass(self,minLevel,maxLevel)
+    local cobj = nil
+    local dist = 3*64
+    local pos = self.object:get_pos()
+    for _,obj in ipairs(self.nearby_objects) do
+        local groups=get_dropped_item_groups(obj)
+        --minimal.log("Nearby: "..dump(get_dropped_item_name(obj)))
+        --if groups then minimal.log(dump(groups)) end
+        if groups and groups.carcass and groups.carcass >= minLevel and groups.carcass <= maxLevel  then
+            local opos = obj:get_pos()
+            local odist = abs(opos.x-pos.x) + abs(opos.z-pos.z)
+            if odist < dist then
+                dist=odist
+                cobj=obj
+            end
         end
-      end
-		end
-	end
-	return cobj
+    end
+    return cobj
 end
 
-function animals.eat_carcass(self,priority)
-    local carcass=animals.get_closest_carcass(self)
+-- levels inclusive
+function animals.eat_carcass(self,priority,minLevel,maxLevel)
+    --minimal.log("checking eat_carcass")
+    local carcass=animals.get_closest_carcass(self,minLevel,maxLevel)
     if carcass ~= nil then
         --minimal.log("eat_carcass")
         animals.hq_eat_carcass(self,priority,carcass)

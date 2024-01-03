@@ -218,7 +218,7 @@ minetest.register_chatcommand("sleep", {
     privs = {},
     func = function(name, param)
         local player = minetest.get_player_by_name(name)
-        playerSleep(player)
+        playerStartSleep(player)
     end,
 })
 

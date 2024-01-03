@@ -74,7 +74,7 @@ local list = {
     S("Small Invertebrate"),
     box_small_invert,
     minimal.stack_max_medium,
-    80,
+    1,
     10,
   
   },
@@ -83,7 +83,7 @@ local list = {
     S("Large Invertebrate"),
     box_large_invert,
     minimal.stack_max_medium/4,
-    70,
+    2,
     20,
   },
   {
@@ -91,7 +91,7 @@ local list = {
     S("Small Vertebrate"),
     box_small_invert,
     minimal.stack_max_medium,
-    80,
+    3,
     30,
   },
   {
@@ -99,7 +99,7 @@ local list = {
     S("Large Vertebrate"),
     box_large_invert,
     minimal.stack_max_medium/4,
-    70,
+    4,
     60,
   },
   {
@@ -107,7 +107,7 @@ local list = {
     S("Small Bird"),
     box_small_bird,
     minimal.stack_max_medium/4,
-    70,
+    2,
     30,
   },
   {
@@ -115,7 +115,7 @@ local list = {
     S("Small Fish"),
     box_small_fish,
     minimal.stack_max_medium/4,
-    70,
+    2,
     25,
   },
   {
@@ -123,7 +123,7 @@ local list = {
     S("Large Fish"),
     box_large_fish,
     minimal.stack_max_bulky,
-    65,
+    3,
     35,
   },
 }
@@ -134,7 +134,7 @@ for i in ipairs(list) do
 	local desc = list[i][2]
 	local box = list[i][3]
 	local stack = list[i][4]
-	local heat = list[i][5]
+	local carcass = list[i][5]
   local food_value = list[i][6]
 
   --raw
@@ -149,7 +149,7 @@ for i in ipairs(list) do
   	},
     food_value = food_value,
   	stack_max = stack/2,
-  	groups = {snappy = 3, dig_immediate = 3, falling_node = 1, temp_pass = 1, heatable = heat},
+  	groups = {snappy = 3, dig_immediate = 3, falling_node = 1, temp_pass = 1, carcass = carcass},
   	on_use = function(itemstack, user, pointed_thing)
       addNutrient(user,"hunger",food_value) 
       itemstack:take_item()

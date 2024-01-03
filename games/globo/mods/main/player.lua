@@ -32,8 +32,9 @@ function changePlayerEnergy(player,amount)
     elseif eCur > eMax then
         eCur = eMax
     end
-    meta:set_string("energy", eCur)
+    meta:set_float("energy", eCur)
 end
+
 
 function changePlayerHP(player,amount)
     local new_health = player:get_hp() + amount  
@@ -49,15 +50,14 @@ end
 
 function addNutrient(player,name,value)
     local meta = player:get_meta()
-	local nut=tonumber( meta:get_string(name) )
-    print("Nut: " .. nut)
+	local nut=meta:get_float(name)
     nut = nut + value
     if nut < 0 then 
         nut = 0
     elseif nut>1000 then
         nut = 1000
     end
-	meta:set_string(name, nut)
+	meta:set_float(name, nut)
 end
 
 function setupHUD(player)
@@ -273,9 +273,9 @@ minetest.register_on_respawnplayer(function(player)
     meta:set_string("hunger", 1000)
     meta:set_string("thirst", 1000)
     meta:set_string("sleeping","")
-    local score=meta:get_string("score") or 0
+    local score=meta:get_int("score") or 0
     score = score - 4
-    meta:set_string("score", score)
+    meta:set_int("score", score)
 
     return false
 end)
@@ -304,6 +304,15 @@ function wakeUp(player,msg)
 end
 
 function playerStartSleep(player)
+    -- make sure the player isn't in water
+    local pos = player:get_pos()
+    pos.y = pos.y + 0.5
+    local node = minetest.get_node(pos)
+    if node.name ~= "air" then
+        minetest.chat_send_player(player:get_player_name(), "You cannot sleep here.")
+        return
+    end
+
     local meta = player:get_meta()
     meta:set_string("sleeping","1")
     player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
@@ -323,7 +332,7 @@ function playerLayEgg(player)
             minetest.add_node(pos, {name = "main:player_egg"})
             minetest.get_meta(pos):set_string("owner", player:get_player_name())
             addNutrient(player,"hunger",-200)
-            addNutrient(player,"energy",-500)
+            changePlayerEnergy(player,-500)
         end
     end
 end
@@ -336,14 +345,14 @@ function stepPlayerSleep(player,dtime)
     if meta:get_string("sleeping") ~= "" then
         player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
 
-        local eMax = tonumber(meta:get_string("energy_max"))
-        local eCur = tonumber(meta:get_string("energy"))
+        local eMax = meta:get_float("energy_max")
+        local eCur = meta:get_float("energy")
 
         -- Increase energy and health while sleeping
         eMax = math.min(eMax + (ENERGY_RECOVERY_RATE_SLEEP * dtime), 1000)
         eCur = math.min(eCur + (ENERGY_RECOVERY_RATE_SLEEP * dtime), eMax) 
-        meta:set_string("energy", eCur)
-        meta:set_string("energy_max",eMax)
+        meta:set_float("energy", eCur)
+        meta:set_float("energy_max",eMax)
         changePlayerHP(player,HEAL_RATE_SLEEP * dtime)
 
         local controls = player:get_player_control()
@@ -351,6 +360,14 @@ function stepPlayerSleep(player,dtime)
         -- if you move forward or jump, you wake up
         if controls.up or controls.jump then
             wakeUp(player,"You wake up.")
+            return true
+        end
+
+        local pos = player:get_pos()
+        pos.y = pos.y + 0.5
+        local node = minetest.get_node(pos)
+        if node.name ~= "air" then
+            wakeUp(player,"You can't sleep here.")
             return true
         end
 
@@ -379,7 +396,8 @@ end
 -- Override Minetest's on_player_hpchange callback
 minetest.register_on_player_hpchange(on_player_hpchange)
 
-
+--[[
+    Now using the exile version
 -- only called when awake
 function stepPlayerEnergy(player,dtime)
     local player_meta = player:get_meta()
@@ -427,6 +445,8 @@ function stepPlayerEnergy(player,dtime)
     player_meta:set_string("energy_max", eMax)
     
 end
+
+]]--
 
 
 

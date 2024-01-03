@@ -18,9 +18,6 @@ local young_per_egg = 1		--will get this/energy_egg starting energy
 local lifespan = 4000 * 10
 
 
-
-
-
 -----------------------------------
 local function brain(self)
 
@@ -72,7 +69,7 @@ local function brain(self)
 		if priority < 20 then
 			if energy < (self.energy_max-self.energy_max*.2) then
 				if not animals.eat_eggs(self,25) then
-                    if not animals.eat_carcass(self,25) then
+                    if not animals.eat_carcass(self,25,1,100) then
 					    if not animals.prey_hunt(self, 25) then
                             --random search
                             mobkit.animate(self,'walk')

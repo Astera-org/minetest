@@ -8,6 +8,7 @@ TODO:
     - predators in the swamps
     - more stuff in swamps
 
+- wet clay should be diggable
 -make cows favor things you eat
 - dropped items should burn in fire
 - flowing water should push you
@@ -25,12 +26,9 @@ TODO:
 
 CHECK:
 - wolves are often getting killed by cows
-- should drop out of "attack eat" when you lose sight of the prey
+- behaviors seem wonky. Do they need more idle time
 - make sure animals can be in equalibrim
-- not raining anymore?
-
-
-
+- is it better to just have the infinite map?
 
 
 BUGS:
@@ -51,6 +49,7 @@ BUGS:
 
 
 IDEAS:
+- need to be able to create some kind of raft
 - Lava Ox
 - Chaos Hawk
 - badger
@@ -92,6 +91,7 @@ Changes to Minetest
 ----
 Allow you to send other commands
 Allow you to generate the whole map and reject those that don't meet some criteria
+The way lava and water flow
 
 
 Notes

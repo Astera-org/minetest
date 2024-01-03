@@ -339,7 +339,7 @@ minetest.register_globalstep(function(dtime)
    end
 
    timer_p = timer_p + dtime
-   --[[
+   
    for _,player in ipairs(minetest.get_connected_players()) do
       local pos = player:get_pos()
       local p_name = player:get_player_name()
@@ -348,27 +348,28 @@ minetest.register_globalstep(function(dtime)
          if updatesound or sound == nil then
             update_player_sounds(p_name)
          end
-      --fast weather effects for aboveground players
-      if (climate.active_weather.particle_interval and
-         timer_p > climate.active_weather.particle_interval) then
-         -- do particle effects for current weather
-         climate.active_weather.particle_function(player)
-      end
+         --fast weather effects for aboveground players
+         if (climate.active_weather.particle_interval and
+            timer_p > climate.active_weather.particle_interval) then
+            -- do particle effects for current weather
+            climate.active_weather.particle_function(player)
+         end
       elseif pos.y < -11 and sound then
 	      local x = 1-(-1*pos.y-12)/5
-	   if x < 0 then
-         minetest.sound_stop(sound)
-         sound_handlers[p_name] = nil
-	   else
-	      minetest.sound_fade(sound, 0.5, x)
-	   end
+         if x < 0 then
+            minetest.sound_stop(sound)
+            sound_handlers[p_name] = nil
+         else
+            minetest.sound_fade(sound, 0.5, x)
+         end
+      end
      --elseif pos.y > -17 and not sound then
 	--sound_handlers[p_name] = function nop()
      --                      end
 	   -- minetest.sound_play(climate.active_weather.sound_loop, {to_player = p_name, loop = true, gain = 0.1})
      --end
    end
-   ]]--
+   
    
   if (climate.active_weather.particle_interval and
       timer_p > climate.active_weather.particle_interval) then

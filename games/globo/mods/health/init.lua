@@ -382,6 +382,14 @@ function HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temper
 	local HE_jum
 	h_rate, r_rate, t_rate, hun_rate, HE_mov, HE_jum, health, energy, thirst, hunger, temperature = do_effects_list(meta, player, health, energy, thirst, hunger, temperature, h_rate, r_rate, t_rate, hun_rate,  mov, jum)
 
+	local player_pos = player:get_pos()
+	local node_name = minetest.get_node(player_pos).name
+	local water = minetest.get_item_group(node_name,"water")
+	if water > 0 then 
+		--minimal.log("Slowing down player in water "..mov)
+		local min=math.min(mov,-90)
+		mov= math.max(mov - 80,min)
+	end
 
 	--save adjusted rates for access (e.g. by a medical tab/equipment etc)
 	meta:set_int("heal_rate", h_rate)

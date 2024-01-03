@@ -82,7 +82,7 @@ local function brain(self)
 			end
 
 			if energy < (self.energy_max-self.energy_max*.2) then
-				if not animals.eat_carcass(self,25) then
+				if not animals.eat_carcass(self,25,2,100) then
 					if not animals.prey_hunt(self, 25) then
 						--random search
 						mobkit.animate(self,'walk')
@@ -224,7 +224,7 @@ local function brain_male(self)
 			end
 
 			if energy < (self.energy_max-self.energy_max*.2) then
-				if not animals.eat_carcass(self,25) then
+				if not animals.eat_carcass(self,25,2,100) then
 					if not animals.prey_hunt(self, 25) then
 						mobkit.animate(self,'walk')
 						animals.hq_roam_far(self,10)

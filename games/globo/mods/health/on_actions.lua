@@ -267,6 +267,8 @@ if minetest.settings:get_bool("enable_damage") then
           end
 				end
 
+        
+
 				----------------
 				--Environmental temperature
 				local player_pos = player:get_pos()
@@ -290,10 +292,12 @@ if minetest.settings:get_bool("enable_damage") then
         local costd = 4
         local costs = 1
         --water conducts heat better
-        if water then
+        if water > 0 then
           costex = 13
           costd = 8
           costs = 4
+          --minimal.log("In water so using more energy: "..node_name.." "..water)
+          energy=energy-20
         end
 
 

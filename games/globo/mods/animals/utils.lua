@@ -61,6 +61,20 @@ function get_dropped_item_name(obj)
     return nil
 end
 
+function get_dropped_item_groups(obj)
+    if is_dropped_item(obj) then
+        local lua_entity = obj:get_luaentity()
+        local itemstring = lua_entity.itemstring
+        local item_def = minetest.registered_items[itemstring]
+        if item_def then
+            return item_def.groups
+        end
+    end
+    return nil
+end
+
+
+
   function get_mean_temp(pos) -- this could be put somewhere else like in climate or minimal
     local temps = {}
     
