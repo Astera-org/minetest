@@ -355,9 +355,18 @@ local baseCow = {
 	collide_with_objects = true,
 	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
 	visual = "mesh",
-	mesh = "mobs_cow.b3d",
-	textures = { "mobs_cow.png" },
-	visual_size = {x=2.8, y=2.8},
+	--mesh = "mobs_cow.b3d",
+	--textures = { "mobs_cow.png" },
+	--visual_size = {x=2.8, y=2.8},
+	visual_size = {x = 10, y = 10},
+    mesh = "animalia_cow.b3d",
+	textures = {
+		"animalia_cow_1.png",
+		"animalia_cow_2.png",
+		"animalia_cow_3.png",
+		"animalia_cow_4.png",
+		"animalia_cow_5.png"
+	},
 	makes_footstep_sound = true,
 	timeout = 0,
 

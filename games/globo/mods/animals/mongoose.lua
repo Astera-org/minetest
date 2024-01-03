@@ -112,7 +112,6 @@ minetest.register_node("animals:mongoose_spawn", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-        print("mongoose hatched")
 		return animals.hatch_egg(pos, 'air', 'air', "animals:mongoose", energy_egg, young_per_egg)
 	end,
 })
@@ -125,11 +124,15 @@ local baseMongoose={
     collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
     --collisionbox = {-0.2, -1, -0.2, 0.2, -0.8, 0.2},
 	visual = "mesh",
-	--mesh = "mobs_rat.b3d",
-	--textures = {"mobs_rat.png"},
-    mesh = "mobs_wolf.b3d",
-	textures = {"mobs_wolf.png"},
-	visual_size = {x = 1, y = 1},
+	mesh = "animalia_rat.b3d",
+	textures = {
+		"animalia_rat_1.png",
+		"animalia_rat_2.png",
+		"animalia_rat_3.png"
+	},
+    --mesh = "mobs_wolf.b3d",
+	--textures = {"mobs_wolf.png"},
+	visual_size = {x = 10, y = 10},
 	makes_footstep_sound = true,
 	timeout = 0,
 

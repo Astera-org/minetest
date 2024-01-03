@@ -272,7 +272,7 @@ minetest.register_node("main:conveyor", {
 	
 
 	on_construct = function(pos)
-        minimal.log("conveyor on_construct("..pos.x..","..pos.z..")")
+        --minimal.log("conveyor on_construct("..pos.x..","..pos.z..")")
         setConveyorParam(pos)
     end,
 })

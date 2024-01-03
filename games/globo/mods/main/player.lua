@@ -207,8 +207,16 @@ local function inventoryEffects(player)
         local inv = player:get_inventory()
   
         for _, stack in ipairs(inv:get_list("main")) do
-            if stack:get_name() == "main:ember" then
+            local name = stack:get_name()
+            if name == "main:ember" then
                 player:set_hp(player:get_hp() - 1)
+            end
+            if name == "main:pulse_blossom" or name=="main:pusle_blossom_on" then
+                player:set_hp(player:get_hp() - 1)
+            end
+            if (name == "main:sun_berry" or name=="main:moon_berry") and math.random()<0.001 then
+                -- delete the item
+                inv:remove_item("main", name)
             end
         end
     end

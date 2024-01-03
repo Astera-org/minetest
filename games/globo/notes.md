@@ -1,21 +1,21 @@
 TODO:
-- make playable
-    - make breeding
-        - make pregnant a timer rather than a bool
-    - temperature should effect you
-        - hides that keep you warm
-        - eggs need to be a certain temperature to hatch
-    - predators in the swamps
-    - more stuff in swamps
 
+- make breeding
+    - make pregnant a timer rather than a bool
+- temperature should effect you
+    - hides that keep you warm
+    - eggs need to be a certain temperature to hatch
+- predators in the swamps
+- more stuff in swamps
+
+- tell you the direction that damage came from
 - wet clay should be diggable
--make cows favor things you eat
+- make cows favor things you eat
 - dropped items should burn in fire
 - flowing water should push you
 - you heal too fast
 - you shouldn't be able to swim long distances (maybe just really saps your energy)
 - player should be no different than other animals to the mobs
-- if pulse blossom is in your inventory it should hurt you
 - plants spread
 - normalize mobs
 - normalize food/water/damage
@@ -23,6 +23,7 @@ TODO:
 - animals run from fire
 - adjust the exile energy system to have a max energy and regain your current energy when you are still
 - ensure the maps aren't too crazy
+- need more light sources
 
 CHECK:
 - wolves are often getting killed by cows
@@ -36,7 +37,7 @@ BUGS:
 - wolf energy not decreasing
 - health efects are being cleared instantly
 - will drift at last speed once at energy 0
-
+2024-01-03 07:50:40: ERROR[Server]: suspiciously large amount of objects detected: 264 in (-22,0,-20); removing all of them.
 
 
 
@@ -49,6 +50,7 @@ BUGS:
 
 
 IDEAS:
+- eat something that makes you glow
 - need to be able to create some kind of raft
 - Lava Ox
 - Chaos Hawk
@@ -92,6 +94,7 @@ Changes to Minetest
 Allow you to send other commands
 Allow you to generate the whole map and reject those that don't meet some criteria
 The way lava and water flow
+Allow other color lights
 
 
 Notes

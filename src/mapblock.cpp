@@ -97,8 +97,10 @@ bool MapBlock::onObjectsActivation()
 			<< std::endl;
 
 	if (count > g_settings->getU16("max_objects_per_block")) {
-		errorstream << "suspiciously large amount of objects detected: "
-			<< count << " in " << getPos() << "; removing all of them."
+		std::vector<StaticObject> list = m_static_objects.getAllStored();
+		auto obj = list[0];
+		errorstream << "suspiciously large amount of objects detected: " << count
+					<< " in " << getPos() << "; removing all of them." << obj.data
 			<< std::endl;
 		// Clear stored list
 		m_static_objects.clearStored();

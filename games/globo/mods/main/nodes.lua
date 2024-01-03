@@ -26,7 +26,7 @@ minetest.register_node("main:glow_stone", {
 	description = "Glow Stone",
 	drawtype = "normal",
 	tiles = {"glow_stone.png"},
-	light_source = 7, 
+	light_source = 14, 
 	groups = {cracky = 3, falling_node = 1},
 	on_punch = function(pos, node, player, pointed_thing)
 		-- move this node 1 space in the direction the player is facing if possibl
@@ -302,6 +302,19 @@ minetest.register_node("main:sumac", {
 	end,
 })
 
+minetest.register_node("main:moon_berry", {
+	description = "Moon Berry",
+	drawtype = "plantlike",
+	tiles = {"moon_berry.png"},
+	inventory_image = "moon_berry.png",
+	wield_image = "moon_berry.png",
+	paramtype = "light",
+	light_source=4,
+	sunlight_propagates = true,
+	walkable = false,
+	groups = {snappy = 3, flammable = 30, flora=1},
+})
+
 minetest.register_node("main:sun_berry", {
 	description = "Sun Berry",
 	drawtype = "plantlike",
@@ -309,7 +322,7 @@ minetest.register_node("main:sun_berry", {
 	inventory_image = "sun_berry.png",
 	wield_image = "sun_berry.png",
 	paramtype = "light",
-	light_source=4,
+	light_source=13,
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 3, flammable = 30, flora=1},

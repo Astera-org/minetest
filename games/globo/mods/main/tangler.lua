@@ -149,7 +149,7 @@ minetest.register_node("main:tangler_heart", {
 		local objects = minetest.get_objects_inside_radius(pos, 10)
 		for _, obj in ipairs(objects) do
 			if obj:is_player() then
-				minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a tangler")
+				--minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a tangler")
 				changePlayerHP(obj, -1)
 			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
@@ -160,7 +160,7 @@ minetest.register_node("main:tangler_heart", {
     end,
 
     on_construct = function(pos)
-		minimal.log("main:tangler heart".. posToStr(pos))
+		--minimal.log("main:tangler heart".. posToStr(pos))
         local timer = minetest.get_node_timer(pos)
 		timer:start(2)
     end
@@ -181,7 +181,7 @@ minetest.register_node("main:tangler", {
     
 
 	on_construct = function(pos)
-		minimal.log("main:tangler".. posToStr(pos))
+		--minimal.log("main:tangler".. posToStr(pos))
 
         pos.y=pos.y
         local northPos=shallowCopy(pos)

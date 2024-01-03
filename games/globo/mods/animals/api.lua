@@ -75,7 +75,7 @@ function animals.core_hp(self)
   end
   hp = self.hp
   if hp <= 0 then
-    minimal.log("die no HP")
+    minimal.log("die no HP "..self.name)
     mobkit.clear_queue_high(self)
     animals.handle_drops(self)
     mobkit.hq_die(self)
