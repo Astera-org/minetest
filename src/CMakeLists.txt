@@ -196,11 +196,9 @@ find_package(SQLite3 REQUIRED)
 
 
 OPTION(ENABLE_CAPNPROTO "Enable Cap'n Proto" TRUE)
-set(USE_CAPNPROTO FALSE)
 if(ENABLE_CAPNPROTO)
     # TODO error handling
     message(STATUS "Cap'n Proto enabled.")
-    set(USE_CAPNPROTO true)
     find_package(CapnProto CONFIG REQUIRED)
     message(STATUS "Cap'n Proto include dir: ${CAPNP_INCLUDE_DIRS}")
     include_directories(${CAPNP_INCLUDE_DIRS})
@@ -575,7 +573,7 @@ if(BUILD_CLIENT)
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 	)
-	if (USE_CAPNPROTO)
+	if (ENABLE_CAPNPROTO)
 		target_link_libraries(${PROJECT_NAME} ${CAPNP_LIBRARIES})
 	endif()
 
