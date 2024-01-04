@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Cow
+-- Gazelle
 --[[
 males and females, must mate to reproduce.
 lives off flora
@@ -118,25 +118,23 @@ local function brain(self)
 						local preg = mobkit.recall(self,'pregnant') or false
 						if preg == true then
 							mobkit.lq_idle(self,3)
-							if random() < 0.05 then
-								local birth=false
-								if random() < 0.5 then 
-									birth = animals.birth(pos, "animals:cow", "air",  energy_egg, 1)
-								else 
-									birth = animals.birth(pos, "animals:cow_male", "air" , energy_egg, 1)
-								end
-								if birth then
-									minimal.log("cow giving birth")
-									mobkit.remember(self,'pregnant',false)
-									mobkit.remember(self,'energy',energy-energy_egg)
-								end
-							end
+							local birth=false
+                            if random() < 0.5 then 
+                                birth = animals.birth(pos, "animals:gazelle", "air",  energy_egg, 1)
+                            else 
+                                birth = animals.birth(pos, "animals:gazelle_male", "air" , energy_egg, 1)
+                            end
+                            if birth then
+                                minimal.log("gazelle giving birth")
+                                mobkit.remember(self,'pregnant',false)
+                                energy=energy-energy_egg
+                            end
 
 						else
 
 							--we are randy
 							mobkit.remember(self,'sexual',true)
-							local mate = animals.mate_assess(self, 'animals:cow_male')
+							local mate = animals.mate_assess(self, 'animals:gazelle_male')
 							if mate then
 								--go get him!
 								--mobkit.make_sound(self,'mating')
@@ -282,7 +280,7 @@ local function brain_male(self)
 						--set status as randy
 						--find nearby prospect and try to mate
 						mobkit.remember(self, 'sexual', true)
-						local mate = animals.mate_assess(self, 'animals:cow')
+						local mate = animals.mate_assess(self, 'animals:gazelle')
 
 						if mate then
 							--go get her!
@@ -333,8 +331,8 @@ end
 ---------------
 
 --eggs
-minetest.register_node("animals:cow_spawn_herd", {
-	description = S('Cow Spawn Herd'),
+minetest.register_node("animals:gazelle_spawn_herd", {
+	description = S('Gazelle Spawn'),
 	tiles = {"animals_gundu_eggs.png"},
 	stack_max = minimal.stack_max_medium,
 	drawtype = "nodebox",
@@ -348,39 +346,25 @@ minetest.register_node("animals:cow_spawn_herd", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-		local density= randomFloat(.002,.013)
-		animals.spawnHerd(pos,  "animals:cow", energy_egg, density,15)
-		animals.spawnHerd(pos, "animals:cow_male", energy_egg, density,15)
-
-		return false
+		animals.spawnHerd(pos,  "animals:gazelle", energy_egg, 0.002,20)
+		animals.spawnHerd(pos, "animals:gazelle_male", energy_egg, 0.002,20)
 	end,
 })
 
-local baseCow = {
-	--core
-    --type = "animal",
+local baseGazelle = {
 	physical = true,
 	collide_with_objects = true,
-	collisionbox = {-0.45, -0.01, -0.45, 0.45, 1.39, 0.45},
+	collisionbox = {-0.35, -0.19, -0.35, 0.35, 0.65, 0.35},
 	visual = "mesh",
-	--mesh = "mobs_cow.b3d",
-	--textures = { "mobs_cow.png" },
-	--visual_size = {x=2.8, y=2.8},
-	visual_size = {x = 10, y = 10},
-    mesh = "animalia_cow.b3d",
-	textures = {
-		"animalia_cow_1.png",
-		"animalia_cow_2.png",
-		"animalia_cow_3.png",
-		"animalia_cow_4.png",
-		"animalia_cow_5.png"
-	},
+	mesh = "herbivore.b3d",
+	textures = {"herbivore.png"},
+	visual_size = {x = 1.3, y = 1.3},
 	makes_footstep_sound = true,
 	timeout = 0,
 
 	--damage
-	max_hp = 2000,
-	heal_rate= 5,
+	max_hp = 1000,
+	heal_rate= 2,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -388,9 +372,9 @@ local baseCow = {
 	energy_max= 8000,
 
 	--interaction
-	predators = {"animals:wolf", "animals:wolf_male"},
-	friends = {"animals:cow", "animals:cow_male"},
-	rivals = {"animals:cow"},
+	predators = {"animals:wolf", "animals:wolf_male","animals:puma"},
+	friends = {"animals:gazelle", "animals:gazelle_male"},
+	rivals = {""},
 
 	on_step = mobkit.stepfunc,
 	on_activate = mobkit.actfunc,
@@ -411,18 +395,21 @@ local baseCow = {
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
-	jump_height = 1.2,				-- nodes/meters
+	max_speed = 3.5,					-- m/s
+	jump_height = 2.5,				-- nodes/meters
 	view_range = 7,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=100}},
+	attack={range=0.8, damage_groups={fleshy=60}},
 	armor_groups = {fleshy=100},
 
 	--on actions
 	drops = {
-		{name = "animals:carcass_vert_large", chance = 1, min = 2, max = 4,},
+		{name = "animals:carcass_vert_large", chance = 1, min = 1, max = 2,},
 	},
+    on_construct = function(pos)
+        minimal.log("gazelle spawned")
+    end,
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("cow punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
@@ -432,12 +419,12 @@ local baseCow = {
 }
 
 
-local maleCow=baseCow
-maleCow.logic=brain_male
-maleCow.sex="male"
-maleCow.rivals = {"animals:cow_male"}
-maleCow.max_hp=2200
+local maleGazelle=baseGazelle
+maleGazelle.logic=brain_male
+maleGazelle.sex="male"
+maleGazelle.rivals = {""}
+maleGazelle.max_hp=1200
 
 
-minetest.register_entity("animals:cow_male",maleCow)
-minetest.register_entity("animals:cow",baseCow)
+minetest.register_entity("animals:gazelle_male",maleGazelle)
+minetest.register_entity("animals:gazelle",baseGazelle)

@@ -15,9 +15,6 @@ dofile(path.."/impethu.lua")
 dofile(path.."/kubwakubwa.lua")
 dofile(path.."/darkasthaan.lua")
 
-dofile(path.."/gundu.lua")
-dofile(path.."/sarkamos.lua")
-
 dofile(path.."/pegasun.lua")
 dofile(path.."/sneachan.lua")
 
@@ -33,7 +30,9 @@ dofile(path.."/sandslug.lua")
 dofile(path.."/snagon.lua")
 dofile(path.."/skipfungus.lua")
 dofile(path.."/wolf.lua")
-dofile(path.."/test.lua")
+dofile(path.."/puma.lua")
+dofile(path.."/gazelle.lua")
+--dofile(path.."/test.lua")
 
 
 

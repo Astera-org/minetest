@@ -445,8 +445,8 @@ minetest.register_entity("animals:pegasun_male",{
 	timeout = 0,
 
 	--damage
-	max_hp = 45,
-	heal_rate=0.25,
+	max_hp = 400,
+	heal_rate=1,
 	lung_capacity = 25,
 	min_temp = -20,
 	max_temp = 45,
@@ -522,7 +522,7 @@ minetest.register_entity("animals:pegasun_male",{
 	view_range = 7,					-- nodes/meters
 
 	--attack
-	attack={range=0.5, damage_groups={fleshy=4}},
+	attack={range=0.5, damage_groups={fleshy=200}},
 	armor_groups = {fleshy=100},
 
 	--on actions
@@ -565,8 +565,8 @@ minetest.register_entity("animals:pegasun",{
 	timeout = 0,
 
 	--damage
-	max_hp = 40,
-	heal_rate=0.25,
+	max_hp = 400,
+	heal_rate=1,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -641,7 +641,7 @@ minetest.register_entity("animals:pegasun",{
 	view_range = 7,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=2}},
+	attack={range=0.3, damage_groups={fleshy=100}},
 	armor_groups = {fleshy=100},
 
 	--on actions

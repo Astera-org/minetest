@@ -59,7 +59,7 @@ local flame_def = {
 	buildable_to = true,
 	sunlight_propagates = true,
 	floodable = true,
-	damage_per_second = 4,
+	damage_per_second = 200,
 	groups = {igniter = 2, flames = 1, dig_immediate = 3,
 		  not_in_creative_inventory = 1,
 		  temp_effect = 1, temp_pass = 1},
@@ -140,7 +140,7 @@ local ember_def = {
 	buildable_to = true,
 	sunlight_propagates = true,
 	floodable = true,
-	damage_per_second = 1,
+	damage_per_second = 50,
 	groups = {igniter = 2, dig_immediate = 3, falling_node = 1,
 		  temp_effect = 1, temp_pass = 1},
 

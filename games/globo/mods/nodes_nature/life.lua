@@ -648,7 +648,7 @@ minetest.register_node("nodes_nature:tiken", {
 	place_param2 = 2,
 	sunlight_propagates = true,
 	walkable = false,
-	damage_per_second = 1,
+	damage_per_second = 50,
 	climbable = true,
 	--floodable = true,
 	selection_box = {

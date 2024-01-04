@@ -1,4 +1,10 @@
 TODO:
+- normalize damage around player health of 1000
+
+
+
+
+
 
 - make breeding
     - make pregnant a timer rather than a bool

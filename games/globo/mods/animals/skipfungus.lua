@@ -110,13 +110,13 @@ end
 
 function explode(pos)
     local radius = 4
-    local damage = 100
+    local damage = 5000
 
     -- Hurt all nearby mobs and players
     local objects = minetest.get_objects_inside_radius(pos, radius)
     for _, obj in ipairs(objects) do
         if obj:is_player() then
-            obj:set_hp(obj:get_hp() - damage)
+            obj:set_hp(obj:get_hp() - damage) -- TODO: switch to use changePlayerHP
         elseif mobkit.is_alive(obj) then
             local mob=obj:get_luaentity()
             if mob== nil then
@@ -211,7 +211,7 @@ local baseSkip={
 	timeout = 0,
 
 	--damage
-	max_hp = 40,
+	max_hp = 200,
 	heal_rate= 0.25,
 	lung_capacity = 20,
 	min_temp = -20,

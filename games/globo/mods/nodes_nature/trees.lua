@@ -321,7 +321,7 @@ end
 --Special properties
 
 --maraka thorns
-minetest.override_item("nodes_nature:maraka_leaves",{damage_per_second = 1})
+minetest.override_item("nodes_nature:maraka_leaves",{damage_per_second = 50})
 
 --tangkal fruit is good food, but bulky
 minetest.override_item("nodes_nature:tangkal_fruit",{stack_max = minimal.stack_max_medium/2})

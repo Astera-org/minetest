@@ -334,8 +334,8 @@ local baseWolf={
 	timeout = 0,
 
 	--damage
-	max_hp = 40,
-	heal_rate= 0.25,
+	max_hp = 800,
+	heal_rate= 5,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -344,7 +344,7 @@ local baseWolf={
 
 	--interaction
 	predators = {},
-    prey={"animals:cow","animals:cow_male","player"},
+    prey={"animals:cow","animals:cow_male","animals:gazelle","animals:gazelle_male","player"},
 	friends = {"animals:wolf", "animals:wolf_male"},
 	rivals = {},
 
@@ -372,7 +372,7 @@ local baseWolf={
 	view_range = 15,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=5}},
+	attack={range=0.8, damage_groups={fleshy=300}},
 	armor_groups = {fleshy=100},
 
 	--on actions

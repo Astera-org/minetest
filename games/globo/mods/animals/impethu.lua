@@ -185,8 +185,8 @@ minetest.register_entity("animals:impethu",{
 
 	_VH1_barheight = 1,
 	-- animal stats
-	max_hp = 3,
-	heal_rate=0.25,
+	max_hp = 150,
+	heal_rate=1,
 	lung_capacity = 10,
 	min_temp = -15,
 	max_temp = 50,
@@ -235,7 +235,7 @@ minetest.register_entity("animals:impethu",{
 	view_range = 2,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=1}},
+	attack={range=0.3, damage_groups={fleshy=50}},
 	armor_groups = {fleshy=100},
 
 	--on actions

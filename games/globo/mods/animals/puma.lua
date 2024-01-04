@@ -12,7 +12,7 @@ local random = math.random
 local floor = math.floor
 
 --energy
-local energy_egg = 3000 --energy that goes to egg
+local energy_egg = 4000 --energy that goes to egg
 local egg_timer  = 60*60
 local young_per_egg = 1		--will get this/energy_egg starting energy
 local lifespan = 4000 * 10
@@ -56,8 +56,8 @@ local function brain(self)
 			--Threats
 			local player = mobkit.get_nearby_player(self)
 			if player then
-				animals.fight_or_flight_plyr(self, player, 55, 0.1)
-				mobkit.remember(self,"action","fight/flight player")
+				animals.fight_or_flight_plyr(self, player, 55, 0.4)
+				mobkit.remember(self,"action","fight player")
 			end
 
 			animals.predator_avoid(self, 55, 0.01)
@@ -70,8 +70,8 @@ local function brain(self)
 			-- if pregnant then have a chance to give birth
 			if mobkit.recall(self,'pregnant') then
 				if random() < .02 then
-					minimal.log("mongoose giving birth")
-					if animals.birth(pos, "animals:mongoose", "air",  energy_egg, 1) then
+					minimal.log("puma giving birth")
+					if animals.birth(pos, "animals:puma", "air",  energy_egg, 1) then
 						mobkit.remember(self,'pregnant',false)
 						mobkit.remember(self,'energy',energy-energy_egg)
 					end
@@ -90,15 +90,14 @@ local function brain(self)
 			elseif math.random()< .3 then
 				mobkit.remember(self,'pregnant',true)
 			end
-            -- TODO: sleep
 		end
 
 		-------------------
 		--generic behaviour
 		if mobkit.is_queue_empty_high(self) then
-			mobkit.animate(self,'walk')
-			animals.hq_roam_far(self,10)
-			mobkit.remember(self,"action","default wander")
+			mobkit.animate(self,'stand')
+			mobkit.lq_idle(self,3)
+			mobkit.remember(self,"action","default idle")
 		end
 	end
 end
@@ -108,8 +107,8 @@ end
 ---------------
 
 --eggs
-minetest.register_node("animals:mongoose_spawn", {
-	description = S('Mongoose Spawn'),
+minetest.register_node("animals:puma_spawn", {
+	description = S('Puma Spawn'),
 	tiles = {"animals_gundu_eggs.png"},
 	stack_max = minimal.stack_max_medium,
 	drawtype = "nodebox",
@@ -123,44 +122,47 @@ minetest.register_node("animals:mongoose_spawn", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-		animals.birth(pos, "animals:mongoose", "air",  energy_egg, 1)
-		return false
+		animals.birth(pos, "animals:puma", "air",  energy_egg, 1)
+        return false
 	end,
 })
 
-local baseMongoose={
+local basePuma={
 	physical = true,
 	collide_with_objects = true,
-    --collisionbox = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5 },
-    --collisionbox = { -0.5, -0.5, -0.5, 2, 2, 2 },
     collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
-    --collisionbox = {-0.2, -1, -0.2, 0.2, -0.8, 0.2},
 	visual = "mesh",
-	mesh = "animalia_rat.b3d",
+	mesh = "animalia_cat.b3d",
 	textures = {
-		"animalia_rat_1.png",
-		"animalia_rat_2.png",
-		"animalia_rat_3.png"
+		"animalia_cat_1.png",
+		"animalia_cat_2.png",
+		"animalia_cat_3.png",
+		"animalia_cat_4.png",
+		"animalia_cat_5.png",
+		"animalia_cat_6.png",
+		"animalia_cat_7.png",
+		"animalia_cat_8.png",
+		"animalia_cat_9.png",
+		"animalia_cat_ash.png",
+		"animalia_cat_birch.png",
 	},
-    --mesh = "mobs_wolf.b3d",
-	--textures = {"mobs_wolf.png"},
 	visual_size = {x = 10, y = 10},
 	makes_footstep_sound = true,
 	timeout = 0,
 
 	--damage
-	max_hp = 500,
+	max_hp = 600,
 	heal_rate= 5,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
     energy_loss = 0.5,
-	energy_max = 4000,
+	energy_max = 5000,
 
 	--interaction
 	predators = {"animals:wolf","animals:wolf_male"},
-    prey={"animals:sneachen","animals:pegasun"},
-	friends = {"animals:mongoose"},
+    prey={"animals:sneachen","animals:pegasun","animals:mongoose","animals:gazelle","animals:gazelle_male"},
+	friends = {},
 	rivals = {},
 
 	on_step = mobkit.stepfunc,
@@ -180,12 +182,12 @@ local baseMongoose={
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
-	jump_height = 2,				-- nodes/meters
-	view_range = 15,					-- nodes/meters
+	max_speed = 2.5,					-- m/s
+	jump_height = 3,				-- nodes/meters
+	view_range = 12,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=100}},
+	attack={range=0.8, damage_groups={fleshy=130}},
 	armor_groups = {fleshy=100},
 
 	--on actions
@@ -200,4 +202,4 @@ local baseMongoose={
 	end,
 }
 
-minetest.register_entity("animals:mongoose",baseMongoose)
+minetest.register_entity("animals:puma",basePuma)

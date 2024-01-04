@@ -233,8 +233,8 @@ minetest.register_entity("animals:sneachan",{
 	timeout = 0,
 
 	--damage
-	max_hp = 10,
-	heal_rate=0.25,
+	max_hp = 200,
+	heal_rate=1,
 	lung_capacity = 10,
 	min_temp = -28,
 	max_temp = 48,
@@ -283,7 +283,7 @@ minetest.register_entity("animals:sneachan",{
 	view_range = 2,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=1}},
+	attack={range=0.3, damage_groups={fleshy=50}},
 	armor_groups = {fleshy=100},
 
 	--on actions

@@ -175,8 +175,8 @@ minetest.register_entity("animals:darkasthaan",{
 
 
 	--damage
-	max_hp = 200,
-	heal_rate=0.25,
+	max_hp = 3000,
+	heal_rate=5,
 	lung_capacity = 40,
 	min_temp = 10,
 	max_temp = 50,
@@ -223,7 +223,7 @@ minetest.register_entity("animals:darkasthaan",{
 	view_range = 6,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=12}},
+	attack={range=0.8, damage_groups={fleshy=600}},
 	armor_groups = {fleshy=100},
 
 	--on actions

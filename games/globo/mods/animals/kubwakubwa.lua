@@ -182,8 +182,8 @@ minetest.register_entity("animals:kubwakubwa",{
 
 
 	--damage
-	max_hp = 80,
-	heal_rate=0.25,
+	max_hp = 1000,
+	heal_rate=5,
 	lung_capacity = 20,
 	min_temp = -15,
 	max_temp = 50,
@@ -231,7 +231,7 @@ minetest.register_entity("animals:kubwakubwa",{
 	view_range = 4,					-- nodes/meters
 
 	--attack
-	attack={range=0.5, damage_groups={fleshy=4}},
+	attack={range=0.5, damage_groups={fleshy=200}},
 	armor_groups = {fleshy=100},
 
 	--on actions

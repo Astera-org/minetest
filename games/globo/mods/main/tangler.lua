@@ -150,10 +150,10 @@ minetest.register_node("main:tangler_heart", {
 		for _, obj in ipairs(objects) do
 			if obj:is_player() then
 				--minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a tangler")
-				changePlayerHP(obj, -1)
+				changePlayerHP(obj, -50)
 			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
-				mobkit.hurt(mob,1)
+				mobkit.hurt(mob,50)
 			end
 		end
         return true -- Continue the cycle

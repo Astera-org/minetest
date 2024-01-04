@@ -16,7 +16,7 @@ minetest.register_item(":", {
 			snappy = {times={[3]=minimal.hand_snap}, uses=0, maxlevel=1},
 			oddly_breakable_by_hand = {times={[1]=minimal.hand_crum*minimal.t_scale1,[2]=minimal.hand_crum*minimal.t_scale2,[3]=minimal.hand_crum}, uses=0},
 		},
-		damage_groups = {fleshy=minimal.hand_dmg},
+		damage_groups = {fleshy=50},
 	}
 })
 
@@ -54,6 +54,6 @@ minetest.register_tool("main:tool_bones", {
 			crumbly = {times = {[1]=2.00, [2]=1.00}, uses = 20, maxlevel = 1},
 			snappy = {times = {[2]=3.00, [3]=2.40}, uses = 20, maxlevel = 1},
 		},
-		damage_groups = {fleshy=2},
+		damage_groups = {fleshy=100},
 	},
 })

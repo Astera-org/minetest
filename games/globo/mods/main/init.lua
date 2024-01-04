@@ -49,6 +49,7 @@ GAME_LENGTH=minetest.settings:get('GAME_LENGTH')
 
 
 local default_path = minetest.get_modpath("main")
+dofile(default_path.."/utils.lua")
 dofile(default_path.."/compat.lua")
 dofile(default_path.."/tools.lua")
 dofile(default_path.."/player.lua")

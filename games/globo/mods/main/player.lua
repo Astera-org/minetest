@@ -17,7 +17,7 @@ player_definition = {
     view_range = 10,
     walk_velocity = 2,
     run_velocity = 5, 
-    hp_max = 40,
+    hp_max = 1000,
 }
 
 minetest.register_entity("main:player", player_definition)
@@ -209,10 +209,10 @@ local function inventoryEffects(player)
         for _, stack in ipairs(inv:get_list("main")) do
             local name = stack:get_name()
             if name == "main:ember" then
-                player:set_hp(player:get_hp() - 1)
+                changePlayerHP(player,-50)
             end
             if name == "main:pulse_blossom" or name=="main:pusle_blossom_on" then
-                player:set_hp(player:get_hp() - 1)
+                changePlayerHP(player,-50)
             end
             if (name == "main:sun_berry" or name=="main:moon_berry") and math.random()<0.001 then
                 -- delete the item
@@ -267,6 +267,8 @@ minetest.register_on_joinplayer(function(player)
 
     local inv = player:get_inventory()
     inv:set_size("main", INVENTORY_SIZE)  
+    player:set_properties({hp_max = 1000})
+    player:set_hp(1000)
    --inv:add_item("main", "main:potatoes")
 
     initializePlayerMeta(player)
@@ -403,60 +405,3 @@ end
 
 -- Override Minetest's on_player_hpchange callback
 minetest.register_on_player_hpchange(on_player_hpchange)
-
---[[
-    Now using the exile version
--- only called when awake
-function stepPlayerEnergy(player,dtime)
-    local player_meta = player:get_meta()
-    local eCur = tonumber(player_meta:get_string("energy"))
-    local eMax = tonumber(player_meta:get_string("energy_max"))
-    
-    local ctrl = player:get_player_control()
-    local energy_cost = 0
-    
-    -- Calculate energy cost based on player's actions
-    if ctrl.up or ctrl.left or ctrl.right or ctrl.down then
-        energy_cost = ENERGY_WALK_COST * dtime
-        if ctrl.aux1 then -- Running
-            energy_cost = ENERGY_RUN_COST * dtime
-        end
-    end
-    
-    if ctrl.jump then
-        energy_cost = ENERGY_JUMP_COST
-    end
-    
-    -- Update current energy
-    eMax = eMax-TIRED_RATE*dtime
-    eCur = math.min(math.max(eCur - energy_cost, 0),eMax )
-
-    -- Check if the player can still walk or run
-    if eCur < 200 then
-        if eCur < 3 then
-            player:set_physics_override({speed = 0})  -- Player cannot move
-        else 
-            player:set_physics_override({speed = player_definition.walk_velocity})
-        end
-    end
-    
-    -- Recover energy when player is still
-    if energy_cost == 0 then
-        if eCur < eMax then
-            eCur = math.min(eCur + ENERGY_RECOVERY_RATE * dtime, eMax)
-        end
-        changePlayerHP(player,HEAL_RATE*dtime)
-    end
-    
-    -- Set the energy values
-    player_meta:set_string("energy", eCur)
-    player_meta:set_string("energy_max", eMax)
-    
-end
-
-]]--
-
-
-
-
-

@@ -308,7 +308,7 @@ minetest.register_node("nodes_nature:lava_source", {
 	liquid_alternative_source = "nodes_nature:lava_source",
 	liquid_viscosity = 7,
 	liquid_renewable = false,
-	damage_per_second = 4 * 2,
+	damage_per_second = 400,
 	post_effect_color = {a = 191, r = 255, g = 64, b = 0},
 	groups = {igniter = 1, temp_effect = 1, temp_pass = 1},
 	on_construct = function(pos)
@@ -366,7 +366,7 @@ minetest.register_node("nodes_nature:lava_flowing", {
 	liquid_alternative_source = "nodes_nature:lava_source",
 	liquid_viscosity = 7,
 	liquid_renewable = false,
-	damage_per_second = 4 * 2,
+	damage_per_second = 400,
 	post_effect_color = {a = 191, r = 255, g = 64, b = 0},
 	groups = {igniter = 1,	not_in_creative_inventory = 1, temp_effect = 1, temp_pass = 1},
 })

@@ -68,7 +68,7 @@ minetest.register_node("main:brambles", {
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 3, flammable = 40, flora=1},
-    damage_per_second = 1,
+    damage_per_second = 50,
 })
 
 minetest.register_node("main:pulse_blossom", {
@@ -128,10 +128,10 @@ minetest.register_node("main:pulse_blossom_on", {
 		for _, obj in ipairs(objects) do
 			if obj:is_player() then
 				minetest.chat_send_player(obj:get_player_name(), "You have been damaged by a pulse blossom")
-				changePlayerHP(obj, -3)
+				changePlayerHP(obj, -200)
 			elseif obj:get_luaentity() ~= nil then
 				local mob = obj:get_luaentity()
-				mobkit.hurt(mob,3)
+				mobkit.hurt(mob,200)
 			end
 		end
 
@@ -189,7 +189,7 @@ minetest.register_node("main:thorns", {
 	inventory_image = "thorns_0.png",
 	wield_image = "thorns_0.png",
 	paramtype = "light",
-	damage_per_second = 1,
+	damage_per_second = 50,
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 1,flammable = 30, flora=1},
@@ -211,7 +211,7 @@ minetest.register_node("main:thorns_fruit", {
 	inventory_image = "thorns_0.png",
 	wield_image = "thorns_0.png",
 	paramtype = "light",
-	damage_per_second = 1,
+	damage_per_second = 50,
 	sunlight_propagates = true,
 	walkable = false,
 	groups = {snappy = 1, flammable = 30, flora=1},
@@ -298,7 +298,7 @@ minetest.register_node("main:sumac", {
 	walkable = false,
 	groups = {snappy = 3, flammable = 30, flora=1},
 	on_punch = function(pos, node, player, pointed_thing)
-		changePlayerHP(player,-2)
+		changePlayerHP(player,-100)
 	end,
 })
 

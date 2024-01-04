@@ -90,7 +90,7 @@ end
 function animals.core_hp_water(self)
 
   if not self.isinliquid then
-    mobkit.hurt(self,1)
+    mobkit.hurt(self,50)
     if use_vh1 then
        VH1.update_bar(self.object, self.hp, self.max_hp)
     end
@@ -158,7 +158,7 @@ function animals.core_life(self, lifespan, pos)
   if temp > 100 then -- if it's still boiling time
     -- make the animal exhausted and hurt them (instant death)
      energy = 0
-     mobkit.hurt(self, temp)
+     mobkit.hurt(self, temp*50)
   end
 
   --temperature stress
@@ -170,7 +170,7 @@ function animals.core_life(self, lifespan, pos)
       hbnate = false -- moving around, thus not hibernating
     end
     if temp > self.max_temp * 4 then
-       mobkit.hurt(self,2)
+       mobkit.hurt(self,100)
     end
   end
 
@@ -257,6 +257,51 @@ function animals.hatch_egg(pos, medium_name, replace_name, name, energy_egg, you
   return false
 
 end
+
+-- returns true if the animal was birthed
+function animals.birth(pos, name, medium_name, start_energy, litter_size)
+    local air = minetest.find_nodes_in_area(
+      {x=pos.x-1, y=pos.y-1, z=pos.z-1},
+      {x=pos.x+1, y=pos.y+1, z=pos.z+1}, {medium_name})
+    --if can't find the stuff this mob moves through then it dies
+    if #air < 1 then
+        return false
+    end
+
+    local count = 0
+    local start_e = math.floor(start_energy/litter_size)
+    while count < litter_size  do
+        local ran_pos = air[random(#air)]
+        local ent = minetest.add_entity(ran_pos, name)
+        ent = ent:get_luaentity()
+        if ent == nil then
+          minimal.log("Failed to hatch_egg "..name)
+          return false
+        end
+        mobkit.remember(ent,'energy', start_e)
+        mobkit.remember(ent,'age',0)
+        count = count + 1
+    end
+end
+
+function animals.spawnHerd(pos,name,start_energy,density,radius)
+    -- create a herd of animals around pos
+    -- find the spaces within radius that the animal can stand on
+    -- then randomly place them using animals.birth
+    local locations = minetest.find_nodes_in_area_under_air(
+      {x=pos.x-radius, y=pos.y-radius, z=pos.z-radius},
+      {x=pos.x+radius, y=pos.y+radius, z=pos.z+radius}, {"group:sediment"})
+
+    for _,loc in ipairs(locations) do
+        if math.random() < density then
+            animals.birth(loc, name, "air", start_energy, 1)
+        end
+    end
+end
+
+
+
+
 
  --------------------------------------------------------------------------
  --Movement
@@ -673,7 +718,7 @@ function animals.on_punch(self, tool_capabilities, puncher, prty, chance)
     --do damage
     mobkit.clear_queue_high(self)
     local hbnate = mobkit.recall(self,'hibernate')
-    local dmg = tool_capabilities.damage_groups.fleshy or 1
+    local dmg = tool_capabilities.damage_groups.fleshy or 50
     mobkit.hurt(self,dmg)
     --mobkit.make_sound(self,'punch')
     if use_vh1 then
@@ -696,7 +741,7 @@ function animals.on_punch_water(self, tool_capabilities, puncher, prty, chance)
   if mobkit.is_alive(self) then
     --do damage
     mobkit.clear_queue_high(self)
-    mobkit.hurt(self,tool_capabilities.damage_groups.fleshy or 1)
+    mobkit.hurt(self,tool_capabilities.damage_groups.fleshy or 50)
     --mobkit.make_sound(self,'punch')
     if use_vh1 then
        VH1.update_bar(self.object, self.hp, self.max_hp)
