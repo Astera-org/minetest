@@ -12,7 +12,7 @@ install_linux_deps() {
 		libsqlite3-dev libhiredis-dev libogg-dev libgmp-dev libvorbis-dev
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
 		capnproto libcapnp-dev xvfb
-		libzmq3-dev libzmq5
+		libzmq3-dev
 	)
 
 	if [[ "$1" == "--no-irr" ]]; then
@@ -24,7 +24,7 @@ install_linux_deps() {
 	fi
 
 	sudo apt-get update
-	sudo apt-get install -y --no-install-recommends "${pkgs[@]}" "$@"
+	sudo apt-get install -y "${pkgs[@]}" "$@"
 
 	sudo systemctl start postgresql.service
 	sudo -u postgres psql <<<"
