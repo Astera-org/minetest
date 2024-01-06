@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import sys
 import shutil
 import subprocess
 import uuid
@@ -398,7 +399,13 @@ def start_minetest_client(
     client_socket: str,
     display: int = None,
 ):
-    cmd = [
+    virtual_display = []
+    if sys.platform == "linux":
+        virtual_display = ["xvfb-run", "--auto-servernum"]
+    else:
+        print(f"Warning: virtual display not supported on {sys.platform}")
+
+    cmd = virtual_display + [
         minetest_executable,
         "--go",
         "--worldname",

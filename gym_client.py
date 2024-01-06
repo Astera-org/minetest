@@ -89,10 +89,14 @@ if __name__ == "__main__":
     # Initialize Pygame
     pygame.init()
 
-    # Initialize CartPole environment
+    # The Makefile puts the binary into build/macos
+    minetest_executable = "/home/simon/minetest/build/macos/bin/minetest"
+    if sys.platform == "darwin":
+        minetest_executable = "/Users/siboehm/repos/minetest/build/macos/minetest.app/Contents/MacOS/minetest"
+
     env = gym.make(
         "minetest",
-        minetest_executable="/Users/siboehm/repos/minetest/build/macos/minetest.app/Contents/MacOS/minetest",
+        minetest_executable=minetest_executable,
         render_mode="human",
         display_size=(1600, 1200),
     )
