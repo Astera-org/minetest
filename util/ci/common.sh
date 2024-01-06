@@ -12,7 +12,7 @@ install_linux_deps() {
 		libsqlite3-dev libhiredis-dev libogg-dev libgmp-dev libvorbis-dev
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
 		capnproto libcapnp-dev xvfb
-		libzmq3-dev
+		libzmq3-dev libzmq5
 	)
 
 	if [[ "$1" == "--no-irr" ]]; then
