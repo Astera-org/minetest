@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import numpy as np
 from minetester.minetest_env import KEY_MAP, INVERSE_KEY_MAP
 import signal
+import sys
 
 
 KEY_TO_KEYTYPE = {
