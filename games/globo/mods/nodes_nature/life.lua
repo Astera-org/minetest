@@ -977,7 +977,7 @@ minetest.override_item("nodes_nature:hakimi",{
 		end
 
 		--hp_change, thirst_change, hunger_change, energy_change, temp_change, replace_with_item
-		return HEALTH.use_item(itemstack, user, 1, 0, 0, -10, 0)
+		return HEALTH.use_item(itemstack, user, 50, 0, 0, -10, 0)
 	end,
 })
 
@@ -991,7 +991,7 @@ minetest.override_item("nodes_nature:merki",{
 
 
 		--hp_change, thirst_change, hunger_change, energy_change, temp_change, replace_with_item
-		return HEALTH.use_item(itemstack, user, 1, 0, 0, -10, 0)
+		return HEALTH.use_item(itemstack, user, 50, 0, 0, -10, 0)
 	end,
 })
 

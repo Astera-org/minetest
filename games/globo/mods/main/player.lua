@@ -17,7 +17,7 @@ player_definition = {
     view_range = 10,
     walk_velocity = 2,
     run_velocity = 5, 
-    hp_max = 1000,
+    hp_max = PLAYER_MAX_HEALTH,
 }
 
 minetest.register_entity("main:player", player_definition)
@@ -166,35 +166,32 @@ local function updateHUD(player)
 	player_pos.y = player_pos.y + 0.6 --adjust to body height
 	local external_temp = math.floor(climate.get_point_temp(player_pos, true))
 
-    local hunger_level = math.floor(tonumber(meta:get_string("hunger")))
-    local thirst_level = math.floor(tonumber(meta:get_string("thirst")))
-    local energy_cur = math.floor(tonumber(meta:get_string("energy")))
-    local energy_max = math.floor(tonumber(meta:get_string("energy_max")))
-    local internal_temp=math.floor(tonumber(meta:get_string("temperature")))
-    local score=math.floor(tonumber(meta:get_string("score")))
+    local hunger_level = meta:get_int("hunger")
+    local thirst_level = meta:get_int("thirst")
+    local energy_cur = meta:get_int("energy")
+    local energy_max = meta:get_int("energy_max")
+    local internal_temp=meta:get_int("temperature")
+    local score=meta:get_int("score")
+    local hun_rate=meta:get_int("hunger_rate")
+    local t_rate=meta:get_int("thirst_rate")
+    local r_rate=meta:get_int("recovery_rate")
+    local h_rate=meta:get_int("heal_rate")
 
     local air=1000
-    local health=math.floor(tonumber(player:get_hp()))
+    local health=player:get_hp()
 
-    local h_rate, r_rate, t_rate, hun_rate, mov, jum, health_after, energy, thirst, hunger, temperature = HEALTH.malus_bonus(player, meta, health, energy_cur, thirst_level, hunger_level, internal_temp)
-    energy_cur= energy
-    health=health_after
-    thirst_level=thirst
-    hunger_level=hunger
-    internal_temp=temperature
-
-
-    local sleeping = meta:get_string("sleeping") ~= ""
+   -- local h_rate, r_rate, t_rate, hun_rate, mov, jum, health_after, energy, thirst, hunger, temperature = HEALTH.malus_bonus(player, meta, health, energy_cur, thirst_level, hunger_level, internal_temp)
+    --local sleeping = meta:get_string("sleeping") ~= ""
 
     local hud_ids = meta:get("hud_ids")
     hud_ids = minetest.deserialize(hud_ids)
 
     player:hud_change(hud_ids.score, "text", "Score: " .. score)
     player:hud_change(hud_ids.air, "text", "Air: " .. air)
-    player:hud_change(hud_ids.health, "text", "Health: " .. health)
-    player:hud_change(hud_ids.hunger_id, "text", "Hunger: " .. hunger_level)
-    player:hud_change(hud_ids.thirst_id, "text", "Thirst: " .. thirst_level)
-    player:hud_change(hud_ids.energy_id, "text", "Energy: " .. energy_cur .. " / " .. energy_max)
+    player:hud_change(hud_ids.health, "text", "Health: " .. health.."+"..h_rate)
+    player:hud_change(hud_ids.hunger_id, "text", "Hunger: " .. hunger_level.."-"..-hun_rate)
+    player:hud_change(hud_ids.thirst_id, "text", "Thirst: " .. thirst_level.."-"..-t_rate)
+    player:hud_change(hud_ids.energy_id, "text", "Energy: " .. energy_cur .. " / " .. energy_max.."+"..r_rate)
     player:hud_change(hud_ids.temp, "text", "Temp: " .. internal_temp .. " / " .. external_temp)
     player:hud_change(hud_ids.status, "text", effectListStr(player))
 
@@ -225,6 +222,13 @@ end
 
 minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
+       
+        local properties = player:get_properties()
+        local max_hp = properties.hp_max
+        if max_hp ~= PLAYER_MAX_HEALTH then
+            minimal.log("!!!!!!!!!!!!!!! "..max_hp)
+        end
+
         if stepPlayerSleep(player,dtime) then
             stepPlayerWalkRun(player)
         end
@@ -234,28 +238,25 @@ minetest.register_globalstep(function(dtime)
 end)
 
 
-function initializePlayerMeta(player)
+function initializePlayer(player)
     local meta = player:get_meta()
-    if meta:get_string("energy") == "" then
-        meta:set_string("energy", 1000)
-    end
-    if meta:get_string("energy_max") == "" then
-        meta:set_string("energy_max", 1000)
-    end
-    if meta:get_string("hunger") == "" then
-        meta:set_string("hunger", 1000)
-    end
-    if meta:get_string("thirst") == "" then
-        meta:set_string("thirst", 1000)
-    end
-    if meta:get_string("score") == "" then
-        meta:set_string("score", 0)
+    if meta:get_int("joined") ==0 then
+        meta:set_int("joined",1)
+
+        player:set_properties({hp_max = PLAYER_MAX_HEALTH})
+        player:set_hp(PLAYER_MAX_HEALTH)
+        meta:set_int("energy", 1000)
+        meta:set_int("energy_max", 1000)
+        meta:set_int("hunger", 1000)
+        meta:set_int("thirst", 1000)
+        meta:set_int("score", 0)
     end
 end
 
 
 minetest.register_on_joinplayer(function(player)
     print("Player joining")
+    player:set_properties({hp_max = PLAYER_MAX_HEALTH})
 
     local privs = minetest.get_player_privs("singleplayer")
     privs.fly = true
@@ -267,25 +268,27 @@ minetest.register_on_joinplayer(function(player)
 
     local inv = player:get_inventory()
     inv:set_size("main", INVENTORY_SIZE)  
-    player:set_properties({hp_max = 1000})
-    player:set_hp(1000)
+    
    --inv:add_item("main", "main:potatoes")
 
-    initializePlayerMeta(player)
+    initializePlayer(player)
     setupHUD(player)
 end)
 
 
 minetest.register_on_respawnplayer(function(player)
     local meta = player:get_meta()
-    meta:set_string("energy", 1000)
-    meta:set_string("energy_max", 1000)
-    meta:set_string("hunger", 1000)
-    meta:set_string("thirst", 1000)
-    meta:set_string("sleeping","")
+    meta:set_int("energy", 1000)
+    meta:set_int("energy_max", 1000)
+    meta:set_int("hunger", 1000)
+    meta:set_int("thirst", 1000)
+    meta:set_int("sleeping",0)
     local score=meta:get_int("score") or 0
-    score = score - 4
+    score = score - 6
     meta:set_int("score", score)
+
+    player:set_properties({hp_max = PLAYER_MAX_HEALTH})
+    player:set_hp(PLAYER_MAX_HEALTH)
 
     return false
 end)
@@ -306,8 +309,8 @@ end
 
 function wakeUp(player,msg)
     local meta = player:get_meta()
-    if meta:get_string("sleeping")  ~= "" then
-        meta:set_string("sleeping","")
+    if meta:get_int("sleeping")  == 1 then
+        meta:set_int("sleeping",0)
         minetest.log(msg)
         player:set_physics_override({speed = player_definition.walk_velocity})
     end
@@ -324,7 +327,7 @@ function playerStartSleep(player)
     end
 
     local meta = player:get_meta()
-    meta:set_string("sleeping","1")
+    meta:set_int("sleeping",1)
     player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
     minetest.log("You go to sleep.")
 end
@@ -332,8 +335,8 @@ end
 function playerLayEgg(player)
     --minimal.log("player trying to lay egg")
     local meta = player:get_meta()
-    local energy = tonumber(meta:get_string("energy"))
-    local hunger = tonumber(meta:get_string("hunger"))
+    local energy = meta:get_int("energy")
+    local hunger = meta:get_int("hunger")
     if hunger > 500 and energy > 500 then
         local pos = player:get_pos()
         pos.y = pos.y + 0.5
@@ -341,7 +344,7 @@ function playerLayEgg(player)
         if node.name == "air" then
             minetest.add_node(pos, {name = "main:player_egg"})
             minetest.get_meta(pos):set_string("owner", player:get_player_name())
-            addNutrient(player,"hunger",-200)
+            addNutrient(player,"hunger",-100)
             changePlayerEnergy(player,-500)
         end
     end
@@ -352,9 +355,9 @@ end
 function stepPlayerSleep(player,dtime)
     local meta = player:get_meta()
 
-    if meta:get_string("sleeping") ~= "" then
-        player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
-
+    if meta:get_int("sleeping") == 1 then
+        --player:set_physics_override({speed = 0})  -- Player cannot move while sleeping
+--[[
         local eMax = meta:get_float("energy_max")
         local eCur = meta:get_float("energy")
 
@@ -364,7 +367,7 @@ function stepPlayerSleep(player,dtime)
         meta:set_float("energy", eCur)
         meta:set_float("energy_max",eMax)
         changePlayerHP(player,HEAL_RATE_SLEEP * dtime)
-
+]]--
         local controls = player:get_player_control()
         -- minetest.chat_send_player(player:get_player_name(), dump(controls))
         -- if you move forward or jump, you wake up
@@ -381,6 +384,7 @@ function stepPlayerSleep(player,dtime)
             return true
         end
 
+        local eCur = meta:get_float("energy")
         -- Wake up if fully rested
         if eCur == 1000 then
             wakeUp(player,"You wake up feeling rested.")
@@ -393,15 +397,21 @@ end
 
 
 -- Function to handle when a player is hurt
-local function on_player_hpchange(player, hp_change)
+local function on_player_hpchange(player, hp_change, reason)
+    local properties = player:get_properties()
+    local max_hp = properties.hp_max
+    minimal.log("Player hurt: " .. hp_change .. " reason: " .. reason.type.." max: "..max_hp)
+    if reason.type == "fall" then
+       hp_change = hp_change * 50
+    end
+
     local meta = player:get_meta()
-    if hp_change < 0 and meta:get_string("sleeping") ~= "" then
+    if hp_change < 0 and meta:get_int("sleeping")==1 then
         -- Player hurt while sleeping
         wakeUp(player,"You were hurt and have woken up.")
     end
-
     return hp_change
 end
 
 -- Override Minetest's on_player_hpchange callback
-minetest.register_on_player_hpchange(on_player_hpchange)
+minetest.register_on_player_hpchange(on_player_hpchange,true)

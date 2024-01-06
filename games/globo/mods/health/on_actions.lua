@@ -13,7 +13,7 @@ local random = math.random
 --only need the physics part as rates etc get applied from main health function
 --MUST MATCH malus_bonus as it will get overriden by that when it kicks in!!!!
 
-local function quick_physics(player, name, health, energy, thirst, hunger, temperature)
+local function quick_physics(player, health, energy, thirst, hunger, temperature)
   --use standard values
   local mov = 0
   local jum = 0
@@ -23,19 +23,19 @@ local function quick_physics(player, name, health, energy, thirst, hunger, tempe
   --
 
   --bonus/malus from health
-  if health <= 1 then
+  if health <= 50 then
     mov = mov - 50
     jum = jum - 50
-  elseif health < 4 then
+  elseif health < 200 then
     mov = mov - 25
     jum = jum - 25
-  elseif health < 8 then
+  elseif health < 400 then
     mov = mov - 20
     jum = jum - 20
-  elseif health < 12 then
+  elseif health < 600 then
     mov = mov - 15
     jum = jum - 15
-  elseif health < 16 then
+  elseif health < 800 then
     mov = mov - 10
     jum = jum - 10
   end
@@ -111,15 +111,13 @@ local function quick_physics(player, name, health, energy, thirst, hunger, tempe
     jum = jum - 20
   end
 
-
+  
+    minimal.log("quick_physics: "..mov.." "..jum)
   --apply player physics
   --don't do in bed or it buggers the physics
   
     player_monoids.speed:add_change(player, 1 + (mov/100), "health:physics")
     player_monoids.jump:add_change(player, 1 + (jum/100), "health:physics")
-  
-
-
 
 end
 
@@ -152,8 +150,8 @@ function HEALTH.use_item(itemstack, user, hp_change, thirst_change, hunger_chang
 	health = health + hp_change
 	if health < 0 then
 		health = 0
-	elseif health > 20 then
-		health = 20
+	elseif health > PLAYER_MAX_HEALTH then
+		health = PLAYER_MAX_HEALTH
 	end
 
 	thirst = thirst + thirst_change
@@ -184,7 +182,7 @@ function HEALTH.use_item(itemstack, user, hp_change, thirst_change, hunger_chang
 	--set new values
 	-- and update malus (need for setting correct physics) --conflicts with Health Effects!
 	--HEALTH.malus_bonus(user, name, meta, health, energy, thirst, hunger, temperature)
-  quick_physics(user, name, health, energy, thirst, hunger, temperature)
+  quick_physics(user, health, energy, thirst, hunger, temperature)
 
 	user:set_hp(health)
 	meta:set_int("thirst", thirst)
@@ -218,14 +216,12 @@ end
 --fast interval (cf main update)
 --Moving and digging and building
 --Environmental based, bed rest ...
-if minetest.settings:get_bool("enable_damage") then
 
-	local timer = 0
-	local interval = 4
-	minetest.register_globalstep(function(dtime)
+local timer = 0
+local interval = 4
+minetest.register_globalstep(function(dtime)
 		timer = timer + dtime
 
-		--run
 		if timer > interval then
 			for _,player in ipairs(minetest.get_connected_players()) do
 				local name = player:get_player_name()
@@ -233,39 +229,38 @@ if minetest.settings:get_bool("enable_damage") then
 
 				local health = player:get_hp()
 				-- if we're dead, no more healing/etc
-				if health > 0 and
-				   player:get_armor_groups().immortal ~= 1 then
-				local thirst = meta:get_int("thirst")
-				local hunger = meta:get_int("hunger")
-				local energy = meta:get_int("energy")
-				local temperature = meta:get_int("temperature")
+				if health > 0 then
+          local thirst = meta:get_int("thirst")
+          local hunger = meta:get_int("hunger")
+          local energy = meta:get_int("energy")
+          local temperature = meta:get_int("temperature")
 
-				----------------
-				--movement/digging
-				local controls = player:get_player_control()
-				-- Determine if the player is active,
-        --some actions more energetic
-				if controls.up
-				or controls.down
-				or controls.left
-				or controls.right
-				or controls.RMB
-				then
-					energy = energy - 3
-          --thirsty work
-          if random()<0.07 then
-            thirst = thirst - 10
-            hunger = hunger - 20
+          ----------------
+          --movement/digging
+          local controls = player:get_player_control()
+          -- Determine if the player is active,
+          --some actions more energetic
+          if controls.up
+          or controls.down
+          or controls.left
+          or controls.right
+          or controls.RMB
+          then
+            energy = energy - 3
+            --thirsty work
+            if random()<0.07 then
+              thirst = thirst - 10
+              hunger = hunger - 20
+            end
+          elseif controls.LMB
+          or controls.jump then
+            energy = energy - 8
+            --thirsty work
+            if random()<0.07 then
+              thirst = thirst - 20
+              hunger = hunger - 4
+            end
           end
-				elseif controls.LMB
-				or controls.jump then
-					energy = energy - 8
-          --thirsty work
-          if random()<0.07 then
-            thirst = thirst - 20
-            hunger = hunger - 4
-          end
-				end
 
         
 
@@ -280,9 +275,10 @@ if minetest.settings:get_bool("enable_damage") then
         --[safe] comfort zone ->[low cost]->stress zone ->[high cost]-> danger zone->[damage]
 
         local comfort_low = meta:get_int("clothing_temp_min")
-	local comfort_high = meta:get_int("clothing_temp_max") + 1
-	-- comfort is rounded off in display, so you can be half a degree
-	-- over and still in the white. Don't confuse players by penalizing!
+        local comfort_high = meta:get_int("clothing_temp_max") + 1
+        -- comfort is rounded off in display, so you can be half a degree
+        -- over and still in the white. Don't confuse players by penalizing!
+
         local stress_low = comfort_low - 10
         local stress_high = comfort_high + 10
         local danger_low = stress_low - 40
@@ -335,33 +331,32 @@ if minetest.settings:get_bool("enable_damage") then
 				local dam_weather = climate.get_damage_weather(player_pos, light)
 
 				--bed rest
-				--when in bed, under shelter boost energy
-				if energy < 1000 then
-					-- JED if bed_rest.player[name] then
+				--when in bed, under shelter boost energy        
+				if meta:get_int("sleeping") == 1 then
 						--best rest is under shelter, in a non-extreme temperature
-            local lvl = 1 -- bed_rest.level[name]
+            local lvl = 3 
 						if rain
-            or snow
-            or dam_weather
-            or enviro_temp < stress_low
-            or enviro_temp > stress_high then
-              --terrible sleep in the rain etc
-              if random()>0.1 then
+              or snow
+              or dam_weather
+              or enviro_temp < stress_low
+              or enviro_temp > stress_high then
+                --terrible sleep in the rain etc
+                --if random()>0.1 then
                 energy = energy + (2 * lvl)
-              end
-
+                --end
             elseif enviro_temp < comfort_low
-            or enviro_temp > comfort_high
-            or light >= 14 then
-              --okay sleep if in uncomfortable temp, exposed
-              energy = energy + (4 * lvl)
-
+              or enviro_temp > comfort_high
+              or light >= 14 then
+                --okay sleep if in uncomfortable temp, exposed
+                energy = energy + (4 * lvl)
             elseif enviro_temp < comfort_high and enviro_temp > comfort_low and light < 14 then
               --best rest is under shelter, in a non-extreme temperature
 							energy = energy + (16 * lvl)
 						end
-					
-				end
+        else
+            quick_physics(player, health, energy, thirst, hunger, temperature)
+        end
+      
 
         ------------------
 				--drink a little rain
@@ -422,10 +417,10 @@ if minetest.settings:get_bool("enable_damage") then
           posu.y = posu.y - 1.6
 
           local s_name = minetest.get_node(posu).name
-	  if minetest.get_item_group(s_name, "wet_sediment") > 0 then
-	     HEALTH.add_new_effect(player, {"Fungal Infection", 1})
-          end
-        end
+          if minetest.get_item_group(s_name, "wet_sediment") > 0 then
+            HEALTH.add_new_effect(player, {"Fungal Infection", 1})
+                end
+              end
 
 
 
@@ -471,6 +466,4 @@ if minetest.settings:get_bool("enable_damage") then
 		if timer > interval then
 			timer = 0
 		end
-	end)
-
-end
+end)

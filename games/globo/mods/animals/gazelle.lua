@@ -364,7 +364,7 @@ local baseGazelle = {
 
 	--damage
 	max_hp = 1000,
-	heal_rate= 2,
+	heal_rate= 1,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -413,6 +413,7 @@ local baseGazelle = {
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("cow punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 	end,

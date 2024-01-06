@@ -195,11 +195,14 @@ minetest.register_chatcommand("test", {
        tanglerTest()
 
        local player = minetest.get_player_by_name(name)
+       local properties = player:get_properties()
+    local max_hp = properties.hp_max
+       minimal.log("player maxhp"..max_hp)
         local dir = player:get_look_dir()
         local pos = player:get_pos()
 
         local nodePos = {x = pos.x + dir.x, y = pos.y, z = pos.z + dir.z}
-       grib_spread(nodePos)
+       --grib_spread(nodePos)
     end,
 })
 

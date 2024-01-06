@@ -522,7 +522,7 @@ minetest.register_entity("animals:pegasun_male",{
 	view_range = 7,					-- nodes/meters
 
 	--attack
-	attack={range=0.5, damage_groups={fleshy=200}},
+	attack={range=0.5, damage_groups={fleshy=150}},
 	armor_groups = {fleshy=100},
 
 	--on actions
@@ -531,6 +531,7 @@ minetest.register_entity("animals:pegasun_male",{
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.6)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 		if not clicker or not clicker:is_player() then
@@ -650,6 +651,7 @@ minetest.register_entity("animals:pegasun",{
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 		if not clicker or not clicker:is_player() then

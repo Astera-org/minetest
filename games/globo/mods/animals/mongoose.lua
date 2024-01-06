@@ -150,7 +150,7 @@ local baseMongoose={
 
 	--damage
 	max_hp = 500,
-	heal_rate= 5,
+	heal_rate= 3,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -195,6 +195,7 @@ local baseMongoose={
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("mongoose punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 	end,

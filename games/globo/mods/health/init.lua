@@ -25,8 +25,7 @@ dofile(minetest.get_modpath('health')..'/hud.lua')
 dofile(minetest.get_modpath('health')..'/food.lua')
 
 
---frequency of updating and applying effects
-local interval = 60
+
 
 -----------------------------
 --Player Attibutes
@@ -246,25 +245,25 @@ function HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temper
 	--
 
 	--bonus/malus from health
-	if health <= 1 then
+	if health <= 50 then
 		mov = mov - 50
 		jum = jum - 50
 		h_rate = h_rate - 3
 		r_rate = r_rate - 4
-	elseif health < 4 then
+	elseif health < 200 then
 		mov = mov - 25
 		jum = jum - 25
 		h_rate = h_rate - 2
 		r_rate = r_rate - 2
-	elseif health < 8 then
+	elseif health < 400 then
 		mov = mov - 20
 		jum = jum - 20
 		h_rate = h_rate - 1
 		r_rate = r_rate - 1
-	elseif health < 12 then
+	elseif health < 600 then
 		mov = mov - 15
 		jum = jum - 15
-	elseif health < 16 then
+	elseif health < 800 then
 		mov = mov - 10
 		jum = jum - 10
 	end
@@ -411,9 +410,6 @@ function HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temper
 		player_monoids.speed:add_change(player, 1 + (HE_mov/100), "health:physics_HE")
 		player_monoids.jump:add_change(player, 1 + (HE_jum/100), "health:physics_HE")
 
-
-	
-
 	--return adjusted rates so can be applied if necessary
 	return h_rate, r_rate, t_rate, hun_rate, mov, jum, health, energy, thirst, hunger, temperature
 
@@ -441,7 +437,7 @@ minetest.register_on_joinplayer(function(player)
 	local hunger = meta:get_int("hunger")
 	local energy = meta:get_int("energy")
 	local temperature = meta:get_int("temperature")
-	HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
+	--HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
 
 	local velo = meta:get_string("player_velocity")
 	if velo ~= nil then
@@ -477,10 +473,12 @@ minetest.register_on_leaveplayer(function(player, timed_out)
       meta:set_string("player_velocity", minetest.pos_to_string(velo))
 end)
 
-if minetest.settings:get_bool("enable_damage") then
-	--Main update values
-	local timer = 0
-	minetest.register_globalstep(function(dtime)
+
+--Main update values
+local timer = 0
+--frequency of updating and applying effects
+local interval = 60
+minetest.register_globalstep(function(dtime)
 		timer = timer + dtime
 
 		--run
@@ -538,13 +536,13 @@ if minetest.settings:get_bool("enable_damage") then
 				if temperature > 37 then
 					temperature1 = temperature - 1
 					if temperature > 47 then
-						health1 = health1 - 1
+						health1 = health1 - 50
 					end
 
 				elseif temperature < 37 then
 					temperature1 = temperature + 1
 					if temperature < 27 then
-						health1 = health1 - 1
+						health1 = health1 - 50
 					end
 				else
 					temperature1 = temperature
@@ -552,8 +550,8 @@ if minetest.settings:get_bool("enable_damage") then
 
 				if health1 < 0 then
 					health1 = 0
-				elseif health1 > 20 then
-					health1 = 20
+				elseif health1 > PLAYER_MAX_HEALTH then
+					health1 = PLAYER_MAX_HEALTH
 				end
 
 
@@ -575,6 +573,6 @@ if minetest.settings:get_bool("enable_damage") then
 			timer = 0
 		end
 
-	end)
+end)
 
-end
+

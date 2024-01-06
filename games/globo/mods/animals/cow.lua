@@ -380,7 +380,7 @@ local baseCow = {
 
 	--damage
 	max_hp = 2000,
-	heal_rate= 5,
+	heal_rate= 2,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -426,11 +426,14 @@ local baseCow = {
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("cow punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 	end,
 }
 
+
+minetest.register_entity("animals:cow",baseCow)
 
 local maleCow=baseCow
 maleCow.logic=brain_male
@@ -440,4 +443,4 @@ maleCow.max_hp=2200
 
 
 minetest.register_entity("animals:cow_male",maleCow)
-minetest.register_entity("animals:cow",baseCow)
+

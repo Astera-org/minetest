@@ -1,10 +1,6 @@
 TODO:
-- normalize damage around player health of 1000
 
-
-
-
-
+- some herb that increases your healing rate
 
 - make breeding
     - make pregnant a timer rather than a bool
@@ -19,12 +15,10 @@ TODO:
 - make cows favor things you eat
 - dropped items should burn in fire
 - flowing water should push you
-- you heal too fast
-- you shouldn't be able to swim long distances (maybe just really saps your energy)
 - player should be no different than other animals to the mobs
 - plants spread
 - normalize mobs
-- normalize food/water/damage
+- normalize food/water
 - make animals sleep
 - animals run from fire
 - adjust the exile energy system to have a max energy and regain your current energy when you are still
@@ -36,6 +30,7 @@ CHECK:
 - behaviors seem wonky. Do they need more idle time
 - make sure animals can be in equalibrim
 - is it better to just have the infinite map?
+
 
 
 BUGS:

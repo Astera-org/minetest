@@ -192,8 +192,8 @@ local function organ_failure(player, repeat_min, repeat_max, delay_min, delay_ma
 
 			if health < 0 then
 				health = 0
-			elseif health > 20 then
-				health = 20
+			elseif health > PLAYER_MAX_HEALTH then
+				health = PLAYER_MAX_HEALTH
 			end
 
 			player:set_hp(health)

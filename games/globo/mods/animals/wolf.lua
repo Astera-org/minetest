@@ -335,7 +335,7 @@ local baseWolf={
 
 	--damage
 	max_hp = 800,
-	heal_rate= 5,
+	heal_rate= 2,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -382,14 +382,18 @@ local baseWolf={
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("wolf punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
+		--minimal.log("wolf rightclicked. hp:"..self.hp)
 	end,
 }
 
+
+minetest.register_entity("animals:wolf",baseWolf)
 local maleWolf=baseWolf
 maleWolf.logic=brain_male
 maleWolf.sex="male"
 
 minetest.register_entity("animals:wolf_male",maleWolf)
-minetest.register_entity("animals:wolf",baseWolf)
+

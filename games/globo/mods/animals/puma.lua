@@ -70,7 +70,7 @@ local function brain(self)
 			-- if pregnant then have a chance to give birth
 			if mobkit.recall(self,'pregnant') then
 				if random() < .02 then
-					minimal.log("puma giving birth")
+					--minimal.log("puma giving birth")
 					if animals.birth(pos, "animals:puma", "air",  energy_egg, 1) then
 						mobkit.remember(self,'pregnant',false)
 						mobkit.remember(self,'energy',energy-energy_egg)
@@ -152,7 +152,7 @@ local basePuma={
 
 	--damage
 	max_hp = 600,
-	heal_rate= 5,
+	heal_rate= 3,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,
@@ -197,6 +197,7 @@ local basePuma={
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		--minimal.log("mongoose punched. hp:"..self.hp)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.05)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 	end,

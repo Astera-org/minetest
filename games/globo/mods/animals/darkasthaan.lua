@@ -232,6 +232,7 @@ minetest.register_entity("animals:darkasthaan",{
 	},
 	on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		animals.on_punch(self, tool_capabilities, puncher, 55, 0.85)
+		return true
 	end,
 	on_rightclick = function(self, clicker)
 		if not clicker or not clicker:is_player() then

@@ -715,10 +715,12 @@ end
 --on_punch
 function animals.on_punch(self, tool_capabilities, puncher, prty, chance)
   if mobkit.is_alive(self) then
+    --minimal.log("animals.on_punch")
     --do damage
     mobkit.clear_queue_high(self)
     local hbnate = mobkit.recall(self,'hibernate')
     local dmg = tool_capabilities.damage_groups.fleshy or 50
+    minimal.log("animals.on_punch:"..dmg)
     mobkit.hurt(self,dmg)
     --mobkit.make_sound(self,'punch')
     if use_vh1 then

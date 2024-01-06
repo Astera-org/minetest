@@ -42,8 +42,10 @@ ENERGY_JUMP_COST = 20     -- Cost of energy per jump
 SLEEP_STARVE_COE=0.3 
 TIRED_RATE=0.5
 
+----------------------------
 GAME_SPEED=minetest.settings:get('GAME_SPEED')
 GAME_LENGTH=minetest.settings:get('GAME_LENGTH')
+PLAYER_MAX_HEALTH=minetest.settings:get('PLAYER_MAX_HEALTH') or 1000
 
 
 
