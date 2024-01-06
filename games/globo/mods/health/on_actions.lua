@@ -111,6 +111,15 @@ local function quick_physics(player, health, energy, thirst, hunger, temperature
     jum = jum - 20
   end
 
+  local player_pos = player:get_pos()
+	local node_name = minetest.get_node(player_pos).name
+	local water = minetest.get_item_group(node_name,"water")
+	if water > 0 then 
+		--minimal.log("Slowing down player in water "..mov)
+		local min=math.min(mov,-90)
+		mov= math.max(mov - 80,min)
+	end
+
   
     minimal.log("quick_physics: "..mov.." "..jum)
   --apply player physics

@@ -15,8 +15,8 @@ player_definition = {
     textures = {"character.png"},
     makes_footstep_sound = true,
     view_range = 10,
-    walk_velocity = 2,
-    run_velocity = 5, 
+    walk_velocity = 1,
+    run_velocity = 1.6, 
     hp_max = PLAYER_MAX_HEALTH,
 }
 
@@ -293,17 +293,12 @@ minetest.register_on_respawnplayer(function(player)
     return false
 end)
 
-
 function stepPlayerWalkRun(player)
     local ctrl = player:get_player_control()
     if ctrl.aux1 then -- aux1 is often mapped to the 'E' or 'Ctrl' key by default
-        player:set_physics_override({
-            speed = player_definition.run_velocity
-        })
+        player_monoids.speed:add_change(player, player_definition.run_velocity, "main")
     else
-        player:set_physics_override({
-            speed = player_definition.walk_velocity
-        })
+        player_monoids.speed:add_change(player, player_definition.walk_velocity, "main")
     end
 end
 

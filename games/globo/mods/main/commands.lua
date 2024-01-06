@@ -192,12 +192,17 @@ minetest.register_chatcommand("test", {
     params = "",  
     privs = {fly = true},
     func = function(name, param)
-       tanglerTest()
+        --tanglerTest()
 
-       local player = minetest.get_player_by_name(name)
-       local properties = player:get_properties()
-    local max_hp = properties.hp_max
-       minimal.log("player maxhp"..max_hp)
+        local player = minetest.get_player_by_name(name)
+        local properties = player:get_properties()
+        local max_hp = properties.hp_max
+
+        local physics = player:get_physics_override()
+        local speed = physics.speed
+        local jump = physics.jump
+        minimal.log("player maxhp"..max_hp.." speed:"..speed.." jump:"..jump)
+
         local dir = player:get_look_dir()
         local pos = player:get_pos()
 
