@@ -2,11 +2,17 @@
 
 # Linux build only
 install_linux_deps() {
+	# ZMQ is not available in the default repos for 22.04
+	echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+	curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+
 	local pkgs=(
 		cmake gettext postgresql
 		libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev
 		libsqlite3-dev libhiredis-dev libogg-dev libgmp-dev libvorbis-dev
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
+		capnproto libcapnp-dev xvfb
+		libzmq3-dev
 	)
 
 	if [[ "$1" == "--no-irr" ]]; then
