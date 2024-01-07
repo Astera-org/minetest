@@ -13,14 +13,8 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_max = 8000--secs it can survive without food
-local energy_egg = energy_max/2 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-
-local lifespan = energy_max * 10
-local lifespan_male = lifespan * 1.2 --if the flock male dies they go extinct
+local pegasun=animalData[animal.pegasun]
+local pegasunMale=animalData[animal.pegasunMale]
 
 
 -----------------------------------
@@ -35,7 +29,7 @@ local function brain(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan, pos)
+		local age, energy = animals.core_life(self, pegasun.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -121,7 +115,7 @@ local function brain(self)
 						if preg == true then
 							mobkit.lq_idle(self,3)
 							if random() < 0.05 then
-								energy = animals.place_egg(pos, "animals:pegasun_eggs", energy, energy_egg, 'air')
+								energy = animals.place_egg(pos, "animals:pegasun_eggs", energy, pegasun.eggEnergy, 'air')
 								mobkit.remember(self,'pregnant',false)
 							end
 
@@ -211,7 +205,7 @@ local function brain_male(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan_male, pos)
+		local age, energy = animals.core_life(self, pegasunMale.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -304,7 +298,7 @@ local function brain_male(self)
 							--go get her!
 							--mobkit.make_sound(self,'mating')
 							if random() < 0.5 then
-                mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
+                                mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
 								animals.hq_mate(self, 25, mate)
 							end
 						end
@@ -386,9 +380,9 @@ minetest.register_node("animals:pegasun_spawn", {
 	end,
 	on_timer =function(pos, elapsed)
 		if random()<=0.4 then -- 40% for female, 60% for male
-			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun", pegasun.eggEnergy, 1)
 		else
-			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun_male", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun_male", pegasun.eggEnergy, 1)
 		end
 
 	end,
@@ -413,9 +407,9 @@ minetest.register_node("animals:pegasun_eggs", {
 	end,
 	on_timer =function(pos, elapsed)
 		if random()<=0.4 then -- 40% for female, 60% for male
-			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun", pegasun.eggEnergy, 1)
 		else
-			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun_male", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:pegasun_male", pegasun.eggEnergy, 1)
 		end
 
 	end,
@@ -445,13 +439,13 @@ minetest.register_entity("animals:pegasun_male",{
 	timeout = 0,
 
 	--damage
-	max_hp = 400,
-	heal_rate=1,
+	max_hp = pegasunMale.hp,
+	heal_rate=pegasunMale.rate,
 	lung_capacity = 25,
-	min_temp = -20,
-	max_temp = 45,
-  	energy_loss = 1,
-	energy_max=8000,
+	min_temp = pegasun.minTemp,
+	max_temp = pegasun.maxTemp,
+  	energy_loss = pegasun.energyLoss,
+	energy_max=pegasun.energy,
 
 	--interaction
 	predators = {"animals:kubwakubwa", "animals:darkasthaan"},
@@ -517,13 +511,13 @@ minetest.register_entity("animals:pegasun_male",{
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2.5,					-- m/s
-	jump_height = 1.5,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
+	max_speed = pegasunMale.speed,					-- m/s
+	jump_height = pegasunMale.jump,				-- nodes/meters
+	view_range = pegasunMale.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.5, damage_groups={fleshy=150}},
-	armor_groups = {fleshy=100},
+	attack={range=pegasunMale.range, damage_groups={fleshy=pegasunMale.damage}},
+	armor_groups = {fleshy=pegasunMale.armor},
 
 	--on actions
 	drops = {
@@ -546,7 +540,7 @@ minetest.register_entity("animals:pegasun_male",{
 
 
 --spawn egg (i.e. live animal in inventory)
-animals.register_egg("animals:pegasun_male", S("Live Pegasun (male)"), "animals_pegasun_item.png", minimal.stack_max_medium, energy_egg)
+animals.register_egg("animals:pegasun_male", S("Live Pegasun (male)"), "animals_pegasun_item.png", minimal.stack_max_medium, pegasun.energyEgg)
 
 
 
@@ -566,16 +560,16 @@ minetest.register_entity("animals:pegasun",{
 	timeout = 0,
 
 	--damage
-	max_hp = 400,
-	heal_rate=1,
+	max_hp = pegasun.hp,
+	heal_rate=pegasun.heal,
 	lung_capacity = 20,
-	min_temp = -20,
-	max_temp = 45,
-	energy_loss = 1,
-	energy_max=8000,
+	min_temp = pegasun.minTemp,
+	max_temp = pegasun.maxTemp,
+	energy_loss = pegasun.energyLoss,
+	energy_max=pegasun.energy,
 
 	--interaction
-	predators = {"animals:kubwakubwa", "animals:darkasthaan"},
+	predators = {"animals:kubwakubwa", "animals:darkasthaan","animals:puma","animals:mongoose"},
 	prey = {"animals:sneachan", "animals:impethu"},
 	friends = {"animals:pegasun", "animals:pegasun_male"},
 	rivals = {"animals:pegasun"},
@@ -637,13 +631,13 @@ minetest.register_entity("animals:pegasun",{
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
-	jump_height = 1.2,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
+	max_speed = pegasun.speed,					-- m/s
+	jump_height = pegasun.jump,				-- nodes/meters
+	view_range = pegasun.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.3, damage_groups={fleshy=100}},
-	armor_groups = {fleshy=100},
+	attack={range=pegasun.range, damage_groups={fleshy=pegasun.damage}},
+	armor_groups = {fleshy=pegasun.armor},
 
 	--on actions
 	drops = {
@@ -664,4 +658,4 @@ minetest.register_entity("animals:pegasun",{
 
 
 --spawn egg (i.e. live animal in inventory)
-animals.register_egg("animals:pegasun", S("Live Pegasun (female)"), "animals_pegasun_item.png", minimal.stack_max_medium, energy_egg)
+animals.register_egg("animals:pegasun", S("Live Pegasun (female)"), "animals_pegasun_item.png", minimal.stack_max_medium, pegasun.energyEgg)

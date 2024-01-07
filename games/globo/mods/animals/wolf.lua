@@ -12,17 +12,8 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_max = 8000 --secs it can survive without food
-local energy_egg = energy_max/2 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-
-local lifespan = energy_max * 10
-local lifespan_male = lifespan * 1.2 
-
-
-
+local wolf=animalData[animal.wolf]
+local wolfMale=animalData[animal.wolfMale]
 
 
 -----------------------------------
@@ -39,7 +30,7 @@ local function brain(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan, pos)
+		local age, energy = animals.core_life(self, wolf.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -120,7 +111,7 @@ local function brain(self)
 						if preg == true then
 							mobkit.lq_idle(self,3)
 							if random() < 0.05 then
-								energy = animals.place_egg(pos, "animals:wolf_spawn", energy, energy_egg, 'air')
+								energy = animals.place_egg(pos, "animals:wolf_spawn", energy, wolf.eggEnergy, 'air')
 								mobkit.remember(self,'pregnant',false)
 							end
 
@@ -179,7 +170,7 @@ local function brain_male(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan_male, pos)
+		local age, energy = animals.core_life(self, wolfMale.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -315,9 +306,9 @@ minetest.register_node("animals:wolf_spawn", {
 	on_timer =function(pos, elapsed)
         print("wolf hatched")
 		if random()<=0.5 then -- 50% for female, 50% for male
-			return animals.hatch_egg(pos, 'air', 'air', "animals:wolf", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:wolf", wolf.eggEnergy, 1)
 		else
-			return animals.hatch_egg(pos, 'air', 'air', "animals:wolf_male", energy_egg, young_per_egg)
+			return animals.hatch_egg(pos, 'air', 'air', "animals:wolf_male", wolf.eggEnergy, 1)
 		end
 	end,
 })
@@ -334,13 +325,13 @@ local baseWolf={
 	timeout = 0,
 
 	--damage
-	max_hp = 800,
-	heal_rate= 2,
+	max_hp = wolf.hp,
+	heal_rate= wolf.heal,
 	lung_capacity = 20,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 1,
-	energy_max = 8000,
+	min_temp = wolf.minTemp,
+	max_temp = wolf.maxTemp,
+    energy_loss = wolf.energyLoss,
+	energy_max = wolf.energy,
 
 	--interaction
 	predators = {},
@@ -367,13 +358,13 @@ local baseWolf={
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 3,					-- m/s
-	jump_height = 2,				-- nodes/meters
-	view_range = 15,					-- nodes/meters
+	max_speed = wolf.speed,					-- m/s
+	jump_height = wolf.jump,				-- nodes/meters
+	view_range = wolf.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=300}},
-	armor_groups = {fleshy=100},
+	attack={range=wolf.range, damage_groups={fleshy=wolf.damage}},
+	armor_groups = {fleshy=wolf.armor},
 
 	--on actions
 	drops = {

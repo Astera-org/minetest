@@ -180,9 +180,6 @@ local function updateHUD(player)
     local air=1000
     local health=player:get_hp()
 
-   -- local h_rate, r_rate, t_rate, hun_rate, mov, jum, health_after, energy, thirst, hunger, temperature = HEALTH.malus_bonus(player, meta, health, energy_cur, thirst_level, hunger_level, internal_temp)
-    --local sleeping = meta:get_string("sleeping") ~= ""
-
     local hud_ids = meta:get("hud_ids")
     hud_ids = minetest.deserialize(hud_ids)
 

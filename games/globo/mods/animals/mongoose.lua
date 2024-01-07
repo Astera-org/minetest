@@ -11,11 +11,7 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_egg = 3000 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-local lifespan = 4000 * 10
+local mongoose=animalData[animal.mongoose]
 
 
 -----------------------------------
@@ -32,7 +28,7 @@ local function brain(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan, pos)
+		local age, energy = animals.core_life(self, mongoose.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -71,9 +67,9 @@ local function brain(self)
 			if mobkit.recall(self,'pregnant') then
 				if random() < .02 then
 					minimal.log("mongoose giving birth")
-					if animals.birth(pos, "animals:mongoose", "air",  energy_egg, 1) then
+					if animals.birth(pos, "animals:mongoose", "air",  mongoose.eggEnergy, 1) then
 						mobkit.remember(self,'pregnant',false)
-						mobkit.remember(self,'energy',energy-energy_egg)
+						mobkit.remember(self,'energy',energy-mongoose.eggEnergy)
 					end
 				end
 			elseif energy < (self.energy_max-self.energy_max*.2) then
@@ -123,7 +119,7 @@ minetest.register_node("animals:mongoose_spawn", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-		animals.birth(pos, "animals:mongoose", "air",  energy_egg, 1)
+		animals.birth(pos, "animals:mongoose", "air",  mongoose.eggEnergy, 1)
 		return false
 	end,
 })
@@ -149,17 +145,17 @@ local baseMongoose={
 	timeout = 0,
 
 	--damage
-	max_hp = 500,
-	heal_rate= 3,
+	max_hp = mongoose.hp,
+	heal_rate= mongoose.heal,
 	lung_capacity = 20,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 0.5,
-	energy_max = 4000,
+	min_temp = mongoose.minTemp,
+	max_temp = mongoose.maxTemp,
+    energy_loss = mongoose.energyLoss,
+	energy_max = mongoose.energy,
 
 	--interaction
-	predators = {"animals:wolf","animals:wolf_male"},
-    prey={"animals:sneachen","animals:pegasun"},
+	predators = {"animals:puma","animals:wolf_male"},
+    prey={"animals:sneachen","animals:pegasun"}, -- eggs
 	friends = {"animals:mongoose"},
 	rivals = {},
 
@@ -180,13 +176,13 @@ local baseMongoose={
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
-	jump_height = 2,				-- nodes/meters
-	view_range = 15,					-- nodes/meters
+	max_speed = mongoose.speed,					-- m/s
+	jump_height = mongoose.jump,				-- nodes/meters
+	view_range = mongoose.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=100}},
-	armor_groups = {fleshy=100},
+	attack={range=mongoose.range, damage_groups={fleshy=mongoose.damage}},
+	armor_groups = {fleshy=mongoose.armor},
 
 	--on actions
 	drops = {

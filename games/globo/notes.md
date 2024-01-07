@@ -1,4 +1,6 @@
 TODO:
+- so many pumas?
+- cows not grazing to stay alive
 
 - some herb that increases your healing rate
 
@@ -9,6 +11,8 @@ TODO:
     - eggs need to be a certain temperature to hatch
 - predators in the swamps
 - more stuff in swamps
+
+- make seasons shorter?
 
 - tell you the direction that damage came from
 - wet clay should be diggable

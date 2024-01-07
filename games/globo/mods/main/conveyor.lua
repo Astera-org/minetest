@@ -108,7 +108,7 @@ local function makeValidDir(dir)
         end
     end
 
-    minimal.log("makeValidDir closestIndex:"..closestIndex.." numMatches:"..numMatches)
+    --minimal.log("makeValidDir closestIndex:"..closestIndex.." numMatches:"..numMatches)
     dir.north=dirMap[closestIndex].north
     dir.south=dirMap[closestIndex].south
     dir.east=dirMap[closestIndex].east
@@ -150,7 +150,7 @@ local function connectExistingNeighbor(yourDir,neighbor,yc,nc)
             if getDirMapIndex(nDir)==0 then 
                 yourDir[yc]=-1 
                 nDir[nc]=-1
-                minimal.log("connectNeighbor still invalid*"..dump(nDir)) 
+                --minimal.log("connectNeighbor still invalid*"..dump(nDir)) 
             end
         end
     else 
@@ -345,10 +345,14 @@ minetest.register_abm({
         
                 if obj:is_player() then 
                     velocity.y=0
-                    if lift then velocity.y=1 end
-                    minetest.after(0, function()
-                        obj:set_pos(vector.add(obj:get_pos(), velocity))
-                    end)
+                    if lift then velocity.y=3 end
+                    velocity.x=velocity.x*3
+                    velocity.z=velocity.z*3
+                    local player = minetest.get_player_by_name("singleplayer") --TODO: (obj.name)
+                    player:add_velocity(velocity)
+                    --minetest.after(0, function()
+                    --    obj:set_pos(vector.add(obj:get_pos(), velocity))
+                    --nd)
                 else
                     if lift then 
                         local p=obj:get_pos() 

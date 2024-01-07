@@ -24,19 +24,16 @@ dofile(minetest.get_modpath('health')..'/on_actions.lua')
 dofile(minetest.get_modpath('health')..'/hud.lua')
 dofile(minetest.get_modpath('health')..'/food.lua')
 
-
-
-
 -----------------------------
 --Player Attibutes
 --
 --use standard values base, so it doesn't compound each time called
 --Only adjusted values saved in player meta so they can be accessed without recalculating
 --cf hunger etc which do get change and have no base value
-local heal_rate = 1 -- 4
+local heal_rate = 2 -- 4
 local thirst_rate = -10
 local hunger_rate = -3 -- -2
-local recovery_rate = 4 -- 5
+local recovery_rate = 6 -- 5
 local move = 0
 local jump = 0
 
@@ -90,6 +87,7 @@ local function do_effects_list(meta, player, health, energy, thirst, hunger, tem
 	end
 
 	for key, effect in ipairs(effects_list) do
+        minimal.log("HE: "..effect[1])
 
 		local name = effect[1]
 		local order = effect[2]
@@ -243,138 +241,8 @@ function HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temper
 	--
 	--update rates
 	--
+	mov, jum, r_rate, h_rate, t_rate= calcHealthMods(player, health, energy, thirst, hunger, temperature)
 
-	--bonus/malus from health
-	if health <= 50 then
-		mov = mov - 50
-		jum = jum - 50
-		h_rate = h_rate - 3
-		r_rate = r_rate - 4
-	elseif health < 200 then
-		mov = mov - 25
-		jum = jum - 25
-		h_rate = h_rate - 2
-		r_rate = r_rate - 2
-	elseif health < 400 then
-		mov = mov - 20
-		jum = jum - 20
-		h_rate = h_rate - 1
-		r_rate = r_rate - 1
-	elseif health < 600 then
-		mov = mov - 15
-		jum = jum - 15
-	elseif health < 800 then
-		mov = mov - 10
-		jum = jum - 10
-	end
-
-	--bonus/malus from energy
-	if energy > 800 then
-		h_rate = h_rate + 2
-		mov = mov + 15
-		jum = jum + 15
-	elseif energy < 10 then
-		h_rate = h_rate - 1
-		mov = mov - 40
-		jum = jum - 40
-		t_rate = t_rate - 120
-		hun_rate = hun_rate - 24
-	elseif energy < 200 then
-		h_rate = h_rate - 1
-		mov = mov - 20
-		jum = jum - 20
-		t_rate = t_rate - 40
-		hun_rate = hun_rate - 8
-	elseif energy < 400 then
-		mov = mov - 10
-		jum = jum - 10
-		t_rate = t_rate - 30
-		hun_rate = hun_rate - 4
-	elseif energy < 600 then
-		mov = mov - 5
-		jum = jum - 5
-		t_rate = t_rate - 20
-		hun_rate = hun_rate - 2
-	elseif energy < 700 then
-		hun_rate = hun_rate - 1
-	end
-
-
-	--bonus/malus from thirst
-	if thirst > 80 then
-		h_rate = h_rate + 1
-		r_rate = r_rate + 2
-		mov = mov + 1
-		jum = jum + 1
-	elseif thirst < 10 then
-		h_rate = h_rate - 12
-		r_rate = r_rate - 10
-		mov = mov - 30
-		jum = jum - 30
-	elseif thirst < 20 then
-		h_rate = h_rate - 2
-		r_rate = r_rate - 2
-		mov = mov - 20
-		jum = jum - 20
-	elseif thirst < 40 then
-		h_rate = h_rate - 1
-		r_rate = r_rate - 1
-		mov = mov - 10
-		jum = jum - 10
-	elseif thirst < 60 then
-		mov = mov - 1
-		jum = jum - 1
-	end
-
-	--bonus/malus from hunger
-	if hunger > 800 then
-		h_rate = h_rate + 1
-		r_rate = r_rate + 2
-		mov = mov + 1
-		jum = jum + 1
-	elseif hunger < 1 then
-		h_rate = h_rate - 12
-		r_rate = r_rate - 10
-		mov = mov - 30
-		jum = jum - 30
-	elseif hunger < 200 then
-		h_rate = h_rate - 2
-		r_rate = r_rate - 2
-		mov = mov - 20
-		jum = jum - 20
-	elseif hunger < 400 then
-		h_rate = h_rate - 1
-		r_rate = r_rate - 1
-		mov = mov - 10
-		jum = jum - 10
-	elseif hunger < 600 then
-		mov = mov - 1
-		jum = jum - 1
-	end
-
-	--temp malus..severe..having this happen would make you very ill
-	if temperature >= 100 or temperature <= 0 then -- now will cause immediate death
-		--you dead
-		h_rate = h_rate - 10000
-		r_rate = r_rate - 10000
-		mov = mov - 10000
-		jum = jum - 10000
-	elseif temperature > 47 or temperature < 27 then
-		h_rate = h_rate - 16
-		r_rate = r_rate - 64
-		mov = mov - 80
-		jum = jum - 80
-	elseif temperature > 43 or temperature < 32 then
-		h_rate = h_rate - 8
-		r_rate = r_rate - 32
-		mov = mov - 40
-		jum = jum - 40
-	elseif temperature > 38 or temperature < 37 then
-		h_rate = h_rate - 4
-		r_rate = r_rate - 8
-		mov = mov - 20
-		jum = jum - 20
-	end
 
 	--health effects
 	local HE_mov
@@ -423,7 +291,7 @@ end
 minetest.register_on_joinplayer(function(player)
 	
 	--set physics etc
-	local name = player:get_player_name()
+    local name = player:get_player_name()
 	local meta = player:get_meta()
 	local health = player:get_hp()
 	local thirst = meta:get_int("thirst")
@@ -438,7 +306,7 @@ minetest.register_on_joinplayer(function(player)
 	   if velo_vec ~= nil then
 	      player:add_velocity(velo_vec)
 	   end
-	   meta:set_string("player_velocity", "")
+	    meta:set_string("player_velocity", "")
 	end
 end)
 
@@ -449,6 +317,8 @@ minetest.register_on_dieplayer(function(player)
 	player_monoids.jump:del_change(player, "health:physics")
 	player_monoids.speed:del_change(player, "health:physics_HE")
 	player_monoids.jump:del_change(player, "health:physics_HE")
+    player_monoids.speed:del_change(player, "main")
+	player_monoids.jump:del_change(player, "main")
 	--clear Health effects list
 	local meta = player:get_meta()
 	meta:set_string("effects_list", "")
@@ -472,57 +342,38 @@ local timer = 0
 --frequency of updating and applying effects
 local interval = 60
 minetest.register_globalstep(function(dtime)
-		timer = timer + dtime
+	timer = timer + dtime
 
-		--run
-		if timer > interval then
+	--run
+	if timer > interval then
+		timer = 0
+		for _,player in ipairs(minetest.get_connected_players()) do
 
-			for _,player in ipairs(minetest.get_connected_players()) do
-
-				local name = player:get_player_name()
-				local meta = player:get_meta()
-				local health = player:get_hp()
-				-- don't damage us if we're already dead
-				if health > 0 and
-				   player:get_armor_groups().immortal ~= 1 then
+			local name = player:get_player_name()
+			local meta = player:get_meta()
+			local health = player:get_hp()
+			-- don't damage us if we're already dead
+			if health > 0  then
 				local thirst = meta:get_int("thirst")
 				local hunger = meta:get_int("hunger")
 				local energy = meta:get_int("energy")
 				local temperature = meta:get_int("temperature")
 
-
 				--apply rate adjustments so they are correct for current player status
 				local h_rate, r_rate, t_rate, hun_rate, mov, jum, health, energy, thirst, hunger, temperature  = HEALTH.malus_bonus(player, meta, health, energy, thirst, hunger, temperature)
 
-				--
-				--update attributes based on adjusted rates
-				--XXX1 is the new (healt/thirst etc) value
-				--so can be compared with old value, (which was useful...at one point)
-				--
 
 				--update and min max
 				local health1, thirst1, hunger1, energy1, temperature1
 
 				thirst1 = thirst + t_rate
-				if thirst1 < 0 then
-					thirst1 = 0
-				elseif thirst1 > 1000 then
-					thirst1 = 1000
-				end
+				thirst1 = bound(thirst1,0,1000)
 
 				hunger1 = hunger + hun_rate
-				if hunger1 < 0 then
-					hunger1 = 0
-				elseif hunger1 > 1000 then
-					hunger1 = 1000
-				end
+				hunger1=bound(hunger1,0,1000)
 
 				energy1 = energy + r_rate
-				if energy1 < 0 then
-					energy1 = 0
-				elseif energy1 > 1000 then
-					energy1 = 1000
-				end
+				energy1=bound(energy1,0,1000)
 
 				health1 = health + h_rate
 
@@ -541,31 +392,175 @@ minetest.register_globalstep(function(dtime)
 					temperature1 = temperature
 				end
 
-				if health1 < 0 then
-					health1 = 0
-				elseif health1 > PLAYER_MAX_HEALTH then
-					health1 = PLAYER_MAX_HEALTH
-				end
+				health1=bound(health1,0,PLAYER_MAX_HEALTH)
 
-
-				--update
-				--
 				player:set_hp(health1)
 				meta:set_int("thirst", thirst1)
 				meta:set_int("hunger", hunger1)
 				meta:set_int("energy", energy1)
 				meta:set_int("temperature", temperature1)
 				
-
-
-				end
 			end
 		end
-		--reset
-		if timer > interval then
-			timer = 0
-		end
-
+	end
 end)
+
+
+function calcHealthMods(player, health, energy, thirst, hunger, temperature)
+    --use standard values
+    local mov = 0
+    local jum = 0
+    local h_rate = heal_rate
+    local t_rate = thirst_rate
+    local hun_rate = hunger_rate
+    local r_rate = recovery_rate
+
+    --bonus/malus from health
+    if health <= 50 then
+        mov = mov - 50
+        jum = jum - 50
+        h_rate = h_rate - 3
+        r_rate = r_rate - 4
+    elseif health < 200 then
+        mov = mov - 25
+        jum = jum - 25
+        h_rate = h_rate - 2
+        r_rate = r_rate - 2
+    elseif health < 400 then
+        mov = mov - 20
+        jum = jum - 20
+        h_rate = h_rate - 1
+        r_rate = r_rate - 1
+    elseif health < 600 then
+        mov = mov - 15
+        jum = jum - 15
+    elseif health < 800 then
+        mov = mov - 10
+        jum = jum - 10
+    end
+
+    --bonus/malus from energy
+    if energy > 800 then
+        h_rate = h_rate + 2
+        mov = mov + 15
+        jum = jum + 15
+    elseif energy < 10 then
+        h_rate = h_rate - 1
+        mov = mov - 40
+        jum = jum - 40
+        t_rate = t_rate - 120
+        hun_rate = hun_rate - 24
+    elseif energy < 200 then
+        h_rate = h_rate - 1
+        mov = mov - 20
+        jum = jum - 20
+        t_rate = t_rate - 40
+        hun_rate = hun_rate - 8
+    elseif energy < 400 then
+        mov = mov - 10
+        jum = jum - 10
+        t_rate = t_rate - 30
+        hun_rate = hun_rate - 4
+    elseif energy < 600 then
+        mov = mov - 5
+        jum = jum - 5
+        t_rate = t_rate - 20
+        hun_rate = hun_rate - 2
+    elseif energy < 700 then
+        hun_rate = hun_rate - 1
+    end
+
+
+    --bonus/malus from thirst
+    if thirst > 80 then
+        h_rate = h_rate + 1
+        r_rate = r_rate + 2
+        mov = mov + 1
+        jum = jum + 1
+    elseif thirst < 10 then
+        h_rate = h_rate - 12
+        r_rate = r_rate - 10
+        mov = mov - 30
+        jum = jum - 30
+    elseif thirst < 20 then
+        h_rate = h_rate - 2
+        r_rate = r_rate - 2
+        mov = mov - 20
+        jum = jum - 20
+    elseif thirst < 40 then
+        h_rate = h_rate - 1
+        r_rate = r_rate - 1
+        mov = mov - 10
+        jum = jum - 10
+    elseif thirst < 60 then
+        mov = mov - 1
+        jum = jum - 1
+    end
+
+    --bonus/malus from hunger
+    if hunger > 800 then
+        h_rate = h_rate + 1
+        r_rate = r_rate + 2
+        mov = mov + 1
+        jum = jum + 1
+    elseif hunger < 1 then
+        h_rate = h_rate - 12
+        r_rate = r_rate - 10
+        mov = mov - 30
+        jum = jum - 30
+    elseif hunger < 200 then
+        h_rate = h_rate - 2
+        r_rate = r_rate - 2
+        mov = mov - 20
+        jum = jum - 20
+    elseif hunger < 400 then
+        h_rate = h_rate - 1
+        r_rate = r_rate - 1
+        mov = mov - 10
+        jum = jum - 10
+    elseif hunger < 600 then
+        mov = mov - 1
+        jum = jum - 1
+    end
+
+    --temp malus..severe..having this happen would make you very ill
+    if temperature >= 100 or temperature <= 0 then -- now will cause immediate death
+    --you dead
+        h_rate = h_rate - 10000
+        r_rate = r_rate - 10000
+        mov = mov - 10000
+        jum = jum - 10000
+    elseif temperature > 47 or temperature < 27 then
+        h_rate = h_rate - 16
+        r_rate = r_rate - 64
+        mov = mov - 80
+        jum = jum - 80
+    elseif temperature > 43 or temperature < 32 then
+        h_rate = h_rate - 8
+        r_rate = r_rate - 32
+        mov = mov - 40
+        jum = jum - 40
+    elseif temperature > 38 or temperature < 37 then
+        h_rate = h_rate - 4
+        r_rate = r_rate - 8
+        mov = mov - 20
+        jum = jum - 20
+    end
+
+
+    local player_pos = player:get_pos()
+    local node_name = minetest.get_node(player_pos).name
+    local water = minetest.get_item_group(node_name,"water")
+    if water > 0 then 
+        --minimal.log("Slowing down player in water "..mov)
+        local min=math.min(mov,-90)
+        mov= math.max(mov - 80,min)
+    end
+
+
+    --minimal.log("calcHealthMods: "..mov.." "..jum)
+
+    return mov, jum, r_rate, h_rate, t_rate
+end
 
 

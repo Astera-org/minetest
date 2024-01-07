@@ -12,14 +12,8 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_max = 8000--secs it can survive without food
-local energy_egg = energy_max/2 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-
-local lifespan = energy_max * 10
-local lifespan_male = lifespan * 1.2 --if the flock male dies they go extinct
+local gazelle=animalData[animal.gazelle]
+local gazelleMale=animalData[animal.gazelleMale]
 
 
 -----------------------------------

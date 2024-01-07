@@ -12,14 +12,8 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_max = 8000--secs it can survive without food
-local energy_egg = energy_max/2 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-
-local lifespan = energy_max * 10
-local lifespan_male = lifespan * 1.2 --if the flock male dies they go extinct
+local cow=animalData[animal.cow]
+local cowMale=animalData[animal.cowMale]
 
 
 -----------------------------------
@@ -34,7 +28,7 @@ local function brain(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan, pos)
+		local age, energy = animals.core_life(self, cow.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -121,14 +115,14 @@ local function brain(self)
 							if random() < 0.05 then
 								local birth=false
 								if random() < 0.5 then 
-									birth = animals.birth(pos, "animals:cow", "air",  energy_egg, 1)
+									birth = animals.birth(pos, "animals:cow", "air",  cow.eggEnergy, 1)
 								else 
-									birth = animals.birth(pos, "animals:cow_male", "air" , energy_egg, 1)
+									birth = animals.birth(pos, "animals:cow_male", "air" , cow.eggEnergy, 1)
 								end
 								if birth then
 									minimal.log("cow giving birth")
 									mobkit.remember(self,'pregnant',false)
-									mobkit.remember(self,'energy',energy-energy_egg)
+									mobkit.remember(self,'energy',energy-cow.eggEnergy)
 								end
 							end
 
@@ -196,7 +190,7 @@ local function brain_male(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan_male, pos)
+		local age, energy = animals.core_life(self, cowMale.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -349,8 +343,8 @@ minetest.register_node("animals:cow_spawn_herd", {
 	end,
 	on_timer =function(pos, elapsed)
 		local density= randomFloat(.002,.013)
-		animals.spawnHerd(pos,  "animals:cow", energy_egg, density,15)
-		animals.spawnHerd(pos, "animals:cow_male", energy_egg, density,15)
+		animals.spawnHerd(pos, "animals:cow", cow.eggEnergy, density,15)
+		animals.spawnHerd(pos, "animals:cow_male", cow.eggEnergy, density,15)
 
 		return false
 	end,
@@ -379,13 +373,13 @@ local baseCow = {
 	timeout = 0,
 
 	--damage
-	max_hp = 2000,
-	heal_rate= 2,
+	max_hp = cow.hp,
+	heal_rate= cow.heal,
 	lung_capacity = 20,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 1,
-	energy_max= 8000,
+	min_temp = cow.minTemp,
+	max_temp = cow.maxTemp,
+    energy_loss = cow.energyLoss,
+	energy_max= cow.energy,
 
 	--interaction
 	predators = {"animals:wolf", "animals:wolf_male"},
@@ -411,13 +405,13 @@ local baseCow = {
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2,					-- m/s
-	jump_height = 1.2,				-- nodes/meters
-	view_range = 7,					-- nodes/meters
+	max_speed = cow.speed,					-- m/s
+	jump_height = cow.jump,				-- nodes/meters
+	view_range = cow.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=100}},
-	armor_groups = {fleshy=100},
+	attack={range=cow.range, damage_groups={fleshy=cow.damage}},
+	armor_groups = {fleshy=cow.armor},
 
 	--on actions
 	drops = {
@@ -439,7 +433,7 @@ local maleCow=baseCow
 maleCow.logic=brain_male
 maleCow.sex="male"
 maleCow.rivals = {"animals:cow_male"}
-maleCow.max_hp=2200
+maleCow.max_hp=maleCow.hp
 
 
 minetest.register_entity("animals:cow_male",maleCow)

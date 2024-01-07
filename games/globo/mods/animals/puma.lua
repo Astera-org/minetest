@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Mongoose
+-- Puma
 --[[
 lives off animals and eggs
 ]]
@@ -11,12 +11,7 @@ local S = animals.S
 local random = math.random
 local floor = math.floor
 
---energy
-local energy_egg = 4000 --energy that goes to egg
-local egg_timer  = 60*60
-local young_per_egg = 1		--will get this/energy_egg starting energy
-local lifespan = 4000 * 10
-
+local puma=animalData[animal.puma]
 
 -----------------------------------
 local function brain(self)
@@ -32,7 +27,7 @@ local function brain(self)
 
 		local pos = mobkit.get_stand_pos(self)
 
-		local age, energy = animals.core_life(self, lifespan, pos)
+		local age, energy = animals.core_life(self, puma.lifespan, pos)
 		--die from exhaustion or age
 		if not age then
 			return
@@ -71,9 +66,9 @@ local function brain(self)
 			if mobkit.recall(self,'pregnant') then
 				if random() < .02 then
 					--minimal.log("puma giving birth")
-					if animals.birth(pos, "animals:puma", "air",  energy_egg, 1) then
+					if animals.birth(pos, "animals:puma", "air",  puma.eggEnergy, 1) then
 						mobkit.remember(self,'pregnant',false)
-						mobkit.remember(self,'energy',energy-energy_egg)
+						mobkit.remember(self,'energy',energy-puma.eggEnergy)
 					end
 				end
 			elseif energy < (self.energy_max-self.energy_max*.2) then
@@ -151,19 +146,19 @@ local basePuma={
 	timeout = 0,
 
 	--damage
-	max_hp = 600,
-	heal_rate= 3,
+	max_hp = puma.hp,
+	heal_rate= puma.heal,
 	lung_capacity = 20,
-	min_temp = -20,
-	max_temp = 45,
-    energy_loss = 0.5,
-	energy_max = 5000,
+	min_temp = puma.minTemp,
+	max_temp = puma.maxTemp,
+    energy_loss = puma.energyLoss,
+	energy_max = puma.energy,
 
 	--interaction
 	predators = {"animals:wolf","animals:wolf_male"},
     prey={"animals:sneachen","animals:pegasun","animals:mongoose","animals:gazelle","animals:gazelle_male"},
 	friends = {},
-	rivals = {},
+	rivals = {"animals:puma"},
 
 	on_step = mobkit.stepfunc,
 	on_activate = mobkit.actfunc,
@@ -182,13 +177,13 @@ local basePuma={
 	--movement
 	springiness=0,
 	buoyancy = 1.01,
-	max_speed = 2.5,					-- m/s
-	jump_height = 3,				-- nodes/meters
-	view_range = 12,					-- nodes/meters
+	max_speed = puma.speed,					-- m/s
+	jump_height = puma.jump,				-- nodes/meters
+	view_range = puma.view,					-- nodes/meters
 
 	--attack
-	attack={range=0.8, damage_groups={fleshy=130}},
-	armor_groups = {fleshy=100},
+	attack={range=puma.range, damage_groups={fleshy=puma.damage}},
+	armor_groups = {fleshy=puma.armor},
 
 	--on actions
 	drops = {

@@ -74,6 +74,7 @@ function mobkit.get_stand_pos(thing)	-- thing can be luaentity or objectref.
 	local colbox = {}
 	if type(thing) == 'table' then
 		pos = thing.object:get_pos()
+        if thing.object:get_properties() == nil then minimal.log("thing "..dump(thing)) end
 		colbox = thing.object:get_properties().collisionbox
 	elseif type(thing) == 'userdata' then
 		pos = thing:get_pos()

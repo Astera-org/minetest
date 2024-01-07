@@ -27,18 +27,18 @@ local S = HEALTH.S
 dofile(minetest.get_modpath('health')..'/data_food.lua')
 
 -- Declare globals
-food_harm_table = food_harm_table
+food_harm_table = {} --food_harm_table LATER: for now no harms
 food_table = food_table
 bake_table = bake_table
 
 local function do_food_harm(user, nodename)
-   if not food_harm_table[nodename] then return end
-   local fht = food_harm_table[nodename]
-   for i = 1, #fht do
-      if math.random() < fht[i][2] then
-	 HEALTH.add_new_effect(user, {fht[i][1], fht[i][3]})
-      end
-   end
+    if not food_harm_table[nodename] then return end
+    local fht = food_harm_table[nodename]
+    for i = 1, #fht do
+        if math.random() < fht[i][2] then
+            HEALTH.add_new_effect(user, {fht[i][1], fht[i][3]})
+        end
+    end
 end
 
 local __eat_click_settings_cache = {}
