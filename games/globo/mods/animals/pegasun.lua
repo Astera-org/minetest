@@ -108,7 +108,7 @@ local function brain(self)
 
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max - 100 then
+					and energy >= self.energy_max - 100 then
 
 						--are we already pregnant?
 						local preg = mobkit.recall(self,'pregnant') or false
@@ -138,14 +138,12 @@ local function brain(self)
 					end
 				end
 
-			elseif energy < energy_max then
+			elseif energy < self.energy_max then
 
 				--feed via a method
 				if random()< 0.85 then
 					--scratch dirt
-					if animals.eat_spreading_under(self,pos, 0.001) == true then
-						energy = energy + 6
-					else
+					if not animals.eat_spreading_under(self,pos, 0.001) then
 						--wander to food source
 						mobkit.animate(self,'walk')
 						--mobkit.hq_roam(self,10)
@@ -153,12 +151,7 @@ local function brain(self)
 					end
 				elseif random()< 0.75 then
 					--veg
-					if not animals.eat_flora(self,pos, 0.005) then	
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
+					animals.eat_flora(self,pos, 20, 0.5)
 				else
 					--hunt
 					if not animals.prey_hunt(self, 25) then
@@ -287,7 +280,7 @@ local function brain_male(self)
 
 					--reproduction
 					if self.hp >= self.max_hp
-					and energy >= energy_max/2 then
+					and energy >= self.energy_max/2 then
 
 						--set status as randy
 						--find nearby prospect and try to mate
@@ -309,7 +302,7 @@ local function brain_male(self)
 					end
 				end
 
-			elseif energy < energy_max then
+			elseif energy < self.energy_max then
 
 				--feed via a method
 				if random()< 0.75 then
@@ -322,12 +315,7 @@ local function brain_male(self)
 					end
 				elseif random()< 0.5 then
 					--veg
-					if not animals.eat_flora(self,pos, 0.005) then
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
+					animals.eat_flora(self,pos, 20, 0.5)
 				else
 					--hunt
 					if not animals.prey_hunt(self, 25) then

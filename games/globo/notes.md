@@ -1,6 +1,4 @@
 TODO:
-- so many pumas?
-- cows not grazing to stay alive
 
 - some herb that increases your healing rate
 
@@ -34,6 +32,7 @@ CHECK:
 - behaviors seem wonky. Do they need more idle time
 - make sure animals can be in equalibrim
 - is it better to just have the infinite map?
+- what does armor do?
 
 
 

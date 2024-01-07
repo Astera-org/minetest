@@ -377,110 +377,122 @@ end
 ----------------------------------------------
 --roam to a better surface (by group)
 function animals.hq_roam_surface_group(self, group, prty)
-  local timer = time() + 15
+    local timer = time() + 15
 
-  local func=function(self)
-
-    if time() > timer then
-      return true
-    end
-
-    if mobkit.is_queue_empty_low(self) and self.isonground then
-      local neighbor = random(8)
-
-      local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self, neighbor)
-
-      if height and not liquidflag then
-        --is it the correct group?
-        local s_pos = tpos
-        s_pos.y = s_pos.y - 1
-        local under = minetest.get_node(s_pos)
-
-        if under and minetest.get_item_group(under.name, group) > 0 then
-          mobkit.dumbstep(self, height, tpos, 0.3)
-        else
-          return true
+    local func=function(self)
+        if time() > timer then
+            return true
         end
-      end
 
+        if mobkit.is_queue_empty_low(self) and self.isonground then
+            local neighbor = random(8)
+
+            local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self, neighbor)
+
+            if height and not liquidflag then
+                --is it the correct group?
+                local s_pos = tpos
+                s_pos.y = s_pos.y - 1
+                local under = minetest.get_node(s_pos)
+
+                if under and minetest.get_item_group(under.name, group) > 0 then
+                    mobkit.dumbstep(self, height, tpos, 0.3)
+                else
+                    return true
+                end
+            end
+        end
     end
-  end
-  mobkit.queue_high(self,func,prty)
+
+    mobkit.queue_high(self,func,prty)
 end
 
 
+local function roamFar(self)
+    if mobkit.is_queue_empty_low(self) and self.isonground then
+        local pos = mobkit.get_stand_pos(self)
+        local yaw = self.object:get_yaw()
+
+        local r=math.random()
+        if r < 0.08 then
+            --minimal.log("turn left ")
+            yaw = yaw + .78 
+        elseif r < 0.16 then
+            --minimal.log("turn right ")
+            yaw = yaw - .78
+        end
+
+        local neighbor = yaw_to_neighbor(yaw)
+
+        local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self,neighbor)
+        if tpos == nil then
+            local hStr=height or "nil"
+            local lStr=liquidflag or "nil"
+            --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." height:"..hStr.." liq:".. dump(lStr))
+        else 
+            --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." tpos:"..tpos.x..","..tpos.y..","..tpos.z.." height:"..height)
+        end
+
+        --if target == self then minetest.chat_send_all("height:"..dump(height).." liquidflag:"..dump(liquidflag)) end
+        if height and not liquidflag then 
+            mobkit.dumbstep(self,height,tpos,1,0) 
+            return
+        else
+            --minimal.log("turning "..yaw+.78)
+            mobkit.turn2yaw(self,yaw+.78)
+        end
+    end
+end
 
 function animals.hq_roam_far(self,priority)
-  local func=function(self)
-    if mobkit.is_queue_empty_low(self) and self.isonground then
-			local pos = mobkit.get_stand_pos(self)
-      local yaw = self.object:get_yaw()
-
-      local r=math.random()
-      if r < 0.08 then
-        --minimal.log("turn left ")
-        yaw = yaw + .78 
-      elseif r < 0.16 then
-        --minimal.log("turn right ")
-        yaw = yaw - .78
-      end
-
-      local neighbor = yaw_to_neighbor(yaw)
-
-			local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(self,neighbor)
-      if tpos == nil then
-        local hStr=height or "nil"
-        local lStr=liquidflag or "nil"
-        --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." height:"..hStr.." liq:".. dump(lStr))
-      else 
-        --minimal.log("hq_roam_far "..yaw.." pos:"..pos.x..","..pos.y..","..pos.z.." tpos:"..tpos.x..","..tpos.y..","..tpos.z.." height:"..height)
-      end
-
-      --if target == self then minetest.chat_send_all("height:"..dump(height).." liquidflag:"..dump(liquidflag)) end
-			if height and not liquidflag then 
-        mobkit.dumbstep(self,height,tpos,1,0) 
-        return
-      else
-        --minimal.log("turning "..yaw+.78)
-        mobkit.turn2yaw(self,yaw+.78)
-      end
-		end
-  end
-
-  mobkit.queue_high(self,func,priority)
+  mobkit.queue_high(self,roamFar,priority)
 end
+
 
 ----------------------------------------------
 --roam to a walkable (by group) i.e. walk into the node itself c.f. under
-function animals.hq_roam_walkable_group(self, group, prty)
-  local timer = time() + 15
-
-  local func=function(self)
-
-    if time() > timer then
-      return true
-    end
-
-    if mobkit.is_queue_empty_low(self) and self.isonground then
-       local neighbor = random(8)
-
-       local height, tpos, liquidflag = mobkit.is_neighbor_node_reachable(
-	  self, neighbor)
-
-       if height and not liquidflag then
-        --is it the correct?
-        local n_node = minetest.get_node(tpos).name
-
-        if minetest.get_item_group(n_node, group) > 0 then
-          mobkit.dumbstep(self, height, tpos, 0.3)
-        else
-          return true
+local function roamToGroup(self,group,priority)
+    local pos = mobkit.get_stand_pos(self)
+    local places = minetest.find_nodes_in_area( {x=pos.x-3, y=pos.y-3, z=pos.z-3}, {x=pos.x+3, y=pos.y+3, z=pos.z+3}, "group:"..group)
+    -- move to the nearest flora that has the highest flora number
+    --minimal.log("hq_roam_to_group:  found "..#places.." places")
+    local highestGroupLevel = 0
+    local highestNodePos = nil
+    for _, nPos in ipairs(places) do
+        local node = minetest.get_node(nPos)
+        local groupLevel = minetest.get_item_group(node.name, group)
+        --minimal.log("r2g:  "..node.name.." "..group.." level:"..groupLevel)
+        if groupLevel > highestGroupLevel then
+            highestGroupLevel = groupLevel
+            highestNodePos = nPos
         end
-      end
-
     end
-  end
-  mobkit.queue_high(self,func,prty)
+    if highestNodePos == nil then
+        -- minimal.log("hq_roam_to_group: no "..group.." found")
+        roamFar(self)
+    else
+       -- minimal.log("Group found: "..posToStr(highestNodePos))
+        mobkit.hq_goto(self, priority+1, highestNodePos)
+        return true
+    end
+end
+
+function animals.hq_roam_to_group(self, group, priority)
+    local timer = time() + 15
+
+    local func=function(self)
+        mobkit.remember(self,"action","hq_roam_to_group")
+
+        if time() > timer then
+            return true
+        end
+
+        if mobkit.is_queue_empty_low(self) and self.isonground then
+            roamToGroup(self, group,priority)
+        end
+    end
+
+    mobkit.queue_high(self,func,priority)
 end
 
 
@@ -924,32 +936,37 @@ end
 ----------------------------------------------------
 --for things that eat spreading surface
 function animals.eat_spreading_under(self, pos, chance)
-  local p = mobkit.get_node_pos(pos)
-  local posu = {x = p.x, y = p.y - 1, z = p.z}
-  local under = minetest.get_node(posu).name
+    local p = mobkit.get_node_pos(pos)
+    local posu = {x = p.x, y = p.y - 1, z = p.z}
+    local under = minetest.get_node(posu).name
 
-  if minetest.get_item_group(under, "spreading") > 0 then
-    if random()< chance then
-      --set node to it's drop
-      --this is to scratch up surface layers
-      local nodedef = minetest.registered_nodes[under]
-      local drop = nodedef.drop
-      minetest.check_for_falling(posu)
-      minetest.set_node(posu, {name = drop})
-      -- minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
+    if minetest.get_item_group(under, "spreading") > 0 then
+
+        mobkit.lq_idle(self,1)
+        
+        if random()< chance then
+            --set node to it's drop
+            --this is to scratch up surface layers
+            local nodedef = minetest.registered_nodes[under]
+            local drop = nodedef.drop
+            minetest.check_for_falling(posu)
+            minetest.set_node(posu, {name = drop})
+            -- minetest.sound_play("nodes_nature_dig_crumbly", {gain = 0.2, pos = pos, max_hear_distance = 10})
+        end
+
+        --minimal.log("eat grass")
+
+        local energygain = 6
+        local self_e = mobkit.recall(self,'energy')
+        self_e = self_e + energygain
+        if self_e > self.energy_max then self_e = self.energy_max end
+        mobkit.remember(self,'energy', self_e)
+        
+        return true
+
+    else
+        return false
     end
-
-    local energygain = 6
-    local self_e = mobkit.recall(self,'energy')
-    self_e = self_e + energygain
-    if self_e > self.energy_max then self_e = self.energy_max end
-    mobkit.remember(self,'energy', self_e)
-    
-    return true
-
-  else
-    return false
-  end
 
 end
 
@@ -983,30 +1000,71 @@ end
 ----------------------------------------------------
 --eating any flora
 
-function animals.eat_flora(self,pos, chance)
-  local p = mobkit.get_node_pos(pos)
-  local node = minetest.get_node(p).name
+local function eatFlora(self, pos, chance)
+    local node = minetest.get_node(pos)
+    
+    local groupLevel = minetest.get_item_group(node.name, "flora")
+    --minimal.log("eat flora: " .."["..groupLevel.."]"..node.name..posToStr(pos))
+    if groupLevel > 0
+      and minetest.get_item_group(node, "cane_plant") == 0 then
+        --minimal.log("YUM: " .. node.name)
+        mobkit.lq_idle(self,2)
+        --gain energy
+        local energygain = 100
+        local self_e = (mobkit.recall(self,'energy') or 1)
+        self_e = self_e + energygain
+        if self_e > self.energy_max then self_e = self.energy_max end
 
-  if minetest.get_item_group(node, "flora") > 0
-    and minetest.get_item_group(node, "cane_plant") == 0
-  then
-    --gain energy
-    local energygain = 100
-    local self_e = (mobkit.recall(self,'energy') or 1)
-    self_e = self_e + energygain
-    if self_e > self.energy_max then self_e = self.energy_max end
+        mobkit.remember(self,'energy', self_e)
 
-    mobkit.remember(self,'energy', self_e)
-    if random()< chance then
-      --destroy the plant
-      minetest.set_node(p, {name = 'air'})
-      -- minetest.sound_play("nodes_nature_dig_snappy", {gain = 0.2, pos = pos, max_hear_distance = 10})
+        if random()< chance then
+            --destroy the plant
+           -- minimal.log("destroy flora: " .. node.name)
+            minetest.set_node(pos, {name = 'air'})
+            -- minetest.sound_play("nodes_nature_dig_snappy", {gain = 0.2, pos = pos, max_hear_distance = 10})
+        end
+        return true        
+    end
+    return false
+end
+
+function animals.eat_flora(self,pos, priority, chance)
+    local p = mobkit.get_node_pos(pos)
+    if eatFlora(self, p, chance) then
+        return true
+    else
+        -- look for flora in front of where self is facing
+        local dir = self.object:get_yaw()
+        local p2 = mobkit.pos_translate2d(p,dir,1)
+        if eatFlora(self, p2, chance) then
+            return true
+        end
+    end
+    -- didn't find any flora
+
+    local places = minetest.find_nodes_in_area( {x=pos.x-3, y=pos.y-3, z=pos.z-3}, {x=pos.x+3, y=pos.y+3, z=pos.z+3}, "group:flora")
+    -- move to the nearest flora that has the highest flora number
+    --minimal.log("hq_roam_to_group:  found "..#places.." places")
+    local highestGroupLevel = 0
+    local highestNodePos = nil
+    for _, nPos in ipairs(places) do
+        local node = minetest.get_node(nPos)
+        local groupLevel = minetest.get_item_group(node.name, "flora")
+        --minimal.log("r2g:  "..node.name.." "..group.." level:"..groupLevel)
+        if groupLevel > highestGroupLevel then
+            highestGroupLevel = groupLevel
+            highestNodePos = nPos
+        end
+    end
+    if highestNodePos == nil then
+        -- minimal.log("hq_roam_to_group: no "..group.." found")
+        animals.hq_roam_far(self,priority)
+    else
+        --minimal.log("Group found: "..posToStr(highestNodePos))
+        mobkit.hq_goto(self, priority, highestNodePos)
+        return true
     end
 
-    return true
-  else
-    return false
-  end
 end
 
 

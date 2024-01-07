@@ -15,6 +15,31 @@ local floor = math.floor
 local cow=animalData[animal.cow]
 local cowMale=animalData[animal.cowMale]
 
+local function cowEat(self,pos)
+    --minimal.log("cow eat called")
+    if random()< 0.25 then
+        if not animals.eat_spreading_under(self,pos, 0.002) then
+            mobkit.animate(self,'walk')
+            mobkit.remember(self,"action","surface roam")
+            animals.hq_roam_surface_group(self, 'spreading', 20)
+        end
+    else
+        mobkit.remember(self,"action","eat_flora")
+        animals.eat_flora(self,pos, 20, 0.5)
+    end
+end
+
+local function cowExplore(self,pos)
+    if random() < 0.95 then
+        --wander random
+        mobkit.animate(self,'walk')
+        animals.hq_roam_far(self,10)
+    else
+        --wander temp
+        mobkit.animate(self,'walk')
+        animals.hq_roam_comfort_temp(self,10, 21)
+    end
+end
 
 -----------------------------------
 local function brain(self)
@@ -65,102 +90,85 @@ local function brain(self)
 		----------------------
 		--Low priority actions
 		if prty < 20 then
-			--random choice between
-			--feeding, exploring, social
-			--chance differs by time
-			local ce = 0.1
-			local cs = 0.1
-			-- c feeding is simply what happens if no
-			--others are selected
-			local tod = minetest.get_timeofday()
-			if tod <0.2 or tod >0.8 then
-				--more social at night
-				ce = 0.01
-				cs = 0.75
-			elseif tod >0.55 and tod <0.55 then
-				--explore during midday
-				ce = 0.5
-				cs = 0.1
-			end
+            if energy < (self.energy_max*.5) then
+                mobkit.remember(self,"action","cow eat")
+                cowEat(self,pos)
+            else 
+                --random choice between
+                --feeding, exploring, social
+                --chance differs by time
+                local ce = 0.1
+                local cs = 0.1
+                -- c feeding is simply what happens if no
+                --others are selected
+                local tod = minetest.get_timeofday()
+                if tod <0.2 or tod >0.8 then
+                    --more social at night
+                    ce = 0.01
+                    cs = 0.75
+                elseif tod >0.55 and tod <0.55 then
+                    --explore during midday
+                    ce = 0.5
+                    cs = 0.1
+                end
 
 
-			if random() < ce then
-				if random() < 0.95 then
-					--wander random
-					mobkit.animate(self,'walk')
-					animals.hq_roam_far(self,10)
-				else
-					--wander temp
-					mobkit.animate(self,'walk')
-					animals.hq_roam_comfort_temp(self,12, 21)
-				end
+                if random() < ce then
+                    cowExplore(self,pos)
+                elseif random() < cs then
 
-			elseif random() < cs then
+                    --social
+                    if random()< 0.3 then
+                        animals.flock(self, 25, 3)
+                    elseif random()< 0.01 then
+                        animals.territorial(self, energy, false)
+                    elseif random() < 0.05 then
 
-				--social
-				if random()< 0.3 then
-					animals.flock(self, 25, 3)
-				elseif random()< 0.01 then
-					animals.territorial(self, energy, false)
-				elseif random() < 0.05 then
+                        --reproduction
+                        if self.hp >= self.max_hp
+                        and energy >= self.energy_max - 100 then
 
-					--reproduction
-					if self.hp >= self.max_hp
-					and energy >= self.energy_max - 100 then
+                            --are we already pregnant?
+                            local preg = mobkit.recall(self,'pregnant') or false
+                            if preg == true then
+                                mobkit.lq_idle(self,3)
+                                if random() < 0.05 then
+                                    local birth=false
+                                    if random() < 0.5 then 
+                                        birth = animals.birth(pos, "animals:cow", "air",  cow.eggEnergy, 1)
+                                    else 
+                                        birth = animals.birth(pos, "animals:cow_male", "air" , cow.eggEnergy, 1)
+                                    end
+                                    if birth then
+                                        minimal.log("cow giving birth")
+                                        mobkit.remember(self,'pregnant',false)
+                                        mobkit.remember(self,'energy',energy-cow.eggEnergy)
+                                    end
+                                end
 
-						--are we already pregnant?
-						local preg = mobkit.recall(self,'pregnant') or false
-						if preg == true then
-							mobkit.lq_idle(self,3)
-							if random() < 0.05 then
-								local birth=false
-								if random() < 0.5 then 
-									birth = animals.birth(pos, "animals:cow", "air",  cow.eggEnergy, 1)
-								else 
-									birth = animals.birth(pos, "animals:cow_male", "air" , cow.eggEnergy, 1)
-								end
-								if birth then
-									minimal.log("cow giving birth")
-									mobkit.remember(self,'pregnant',false)
-									mobkit.remember(self,'energy',energy-cow.eggEnergy)
-								end
-							end
+                            else
 
-						else
+                                --we are randy
+                                mobkit.remember(self,'sexual',true)
+                                local mate = animals.mate_assess(self, 'animals:cow_male')
+                                if mate then
+                                    --go get him!
+                                    --mobkit.make_sound(self,'mating')
+                                    if random() < 0.5 then
+                                        animals.hq_mate(self, 25, mate)
+                                    end
+                                end
+                            end
+                        else
+                            --I'm too tired darling
+                            mobkit.remember(self,'sexual',false)
+                        end
+                    end
 
-							--we are randy
-							mobkit.remember(self,'sexual',true)
-							local mate = animals.mate_assess(self, 'animals:cow_male')
-							if mate then
-								--go get him!
-								--mobkit.make_sound(self,'mating')
-								if random() < 0.5 then
-									animals.hq_mate(self, 25, mate)
-								end
-							end
-						end
-					else
-						--I'm too tired darling
-						mobkit.remember(self,'sexual',false)
-					end
-				end
-
-			elseif energy < self.energy_max then
-
-				--feed via a method
-				if random()< 0.25 then
-						mobkit.animate(self,'walk')
-						animals.hq_roam_surface_group(self, 'spreading', 20)
-				else
-					--veg
-					if not animals.eat_flora(self,pos, 0.5) then
-						--wander random
-						mobkit.animate(self,'walk')
-						--mobkit.hq_roam(self,10)
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
-				end
-			end
+                elseif energy < self.energy_max then
+                    cowEat(self,pos)
+                end
+            end
 
 		end
 
@@ -172,7 +180,6 @@ local function brain(self)
 		end
 	end
 end
-
 
 
 
@@ -213,8 +220,6 @@ local function brain_male(self)
 		-------------------
 		--High priority actions
 		if prty < 50 then
-
-
 			--Threats
 			local plyr = mobkit.get_nearby_player(self)
 			if plyr then
@@ -222,7 +227,6 @@ local function brain_male(self)
 			end
 
 			animals.predator_avoid(self, 55, 0.6)
-
 		end
 
 
@@ -230,84 +234,72 @@ local function brain_male(self)
 		--Low priority actions
 
 		if prty < 20 then
-			--random choice between
-			--feeding, exploring, social
-			--chance differs by time
-			local ce = 0.2
-			local cs = 0.4
-			-- c feeding is simply what happens if no
-			--others are selected
-			local tod = minetest.get_timeofday()
-			if tod <0.2 or tod >0.8 then
-				--more social at night
-				ce = 0.01
-				cs = 0.95
-			elseif tod >0.55 and tod <0.55 then
-				--explore during midday
-				ce = 0.6
-				cs = 0.2
-			end
-
-
-			if random() < ce then
-				if random() < 0.95 then
-					--wander random
-					mobkit.animate(self,'walk')
-					animals.hq_roam_far(self,10)
-				else
-					--wander temp
-					mobkit.animate(self,'walk')
-					animals.hq_roam_comfort_temp(self,10, 21)
-				end
-
-			elseif random() < cs then
-
-				--social
-				if random()< 0.5 then
-					animals.flock(self, 25, 1)
-				elseif random()< 0.85 then
-					animals.territorial(self, energy, false)
-				elseif random() < 0.1 then
-
-					--reproduction
-					if self.hp >= self.max_hp
-					and energy >= self.energy_max/2 then
-
-						--set status as randy
-						--find nearby prospect and try to mate
-						mobkit.remember(self, 'sexual', true)
-						local mate = animals.mate_assess(self, 'animals:cow')
-
-						if mate then
-							--go get her!
-							--mobkit.make_sound(self,'mating')
-							if random() < 0.5 then
-                				mobkit.remember(self, "energy", energy - 1000) -- energy use for mating lol
-								animals.hq_mate(self, 25, mate)
-							end
-						end
-
-					else
-						--in no state for hankypanky
-						mobkit.remember(self, 'sexual', false)
-					end
-				end
-
-			elseif energy < self.energy_max then
-				if random()< 0.3 then
-					--wander random
-					mobkit.animate(self,'walk')
-					animals.hq_roam_surface_group(self, 'spreading', 20)
-				else
-					--veg
-					if not animals.eat_flora(self,pos, 0.5) then
-						--wander random
-						mobkit.animate(self,'walk')
-						animals.hq_roam_walkable_group(self, 'flora', 10)
-					end
+            if energy < (self.energy_max*.5) then
+                mobkit.remember(self,"action","cow eat")
+                cowEat(self,pos)
+            else 
+                
+                --random choice between
+                --feeding, exploring, social
+                --chance differs by time
+                local ce = 0.2
+                local cs = 0.4
+                -- c feeding is simply what happens if no
+                --others are selected
+                local tod = minetest.get_timeofday()
+                if tod <0.2 or tod >0.8 then
+                    --more social at night
+                    ce = 0.01
+                    cs = 0.95
+                elseif tod >0.55 and tod <0.55 then
+                    --explore during midday
+                    ce = 0.6
+                    cs = 0.2
                 end
-			end
 
+
+                if random() < ce then
+                    mobkit.remember(self,"action","explore")
+                    cowExplore(self,pos)
+                elseif random() < cs then
+                    mobkit.remember(self,"action","social")
+                    --social
+                    if random()< 0.5 then
+                        animals.flock(self, 25, 1)
+                    elseif random()< 0.85 then
+                        animals.territorial(self, energy, false)
+                    elseif random() < 0.1 then
+
+                        --reproduction
+                        if self.hp >= self.max_hp
+                        and energy >= self.energy_max/2 then
+
+                            --set status as randy
+                            --find nearby prospect and try to mate
+                            mobkit.remember(self, 'sexual', true)
+                            local mate = animals.mate_assess(self, 'animals:cow')
+
+                            if mate then
+                                --go get her!
+                                --mobkit.make_sound(self,'mating')
+                                if random() < 0.5 then
+                                    mobkit.remember(self, "energy", energy - 200) -- energy use for mating lol
+                                    animals.hq_mate(self, 25, mate)
+                                end
+                            end
+
+                        else
+                            --in no state for hankypanky
+                            mobkit.remember(self, 'sexual', false)
+                        end
+                    end
+
+                elseif energy < self.energy_max then
+                    mobkit.remember(self,"action","default cow eat")
+                    cowEat(self,pos)
+                    
+                end
+            end
 		end
 
 		-------------------
@@ -315,6 +307,7 @@ local function brain_male(self)
 		if mobkit.is_queue_empty_high(self) then
 			mobkit.animate(self,'walk')
 			animals.hq_roam_far(self,10)
+            mobkit.remember(self,"action","default roam far")
 		end
 	end
 end

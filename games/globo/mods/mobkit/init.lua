@@ -796,7 +796,6 @@ end
 
 function mobkit.actfunc(self, staticdata, dtime_s)
 
-	self.logic = self.logic or self.brainfunc
 	self.physics = self.physics or mobkit.physics
 	
 	self.lqueue = {}

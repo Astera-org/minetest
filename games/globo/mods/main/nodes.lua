@@ -214,7 +214,7 @@ minetest.register_node("main:thorns_fruit", {
 	damage_per_second = 50,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 1, flammable = 30, flora=1},
+	groups = {snappy = 1, flammable = 30, flora=2},
 	on_punch = function(pos, node, player, pointed_thing)
 		addNutrient(player,"hunger",100)
 		minetest.set_node(pos, {name = "main:thorns"})
@@ -230,7 +230,7 @@ minetest.register_node("main:potatoes", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 30, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=3},
 	on_construct = function(pos)
 		local timer = minetest.get_node_timer(pos)
 		timer:start(600*GAME_SPEED) 
@@ -312,7 +312,7 @@ minetest.register_node("main:moon_berry", {
 	light_source=4,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 30, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=2},
 })
 
 minetest.register_node("main:sun_berry", {
@@ -325,7 +325,7 @@ minetest.register_node("main:sun_berry", {
 	light_source=13,
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 30, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=2},
 })
 
 minetest.register_node("main:coffee", {
@@ -337,7 +337,7 @@ minetest.register_node("main:coffee", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 30, flora=1},
+	groups = {snappy = 3, flammable = 30, flora=2},
 	on_punch = function(pos, node, player, pointed_thing)
 		changePlayerEnergy(player,200)
 	end,

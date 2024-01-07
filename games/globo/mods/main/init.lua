@@ -43,8 +43,8 @@ SLEEP_STARVE_COE=0.3
 TIRED_RATE=0.5
 
 ----------------------------
-GAME_SPEED=minetest.settings:get('GAME_SPEED')
-GAME_LENGTH=minetest.settings:get('GAME_LENGTH')
+GAME_SPEED=minetest.settings:get('GAME_SPEED') or 1
+GAME_LENGTH=minetest.settings:get('GAME_LENGTH') or 60*60*1
 PLAYER_MAX_HEALTH=minetest.settings:get('PLAYER_MAX_HEALTH') or 1000
 
 
@@ -55,7 +55,6 @@ dofile(default_path.."/utils.lua")
 dofile(default_path.."/compat.lua")
 dofile(default_path.."/tools.lua")
 dofile(default_path.."/player.lua")
-dofile(default_path.."/creatures.lua")
 dofile(default_path.."/nodes.lua")
 dofile(default_path.."/biomes.lua")
 dofile(default_path.."/decorations.lua")

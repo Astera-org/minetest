@@ -117,7 +117,7 @@ minetest.register_node("animals:puma_spawn", {
 		minetest.get_node_timer(pos):start(1)
 	end,
 	on_timer =function(pos, elapsed)
-		animals.birth(pos, "animals:puma", "air",  energy_egg, 1)
+		animals.birth(pos, "animals:puma", "air",  puma.eggEnergy, 1)
         return false
 	end,
 })

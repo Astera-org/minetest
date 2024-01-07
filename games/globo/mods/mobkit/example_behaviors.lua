@@ -476,17 +476,24 @@ function mobkit.hq_follow(self,prty,tgtobj)
 	mobkit.queue_high(self,func,prty)
 end
 
+
 function mobkit.hq_goto(self,prty,tpos)
+    local timer = os.time() + 15
+
 	local func = function(self)
+        if os.time() > timer then return true end
+
 		if mobkit.is_queue_empty_low(self) and self.isonground then
 			local pos = mobkit.get_stand_pos(self)
-			if vector.distance(pos,tpos) > 3 then
+			if vector.distance(pos,tpos) > 1 then
 				mobkit.goto_next_waypoint(self,tpos)
 			else
+                --minimal.log("hq_goto: arrived"..posToStr(tpos))
 				return true
 			end
 		end
 	end
+
 	mobkit.queue_high(self,func,prty)
 end
 
