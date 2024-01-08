@@ -212,7 +212,7 @@ local baseSkip={
 
 	--damage
 	max_hp = 200,
-	heal_rate= 0.25,
+	heal_rate= 0,
 	lung_capacity = 20,
 	min_temp = -20,
 	max_temp = 45,

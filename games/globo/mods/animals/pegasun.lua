@@ -428,7 +428,7 @@ minetest.register_entity("animals:pegasun_male",{
 
 	--damage
 	max_hp = pegasunMale.hp,
-	heal_rate=pegasunMale.rate,
+	heal_rate=pegasunMale.heal,
 	lung_capacity = 25,
 	min_temp = pegasun.minTemp,
 	max_temp = pegasun.maxTemp,
