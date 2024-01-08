@@ -9,3 +9,12 @@ function bound(value,min,max)
     if(value>max) then return max end
     return value
 end
+
+function isInList(target, list)
+    for _, value in ipairs(list) do
+        if value == target then
+            return true
+        end
+    end
+    return false
+end

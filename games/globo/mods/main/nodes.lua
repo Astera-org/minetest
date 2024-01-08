@@ -410,18 +410,140 @@ function grib_spread(pos)
 	end
 end
 
+function dig_up_set(pos, mainName, names, digger)
+	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
+	local unode = minetest.get_node(np)
+	local count = 0
+	while isInList(unode.name, names) do
+	   count = count + 1
+	   minetest.set_node(np, {name = "air"})
+	   np.y = np.y + 1
+	   unode = minetest.get_node(np)
+	end
+	if count > 0 then
+	   local inv = digger:get_inventory()
+	   local leftover = inv:add_item('main',
+					 mainName.." "..tostring(count))
+	   if leftover then minetest.add_item(pos, leftover) end
+	end
+end
 
-minetest.register_node("main:corn", {
-	description = "Corn",
+-- grows 8 tall
+-- fruit appears at the top after sometime
+-- if the bottom is destroyed, the thing goes away
+minetest.register_node("main:papaya", {
+	description = "Papaya",
 	drawtype = "plantlike",
-	tiles = {"corn.png"},
-	inventory_image = "corn.png",
-	wield_image = "corn.png",
+	tiles = {"papaya.png"},
+	inventory_image = "papaya.png",
+	wield_image = "papaya.png",
+	paramtype = "light",
+    stack_max = 4,
+	sunlight_propagates = true,
+	walkable = false,
+	groups = {snappy = 3, flammable = 35, flora=2}, 
+
+    on_timer = function(pos, elapsed)
+        -- grow the plant
+        local startY=pos.y
+        if minimal.get_daylight(pos) < 13 then
+            return true
+        end
+
+        pos.y = pos.y + 1
+        local above = minetest.get_node(pos)
+        pos.y = pos.y - 1
+        if above.name ~= "air" then
+            return true
+        end
+
+        -- determine height of plant
+        local height = 0
+        pos.y=pos.y-1
+        local node = minetest.get_node(pos)
+        while node.name == "main:papaya" do
+            height = height + 1
+            pos.y = pos.y - 1
+            node = minetest.get_node(pos)
+        end
+
+        -- make sure plant is propperly rooted
+        if minetest.get_item_group(node.name, "sediment") < 1 then
+            return false
+        end
+
+        if height < 8 then
+            pos.y = startY+1
+            minetest.set_node(pos, {name = "main:papaya"})
+        else
+            pos.y = startY
+            minetest.set_node(pos, {name = "main:papaya_flower"})
+        end
+    
+        --[[ LATER
+        ---extreme stop growth
+        local temp = climate.get_point_temp(pos)
+        if temp < 10 or temp > 40 then
+            return
+        end
+        ]]--
+    
+        return false
+    end,
+    
+    on_construct = function(pos)
+        local timer = minetest.get_node_timer(pos)
+	    local time=math.random(60,270)+math.random(60,270)
+        timer:start(time*GAME_SPEED*.1)  
+    end,
+    after_dig_node = function(pos, node, metadata, digger)
+		dig_up_set(pos, "main:papaya",{"main:papaya","main:papaya_fruit","main:papaya_flower"}, digger)
+	end,
+})
+
+minetest.register_node("main:papaya_flower", {
+	description = "Papaya",
+	drawtype = "plantlike",
+	tiles = {"papaya_flower.png"},
+	inventory_image = "papaya_flower.png",
+	wield_image = "papaya_flower.png",
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = false,
-	groups = {snappy = 3, flammable = 35, flora=1},
-	on_use = minetest.item_eat(3),  
+    drop = "",
+	groups = {snappy = 3, flammable = 35, flora=3}, 
+    on_construct = function(pos)
+        local timer = minetest.get_node_timer(pos)
+        local time=math.random(60,270)+math.random(60,270)
+        timer:start(time*GAME_SPEED*.1)  
+    end,
+    on_timer = function(pos, elapsed)
+        minetest.set_node(pos, {name = "main:papaya_fruit"})
+    end,
+})
+
+minetest.register_node("main:papaya_fruit", {
+	description = "Papaya",
+	drawtype = "plantlike",
+	tiles = {"papaya_fruit.png"},
+	inventory_image = "papaya_fruit_only.png",
+	wield_image = "papaya_fruit_only.png",
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+    drop = "",
+	groups = {snappy = 3, flammable = 35, flora=3}, 
+    on_punch = function(pos, node, player, pointed_thing)
+		local inv=player:get_inventory()
+        if inv:room_for_item("main", "main:papaya_fruit") then
+            --minetest.chat_send_player("singleplayer", "potato harvest taken")
+            inv:add_item("main", "main:papaya_fruit")
+            minetest.set_node(pos, {name = "main:papaya"})
+        end
+	end,
+    on_use = function(itemstack, user, pointed_thing)
+		return exile_eatdrink(itemstack, user, pointed_thing)
+    end,
 })
 
 minetest.register_node("main:pond", {

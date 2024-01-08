@@ -29,7 +29,7 @@ creative = creative
 -- Dig upwards
 --
 
-local function dig_up(pos, node, digger)
+function dig_up(pos, node, digger)
 	local lnode = node
 	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
 	local unode = minetest.get_node(np)

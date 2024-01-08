@@ -1,4 +1,9 @@
 TODO:
+- papaya should crumble
+
+
+
+
 
 - make breeding
     - make pregnant a timer rather than a bool

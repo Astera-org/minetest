@@ -33,7 +33,7 @@ food_table = {
 	["nodes_nature:zufani"]             = { 0,  0,   6,  0,  0 },
 	["nodes_nature:galanta"]            = { 0,  1,   3,  0,  0 },
 	["nodes_nature:lambakap"]           = { 0, 10,  10,  0,  0 },
-	["nodes_nature:tangkal_fruit"]      = { 0, 10,  15, 10,  0 },
+	["nodes_nature:tangkal_fruit"]      = { 0, 20,  10,  5,  0 },
 	["nodes_nature:momo"]               = { 0,  1,  12,  0,  0 },
 	["nodes_nature:snow"]               = { 0, 50,  0,-100, -1 },
 	["nodes_nature:snow_block"]         = { 0,100,  0,-200, -2 },
@@ -73,6 +73,7 @@ food_table = {
 	--medicine                              hp  th   hu  en  te
 	["nodes_nature:hakimi"]             = { 1,  0,   0,  -5,  0 },
 	["nodes_nature:merki"]              = { 1,  0,   0,  -5,  0 },
+    ["main:papaya_fruit"]              =  { 0,  10,  10,  0,  0 },
 	}
 
 bake_table = {
