@@ -82,7 +82,7 @@ local function brain(self)
                         end
 					end
 				end
-			elseif math.random()< .3 then
+			elseif math.random()< .2 then
 				mobkit.remember(self,'pregnant',true)
 			end
 		end

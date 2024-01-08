@@ -198,7 +198,7 @@ function carcassTimer(pos)
   
 
   -- Check if the chance of spawning a skip fungus is met
-  if math.random() <= 0.05 then
+  if math.random() <= 0.04 then
     -- Spawn skip fungus at the given position
     animals.hatch_egg(pos, 'air', 'air', "animals:skip_fungus", 4000, 1)
     return false

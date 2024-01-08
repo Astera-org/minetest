@@ -73,6 +73,15 @@ function get_dropped_item_groups(obj)
     return nil
 end
 
+function get_num_dropped_items(obj)
+    if obj and obj:get_luaentity() and obj:get_luaentity().name == "__builtin:item" then
+        local lua_entity = obj:get_luaentity()
+        local item_stack = ItemStack(lua_entity.itemstring)
+        return item_stack:get_count()
+    end
+   return 0
+end
+
 
 
   function get_mean_temp(pos) -- this could be put somewhere else like in climate or minimal

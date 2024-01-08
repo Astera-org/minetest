@@ -382,7 +382,7 @@ local baseWolf={
 
 
 minetest.register_entity("animals:wolf",baseWolf)
-local maleWolf=baseWolf
+local maleWolf=shallowCopy(baseWolf)
 maleWolf.logic=brain_male
 maleWolf.sex="male"
 

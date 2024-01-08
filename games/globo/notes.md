@@ -1,13 +1,8 @@
 TODO:
-- papaya should crumble
-
-
-
-
 
 - make breeding
     - make pregnant a timer rather than a bool
-- temperature should effect you
+- temperature should affect you
     - hides that keep you warm
     - eggs need to be a certain temperature to hatch
 
@@ -32,16 +27,17 @@ TODO:
 CHECK:
 - wolves are often getting killed by cows
 - behaviors seem wonky. Do they need more idle time
-- make sure animals can be in equalibrim
+- make sure animals can be in equilibrium
 - is it better to just have the infinite map?
 - what does armor do?
+- do animals get hurt by thorns?
 
 
 
 BUGS:
 - sneachens aren't eating?
 - wolf energy not decreasing
-- health efects are being cleared instantly
+- health effects are being cleared instantly
 - will drift at last speed once at energy 0
 2024-01-03 07:50:40: ERROR[Server]: suspiciously large amount of objects detected: 264 in (-22,0,-20); removing all of them.
 
@@ -57,7 +53,8 @@ BUGS:
 
 IDEAS:
 - eat something that makes you glow
-- need to be able to create some kind of raft
+- bouyancy
+    - need to be able to create some kind of raft
 - Lava Ox
 - Chaos Hawk
 - badger
@@ -67,24 +64,21 @@ IDEAS:
 - Giant Moth
 - Sand Slug
 - Block that moves through the air at a particular elevation until it hits something.  Anything on top of it will ride along. Spawns randomly
-- something should heal you faster
 - Launcher: anything that stands on this is launched in the air in the direction it was going
-- Corn: needs to be a plant for awhile and then becomes food
-    - corn should grow a stalk and you must reach the top to eat it
 - tar
 Motion detector
 Apple Tree: grows slowly: drops apples occasionally. Has a chance of dropping wood when broken.
 Fountain: Will spray water over the nearby blocks.
 Slug: takes up a block. Will move in a direction pushed. Picks up the first block in its path and becomes this when it comes to a stop.
-Tangler ; lays conveyors from it
 Willow wisp
 Throw rocks. Do a small amount of damage
+Some sort of flying glowing thing that is attracted to a certain flower
 
-Flower that only blossoms at dawn. You can eat it then
+Flower that only blooms at dawn. You can eat it then
 
 
 Later:
-- Wind that effects the direction that fire spreads
+- Wind that affects the direction that fire spreads
 - Do we want to be able to dig clay or cut trees?
 - need a way to throw things away
 - potatoes only spread under the right conditions

@@ -407,11 +407,11 @@ local baseGazelle = {
 }
 
 
-local maleGazelle=baseGazelle
+local maleGazelle=shallowCopy(baseGazelle)
 maleGazelle.logic=brain_male
 maleGazelle.sex="male"
 maleGazelle.rivals = {""}
-maleGazelle.max_hp=1200
+maleGazelle.max_hp=gazelleMale.hp
 
 
 minetest.register_entity("animals:gazelle_male",maleGazelle)

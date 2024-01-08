@@ -1142,27 +1142,30 @@ end
 
 
 function animals.hq_attack_eat(self,prty,tgtobj)
-  local timer = time() + 20 -- stop attacking after this long
+    local timer = time() + 20 -- stop attacking after this long
 
 	local func = function(self)
-    if time() > timer then
-      return true
-    end
-
-		if not mobkit.is_alive(tgtobj) then return true end
+        if time() > timer then return true  end
+        if not mobkit.is_alive(tgtobj) then return true end
 
 		if mobkit.is_queue_empty_low(self) then
-      local pos = mobkit.get_stand_pos(self)
+            local pos = mobkit.get_stand_pos(self)
 			local tpos = mobkit.get_stand_pos(tgtobj)
 			local dist = vector.distance(pos,tpos)
 			if dist < 1.01 then
-        local height = tgtobj:is_player() and 0.35 or tgtobj:get_luaentity().height*0.6
-        mobkit.lq_jumpattack(self,tpos.y+height-pos.y,tgtobj)
+                if (not tgtobj:is_player()) and (tgtobj:get_luaentity() == nil) then  -- crashed here for some reason
+                    minimal.log("hq_attack_eat: tgtobj has no luaentity ".. dump(tgtobj))
+                    return true
+                end
+
+                local height = tgtobj:is_player() and 0.35 or tgtobj:get_luaentity().height*0.6
+                mobkit.lq_jumpattack(self,tpos.y+height-pos.y,tgtobj)
 			else
-        mobkit.goto_next_waypoint(self,tpos)
+                mobkit.goto_next_waypoint(self,tpos)
 			end
 		end
 	end
+
 	mobkit.queue_high(self,func,prty)
 end
 
@@ -1200,39 +1203,36 @@ function animals.hq_eat_node(self,priority,node_pos)
 end
 
 function animals.hq_eat_carcass(self,prty,carcass)
-  local timer = time() + 20 -- stop after this long
+    local timer = time() + 20 -- stop after this long
 
-	local func = function(self)
-    if time() > timer then
-      return true
+    local func = function(self)
+    if time() > timer then return true end
+
+    if mobkit.is_queue_empty_low(self) then
+        local pos = mobkit.get_stand_pos(self)
+        local tpos = carcass:get_pos()
+        if tpos == nil then return true end
+        --if tpos ~= nil then minimal.log("tpos:"..tpos.x..","..tpos.y..","..tpos.z) end
+        local dist = vector.distance(pos,tpos)
+        if dist < 0.8 then
+            -- get carcass group level
+            local groups=get_dropped_item_groups(carcass) 
+            local energygain = groups.carcass*200*get_num_dropped_items(carcass)
+            minimal.log("hq_eat_carcass: energygain:"..energygain)
+            local self_e = (mobkit.recall(self,'energy') or 1)
+            self_e = self_e + energygain
+            if self_e > self.energy_max then self_e = self.energy_max end
+
+            mobkit.remember(self,'energy', self_e) 
+            carcass:remove()
+            return true
+            else
+            mobkit.goto_next_waypoint(self,tpos)
+            end
+        end
     end
 
-		if mobkit.is_queue_empty_low(self) then
-      local pos = mobkit.get_stand_pos(self)
-			local tpos = carcass:get_pos()
-      if tpos == nil then return true end
-      --if tpos ~= nil then minimal.log("tpos:"..tpos.x..","..tpos.y..","..tpos.z) end
-			local dist = vector.distance(pos,tpos)
-			if dist < 0.8 then
-        local name=get_dropped_item_name(carcass)
-        local energygain = 1000
-        if name == "animals:carcass_vert_large" then
-          energygain = 2000
-        end
-        local self_e = (mobkit.recall(self,'energy') or 1)
-        self_e = self_e + energygain
-        if self_e > self.energy_max then self_e = self.energy_max end
-
-        mobkit.remember(self,'energy', self_e) 
-        carcass:remove()
-        return true
-			else
-        mobkit.goto_next_waypoint(self,tpos)
-			end
-		end
-	end
-
-	mobkit.queue_high(self,func,prty)
+    mobkit.queue_high(self,func,prty)
 end
 
 

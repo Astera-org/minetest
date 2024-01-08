@@ -15,6 +15,8 @@ local floor = math.floor
 local cow=animalData[animal.cow]
 local cowMale=animalData[animal.cowMale]
 
+minimal.log("cow loaded hp:"..cow.hp.." "..cowMale.hp)
+
 local function cowEat(self,pos)
     --minimal.log("cow eat called")
     if random()< 0.25 then
@@ -419,14 +421,17 @@ local baseCow = {
 	end,
 }
 
+--minimal.log("cow loaded2 hp:"..baseCow.max_hp)
 
 minetest.register_entity("animals:cow",baseCow)
 
-local maleCow=baseCow
+local maleCow=shallowCopy(baseCow)
 maleCow.logic=brain_male
 maleCow.sex="male"
 maleCow.rivals = {"animals:cow_male"}
-maleCow.max_hp=maleCow.hp
+maleCow.max_hp=cowMale.hp
+
+--minimal.log("cow loaded3 hp:"..maleCow.max_hp)
 
 
 minetest.register_entity("animals:cow_male",maleCow)

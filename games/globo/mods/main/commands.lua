@@ -54,7 +54,7 @@ minetest.register_chatcommand("d", {
             local a=mobkit.recall(target,'action')
             --local yaw = target.object:get_yaw()
             minetest.chat_send_player(name,target.name)
-            minetest.chat_send_player(name,"HP:"..target.hp)
+            minetest.chat_send_player(name,"HP:"..target.hp.."/"..target.max_hp)
             minetest.chat_send_player(name,"Energy:"..mobkit.recall(target,'energy'))
             minetest.chat_send_player(name,"Age:"..mobkit.recall(target,'age'))
             if h ~=nil then

@@ -284,6 +284,12 @@ minetest.register_on_respawnplayer(function(player)
     score = score - 6
     meta:set_int("score", score)
 
+    -- get rid of past inventory
+    local inv = player:get_inventory()
+    inv:set_size("main", INVENTORY_SIZE)
+    inv:set_list("main", {})
+    
+
     player:set_properties({hp_max = PLAYER_MAX_HEALTH})
     player:set_hp(PLAYER_MAX_HEALTH)
 
