@@ -17,7 +17,7 @@ local function check_fire_spread(source_pos,ignite_factor)
 			local node=minetest.get_node(tinder_pos)
 			local node_def = minetest.registered_nodes[node.name]
 			
-			--minimal.log("check_fire_spread: "..dump(node_def.groups.flammable*ignite_factor))
+			minimal.log("check_fire_spread: "..dump(node_def.groups.flammable*ignite_factor))
 			if math.random(1, 100) < node_def.groups.flammable*ignite_factor then
 				local burnTime=node_def.burn_time or 1
 				--minimal.log("check_fire_spread3: "..dump(burnTime))
@@ -185,7 +185,7 @@ minetest.register_abm({
 	label = "Lava sparks embers",
 	nodenames = {"nodes_nature:lava_source"},
 	neighbors = {"air"},
-	interval = 20, 
+	interval = 15, 
 	chance = 12, 
 	catch_up = false,
 	action = function(pos, node)
@@ -198,7 +198,7 @@ minetest.register_abm({
 			minetest.set_node(p, {name = "main:ember"})
 		end
 
-		check_fire_spread(pos,.25)
+		check_fire_spread(pos,1)
 	end,
 })
 
@@ -210,7 +210,7 @@ minetest.register_abm({
 	chance = 50,
 	catch_up = false,
 	action = function(pos, node)
-		check_fire_spread(pos,.25)
+		check_fire_spread(pos,.5)
 	end,
 })
 

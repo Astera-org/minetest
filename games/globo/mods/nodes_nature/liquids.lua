@@ -299,7 +299,7 @@ minetest.register_node("nodes_nature:lava_source", {
 	walkable = false,
 	pointable = false,
 	diggable = false,
-	buildable_to = true,
+	buildable_to = false,
 	is_ground_content = false,
 	drop = "",
 	drowning = 1,
@@ -313,11 +313,27 @@ minetest.register_node("nodes_nature:lava_source", {
 	groups = {igniter = 1, temp_effect = 1, temp_pass = 1},
 	on_construct = function(pos)
 		-- TODO: hack since mts files seem annoying
-		pos.y=pos.y-1
+		pos.y=pos.y
 		for x = -1,1 do
 			for z = -1,1 do
 				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
 				minetest.set_node(p,{name="air"})
+			end
+		end
+        pos.y=pos.y-1
+        for x = -1,1 do
+			for z = -1,1 do
+				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
+                if x ~= 0 or z ~= 0 then
+                    minetest.set_node(p,{name="nodes_nature:grassland_soil"})
+                end
+			end
+		end
+        pos.y=pos.y-1
+        for x = -1,1 do
+			for z = -1,1 do
+				local p = {x=pos.x+x,y=pos.y,z=pos.z+z}
+                minetest.set_node(p,{name="nodes_nature:basalt"})
 			end
 		end
 	end,

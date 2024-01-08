@@ -1,14 +1,11 @@
 TODO:
 
-- some herb that increases your healing rate
-
 - make breeding
     - make pregnant a timer rather than a bool
 - temperature should effect you
     - hides that keep you warm
     - eggs need to be a certain temperature to hatch
-- predators in the swamps
-- more stuff in swamps
+
 
 - make seasons shorter?
 
