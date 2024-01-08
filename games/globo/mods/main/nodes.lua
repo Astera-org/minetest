@@ -302,6 +302,23 @@ minetest.register_node("main:sumac", {
 	end,
 })
 
+minetest.register_node("main:goldcap", {
+	description = "Goldcap",
+	drawtype = "plantlike",
+	tiles = {"goldcap.png"},
+	inventory_image = "goldcap.png",
+	wield_image = "goldcap.png",
+	paramtype = "light",
+	sunlight_propagates = true,
+	walkable = false,
+	groups = {snappy = 3, flammable = 10, flora=1},
+    on_use = function(itemstack, player, pointed_thing)
+		changePlayerHP(player,100)  -- LATER: make it heal over time
+		itemstack:take_item()
+		return itemstack
+	end,
+})
+
 minetest.register_node("main:moon_berry", {
 	description = "Moon Berry",
 	drawtype = "plantlike",
