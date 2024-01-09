@@ -1,4 +1,7 @@
 TODO:
+- Lava Ox
+    Kicks off heat. eats a lot of food. Pretty docile unless hungry. Lives in the duneland
+
 
 - make breeding
     - make pregnant a timer rather than a bool
@@ -50,7 +53,6 @@ IDEAS:
 - eat something that makes you glow
 - bouyancy
     - need to be able to create some kind of raft
-- Lava Ox
 - Chaos Hawk
 - badger
 - Ogre
