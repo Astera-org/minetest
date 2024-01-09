@@ -224,6 +224,7 @@ minetest.register_globalstep(function(dtime)
         local timePlayed=meta:get_float("time")+dtime
         meta:set_float("time",timePlayed)
         if timePlayed > GAME_LENGTH then
+            local score=meta:get_int("score") or 0
             minimal.log("******************************************")
             minimal.log("Game over man! Game over!")
             minimal.log("Score: "..score)
@@ -348,8 +349,8 @@ function playerLayEgg(player)
         if node.name == "air" then
             minetest.add_node(pos, {name = "main:player_egg"})
             minetest.get_meta(pos):set_string("owner", player:get_player_name())
-            addNutrient(player,"hunger",-100)
-            changePlayerEnergy(player,-500)
+            addNutrient(player,"hunger",-250)
+            changePlayerEnergy(player,-100)
         end
     end
 end
@@ -405,7 +406,7 @@ local function on_player_hpchange(player, hp_change, reason)
     local properties = player:get_properties()
     local max_hp = properties.hp_max
     minimal.log("Player hurt: " .. hp_change .. " reason: " .. reason.type.." max: "..max_hp)
-    if reason.type == "fall" then
+    if reason.type == "fall" or reason.type=="drown" then
        hp_change = hp_change * 50
     end
 

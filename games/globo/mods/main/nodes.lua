@@ -514,7 +514,7 @@ minetest.register_node("main:papaya_flower", {
 	groups = {snappy = 3, flammable = 35, flora=3}, 
     on_construct = function(pos)
         local timer = minetest.get_node_timer(pos)
-        local time=math.random(60,270)+math.random(60,270)
+        local time=math.random(90,300)+math.random(90,300)
         timer:start(time*GAME_SPEED*.1)  
     end,
     on_timer = function(pos, elapsed)

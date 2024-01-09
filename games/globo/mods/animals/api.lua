@@ -1217,7 +1217,7 @@ function animals.hq_eat_carcass(self,prty,carcass)
         if dist < 0.8 then
             -- get carcass group level
             local groups=get_dropped_item_groups(carcass) 
-            local energygain = groups.carcass*200*get_num_dropped_items(carcass)
+            local energygain = groups.carcass*300*get_num_dropped_items(carcass)
             minimal.log("hq_eat_carcass: energygain:"..energygain)
             local self_e = (mobkit.recall(self,'energy') or 1)
             self_e = self_e + energygain

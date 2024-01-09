@@ -6,7 +6,7 @@ TODO:
     - hides that keep you warm
     - eggs need to be a certain temperature to hatch
 
-
+drown should do more
 - make seasons shorter?
 
 - tell you the direction that damage came from

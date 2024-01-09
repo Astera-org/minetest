@@ -201,7 +201,8 @@ minetest.register_chatcommand("test", {
         local physics = player:get_physics_override()
         local speed = physics.speed
         local jump = physics.jump
-        minimal.log("player maxhp"..max_hp.." speed:"..speed.." jump:"..jump)
+        local meta = player:get_meta()
+        minimal.log("player maxhp"..max_hp.." speed:"..speed.." jump:"..jump.." time:"..meta:get_float("time"))
 
         local dir = player:get_look_dir()
         local pos = player:get_pos()
