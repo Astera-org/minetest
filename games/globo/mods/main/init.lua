@@ -44,7 +44,7 @@ TIRED_RATE=0.5
 
 ----------------------------
 GAME_SPEED=minetest.settings:get('GAME_SPEED') or 1
-GAME_LENGTH=minetest.settings:get('GAME_LENGTH') or 60*60*1
+GAME_LENGTH=tonumber( minetest.settings:get('GAME_LENGTH')) or 60*60*1
 PLAYER_MAX_HEALTH=minetest.settings:get('PLAYER_MAX_HEALTH') or 1000
 
 
@@ -63,4 +63,3 @@ dofile(default_path.."/commands.lua")
 dofile(default_path.."/inferno.lua")
 dofile(default_path.."/conveyor.lua")
 dofile(default_path.."/tangler.lua")
-dofile(default_path.."/main.lua")

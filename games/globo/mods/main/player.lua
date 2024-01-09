@@ -220,12 +220,17 @@ end
 minetest.register_globalstep(function(dtime)
     for _, player in ipairs(minetest.get_connected_players()) do
        
-        local properties = player:get_properties()
-        local max_hp = properties.hp_max
-        if max_hp ~= PLAYER_MAX_HEALTH then
-            minimal.log("!!!!!!!!!!!!!!! "..max_hp)
+        local meta = player:get_meta()
+        local timePlayed=meta:get_float("time")+dtime
+        meta:set_float("time",timePlayed)
+        if timePlayed > GAME_LENGTH then
+            minimal.log("******************************************")
+            minimal.log("Game over man! Game over!")
+            minimal.log("Score: "..score)
+            minimal.log("******************************************")
+            meta:set_float("time",0)
         end
-
+        
         if stepPlayerSleep(player,dtime) then
             stepPlayerWalkRun(player)
         end
@@ -239,6 +244,7 @@ function initializePlayer(player)
     local meta = player:get_meta()
     if meta:get_int("joined") ==0 then
         meta:set_int("joined",1)
+        meta:set_float("time",0)
 
         player:set_properties({hp_max = PLAYER_MAX_HEALTH})
         player:set_hp(PLAYER_MAX_HEALTH)
@@ -288,7 +294,7 @@ minetest.register_on_respawnplayer(function(player)
     local inv = player:get_inventory()
     inv:set_size("main", INVENTORY_SIZE)
     inv:set_list("main", {})
-    
+
 
     player:set_properties({hp_max = PLAYER_MAX_HEALTH})
     player:set_hp(PLAYER_MAX_HEALTH)

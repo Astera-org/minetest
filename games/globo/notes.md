@@ -10,19 +10,14 @@ TODO:
 - make seasons shorter?
 
 - tell you the direction that damage came from
-- wet clay should be diggable
-- make cows favor things you eat
 - dropped items should burn in fire
 - flowing water should push you
 - player should be no different than other animals to the mobs
 - plants spread
-- normalize mobs
-- normalize food/water
 - make animals sleep
 - animals run from fire
 - adjust the exile energy system to have a max energy and regain your current energy when you are still
 - ensure the maps aren't too crazy
-- need more light sources
 
 CHECK:
 - wolves are often getting killed by cows
@@ -73,8 +68,11 @@ Slug: takes up a block. Will move in a direction pushed. Picks up the first bloc
 Willow wisp
 Throw rocks. Do a small amount of damage
 Some sort of flying glowing thing that is attracted to a certain flower
-
+- migrations?
 Flower that only blooms at dawn. You can eat it then
+What would require more planning?
+
+
 
 
 Later:
