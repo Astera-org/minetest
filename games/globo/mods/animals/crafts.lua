@@ -193,25 +193,23 @@ for i in ipairs(list) do
 end
 
 function carcassTimer(pos)
-  --minimal.log("carcass timer")
-  -- TODO: check if there is a carcass item at the given position
-  
+    --minimal.log("carcass timer")
 
-  -- Check if the chance of spawning a skip fungus is met
-  if math.random() <= 0.04 then
-    -- Spawn skip fungus at the given position
-    animals.hatch_egg(pos, 'air', 'air', "animals:skip_fungus", 4000, 1)
-    return false
-  end
+    -- check if carcass dropped item is still there
+    if not is_dropped_item_in_group_at_pos("carcass", pos, 0.6) then
+        --minimal.log("carcass timer: no carcass")
+        return false
+    end
 
-  --[[ TODO: 
-  -- Check if the chance of removing the carcass is met
-  if math.random() <= 0.07 then
-    -- Remove the carcass at the given position
-    minetest.remove_node(pos)
-  end
-  ]]--
-  return true
+   
+    -- Check if the chance of spawning a skip fungus is met
+    if math.random() <= 0.03 then
+        -- Spawn skip fungus at the given position
+        animals.hatch_egg(pos, 'air', 'air', "animals:skip_fungus", 4000, 1)
+        return false
+    end
+
+    return true
 end
 
 

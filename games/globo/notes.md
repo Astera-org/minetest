@@ -1,4 +1,6 @@
 TODO:
+- lava needs to do full damage to you
+
 - Lava Ox
     Kicks off heat. eats a lot of food. Pretty docile unless hungry. Lives in the duneland
 
@@ -100,3 +102,10 @@ Allow other color lights
 Notes
 ----
 What can we take from existing mods?
+
+
+Stats
+-----
+Seeds:
+21:  2
+22: -1
