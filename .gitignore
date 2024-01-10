@@ -64,6 +64,7 @@ AppDir
 /client/mod_storage/
 
 ## Configuration/log files
+artifacts/
 minetest.conf
 debug.txt
 debug.txt.1
