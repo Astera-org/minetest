@@ -414,6 +414,8 @@ public:
 
 	void showMinimap(bool show = true);
 
+	RenderingEngine *getRenderingEngine();
+
 	const Address getServerAddress();
 
 	const std::string &getAddressName() const

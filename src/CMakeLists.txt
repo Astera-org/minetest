@@ -36,6 +36,19 @@ set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
 # Set some random things default to not being visible in the GUI
 mark_as_advanced(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 
+if(BUILD_CLIENT AND BUILD_HEADLESS)
+	find_package(SDL2 REQUIRED NO_DEFAULT_PATH)
+	# SDL2 exports targets since 2.0.6, but some distributions override config.
+	if(NOT TARGET SDL2::SDL2)
+		add_library(SDL2::SDL2 INTERFACE IMPORTED)
+		set_target_properties(SDL2::SDL2 PROPERTIES
+			INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS}
+			INTERFACE_LINK_LIBRARIES ${SDL2_LIBRARIES}
+		)
+	endif()
+	get_target_property(SDL2_LIB_LOCATION SDL2::SDL2 LOCATION)
+	message(STATUS "SDL2 library location: ${SDL2_LIB_LOCATION}")
+endif()
 
 if(NOT (BUILD_CLIENT OR BUILD_SERVER))
 	message(WARNING "Neither BUILD_CLIENT nor BUILD_SERVER is set! Setting BUILD_SERVER=true")
@@ -561,11 +574,13 @@ if(BUILD_CLIENT)
 		${PROJECT_NAME}
 		${ZLIB_LIBRARIES}
 		IrrlichtMt::IrrlichtMt
+		${SDL2_TARGET}
 		${ZSTD_LIBRARY}
 		${ZMQ_LIBRARY}
 		${ZMQPP_LIBRARY}
 		${SOUND_LIBRARIES}
 		${SQLITE3_LIBRARY}
+		${SDL2_LIBRARIES}
 		${LUA_LIBRARY}
 		${GMP_LIBRARY}
 		${JSON_LIBRARY}

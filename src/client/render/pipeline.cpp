@@ -17,14 +17,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "cmake_config.h"
 #include "pipeline.h"
 #include "client/client.h"
 #include "client/hud.h"
 #include "IRenderTarget.h"
+#include "client/renderingengine.h"
 
 #include <vector>
 #include <memory>
-
 
 TextureBuffer::~TextureBuffer()
 {
@@ -225,10 +226,12 @@ video::ITexture *DynamicSource::getTexture(u8 index)
 
 void ScreenTarget::activate(PipelineContext &context)
 {
-	auto driver = context.device->getVideoDriver();
-	driver->setRenderTarget(nullptr, m_clear, m_clear, context.clear_color);
-	driver->OnResize(size);
-	RenderTarget::activate(context);
+	if (!context.client->getRenderingEngine()->headless) {
+		auto driver = context.device->getVideoDriver();
+		driver->setRenderTarget(nullptr, m_clear, m_clear, context.clear_color);
+		driver->OnResize(size);
+		RenderTarget::activate(context);
+	}
 }
 
 void DynamicTarget::activate(PipelineContext &context)

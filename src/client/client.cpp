@@ -1951,6 +1951,11 @@ void Client::makeScreenshot()
 	raw_image->drop();
 }
 
+RenderingEngine *Client::getRenderingEngine()
+{
+	return m_rendering_engine;
+}
+
 bool Client::shouldShowMinimap() const
 {
 	return !m_minimap_disabled_by_server;
