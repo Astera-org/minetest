@@ -570,6 +570,9 @@ if(BUILD_CLIENT)
 		add_executable(${PROJECT_NAME} ${client_SRCS} ${extra_windows_SRCS})
 	endif()
 	add_dependencies(${PROJECT_NAME} GenerateVersion)
+	if(BUILD_HEADLESS)
+		set(SDL2_TARGET SDL2::SDL2)
+	endif()
 	target_link_libraries(
 		${PROJECT_NAME}
 		${ZLIB_LIBRARIES}

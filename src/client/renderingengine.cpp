@@ -151,6 +151,10 @@ RenderingEngine::RenderingEngine(IEventReceiver *receiver)
 			+ "shaders" + DIR_DELIM + "Irrlicht";
 	params.OGLES2ShaderPath = (porting::path_share + DIR_DELIM + rel_path + DIR_DELIM).c_str();
 
+#if BUILD_HEADLESS
+	SDL_VideoInit("offscreen");
+#endif
+
 	m_device = createDevice(params, driverType);
 	driver = m_device->getVideoDriver();
 	infostream << "Using the " << RenderingEngine::getVideoDriverInfo(driver->getDriverType()).friendly_name << " video driver" << std::endl;
