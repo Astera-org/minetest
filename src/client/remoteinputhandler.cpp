@@ -39,17 +39,26 @@ void RemoteInputHandler::step(float dtime)
 
 	obs_builder.initImage();
 	auto image_builder = obs_builder.getImage();
-	image_builder.setWidth(image->getDimension().Width);
-	image_builder.setHeight(image->getDimension().Height);
-	image_builder.setData(
-			capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()),
-					image->getImageDataSizeInBytes()));
+	// draw() is called after step(), so there won't be an image on the first step
+	if (image) {
+		image_builder.setWidth(image->getDimension().Width);
+		image_builder.setHeight(image->getDimension().Height);
+		image_builder.setData(
+				capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()),
+						image->getImageDataSizeInBytes()));
+	} else {
+		image_builder.setWidth(0);
+		image_builder.setHeight(0);
+		image_builder.setData(capnp::Data::Reader());
+	}
 
 	auto capnData = capnp::messageToFlatArray(obs_prot);
 	zmqpp::message obs_msg;
 	obs_msg.add_raw(capnData.begin(), capnData.size() * sizeof(capnp::word));
 	m_socket.send(obs_msg);
-	image->drop();
+
+	if (image)
+		image->drop();
 
 	// receive next key
 	zmqpp::message message;

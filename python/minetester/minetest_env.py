@@ -457,6 +457,7 @@ def start_minetest_client(
         out.write(f"Starting client with command: {' '.join(str(x) for x in cmd)}\n")
         out.write(f"Client environment: {client_env}\n")
         client_process = subprocess.Popen(cmd, stdout=out, stderr=err, env=client_env)
+        out.write(f"Client started with pid {client_process.pid}\n")
     return client_process
 
 
