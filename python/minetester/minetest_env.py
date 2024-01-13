@@ -60,6 +60,9 @@ class MinetestEnv(gym.Env):
         game_id: str = "minetest",
         client_name: str = "minetester",
         config_dict: Dict[str, Any] = None,
+        start_xvfb: bool = False,
+        x_display: Optional[int] = None,
+        headless: bool = False,
     ):
         if config_dict is None:
             config_dict = {}
@@ -69,6 +72,12 @@ class MinetestEnv(gym.Env):
         self.fov_y = fov
         self.fov_x = self.fov_y * self.display_size.width / self.display_size.height
         self.render_mode = render_mode
+        self.headless = headless
+        self.start_xvfb = start_xvfb and self.headless
+
+        assert (
+            not self.start_xvfb or sys.platform == "linux"
+        ), "Xvfb is only supported on Linux."
 
         if render_mode == "human":
             self._start_pygame()
@@ -130,6 +139,16 @@ class MinetestEnv(gym.Env):
 
         # Configure game and mods
         self.game_id = game_id
+
+        # Start X server virtual frame buffer
+        self.default_display = x_display or 0
+        if "DISPLAY" in os.environ:
+            self.default_display = int(os.environ["DISPLAY"].split(":")[1])
+        self.x_display = x_display or self.default_display
+        self.xserver_process = None
+        if self.start_xvfb:
+            self.x_display = x_display or self.default_display + 4
+            self.xserver_process = start_xserver(self.x_display, self.display_size)
 
     def _configure_spaces(self):
         # Define action and observation space
@@ -206,6 +225,7 @@ class MinetestEnv(gym.Env):
             self.config_path,
             log_path,
             f"localhost:{self.env_port}",
+            display=self.x_display,
         )
 
     def _perform_client_handshake(self):
@@ -401,14 +421,11 @@ def start_minetest_client(
     log_path: str,
     client_socket: str,
     display: int = None,
+    headless: bool = True,
+    set_gpu_vars = True,
+    set_vsync_vars = True,
 ):
-    virtual_display = []
-    if sys.platform == "linux":
-        virtual_display = ["xvfb-run", "--auto-servernum"]
-    else:
-        print(f"Warning: virtual display not supported on {sys.platform}")
-
-    cmd = virtual_display + [
+    cmd = [
         minetest_executable,
         "--go",
         "--worldname",
@@ -417,16 +434,29 @@ def start_minetest_client(
         config_path,
         "--remote-input",
         client_socket,
-        "--verbose",
+        "--verbose"
     ]
+    if headless:
+        # don't render to screen
+        cmd.append("--headless")
 
     stdout_file = log_path.format("client_stdout")
     stderr_file = log_path.format("client_stderr")
     with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
-        # client_env = os.environ.copy()
-        # if display is not None:
-        #     client_env["DISPLAY"] = ":" + str(display)
-        client_process = subprocess.Popen(cmd, stdout=out, stderr=err)
+        client_env = os.environ.copy()
+        if display is not None:
+            client_env["DISPLAY"] = ":" + str(display)
+        if set_gpu_vars:
+            # enable GPU usage
+            client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+            client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+        if set_vsync_vars:
+            # disable vsync
+            client_env["__GL_SYNC_TO_VBLANK"] = "0"
+            client_env["vblank_mode"] = "0"
+        out.write(f"Starting client with command: {' '.join(str(x) for x in cmd)}\n")
+        out.write(f"Client environment: {client_env}\n")
+        client_process = subprocess.Popen(cmd, stdout=out, stderr=err, env=client_env)
     return client_process
 
 
@@ -455,3 +485,19 @@ def write_config_file(file_path, config):
     with open(file_path, "w") as f:
         for key, value in config.items():
             f.write(f"{key} = {value}\n")
+
+
+def start_xserver(
+    display_idx: int = 1,
+    display_size: Tuple[int, int] = (1024, 600),
+    display_depth: int = 24,
+):
+    cmd = [
+        "Xvfb",
+        f":{display_idx}",
+        "-screen",
+        "0",  # screennum param
+        f"{display_size[0]}x{display_size[1]}x{display_depth}",
+    ]
+    xserver_process = subprocess.Popen(cmd)
+    return xserver_process
