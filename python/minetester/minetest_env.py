@@ -312,9 +312,6 @@ class MinetestEnv(gym.Env):
         self.screen.blit(img, (0, 0))
         pygame.display.update()
 
-        # Save the image as a PNG file
-        pygame.image.save(self.screen, "image.png")
-
     def seed(self, seed: Optional[int] = None):
         self._np_random = np.random.RandomState(seed or 0)
 
