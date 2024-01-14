@@ -1884,14 +1884,13 @@ float Client::getCurRate()
 void Client::makeScreenshot()
 {
 	irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
-	irr::video::IImage* raw_image;
 
+	irr::video::IImage* raw_image;
 	if(m_rendering_engine->headless){
 		raw_image = m_rendering_engine->get_screenshot();
 	} else {
 		raw_image = driver->createScreenShot();
 	}
-
 	if (!raw_image)
 		return;
 

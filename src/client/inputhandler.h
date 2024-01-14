@@ -23,9 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
 #include <list>
-#include <zmqpp/zmqpp.hpp>
 #include "keycode.h"
-#include "log.h"
 #include "renderingengine.h"
 
 #ifdef HAVE_TOUCHSCREENGUI
