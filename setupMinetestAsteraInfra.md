@@ -22,6 +22,7 @@ sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev
 
 # zmq, follow [README](https://github.com/zeromq/libzmq#installation)
 # For 22.04:
+# unclear if add this repo is necessary
 echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
 curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
 sudo apt update && sudo apt install libzmq3-dev
