@@ -8,6 +8,7 @@ dependencies:
   - pyzmq
   - pre-commit
   - gymnasium
+  - pytest
   # for dummy client only
   - pygame
   # more requirements
