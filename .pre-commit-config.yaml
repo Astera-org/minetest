@@ -5,5 +5,7 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         types: [python]
+        exclude: '^util/'
       - id: ruff-format
         types: [python]
+        exclude: '^util/'

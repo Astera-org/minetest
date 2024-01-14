@@ -1,9 +1,9 @@
 import datetime
 import logging
 import os
-import sys
 import shutil
 import subprocess
+import sys
 import uuid
 from collections import namedtuple
 from pathlib import Path
@@ -422,8 +422,8 @@ def start_minetest_client(
     client_socket: str,
     display: int = None,
     headless: bool = True,
-    set_gpu_vars = True,
-    set_vsync_vars = True,
+    set_gpu_vars=True,
+    set_vsync_vars=True,
 ):
     cmd = [
         minetest_executable,
@@ -434,7 +434,7 @@ def start_minetest_client(
         config_path,
         "--remote-input",
         client_socket,
-        "--verbose"
+        "--verbose",
     ]
     if headless:
         # don't render to screen

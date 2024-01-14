@@ -10,6 +10,7 @@ Useful for debugging:
 - Then run handshaker.py
 """
 
+
 def unpack_pb_obs(received_obs: str):
     with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_proto:
         # Convert the response to a numpy array
@@ -49,6 +50,6 @@ while inp != "stop":
     if obs.size > 0:
         image = Image.fromarray(obs)
         image.save(f"observation_{i}.png")
-    
+
     i += 1
     inp = input("Stop with 'stop':")
