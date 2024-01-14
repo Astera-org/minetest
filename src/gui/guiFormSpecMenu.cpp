@@ -138,11 +138,23 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
 	gui::IGUIEnvironment *guienv, JoystickController *joystick, IFormSource *fs_src,
 	TextDest *txt_dest, const std::string &formspecPrepend, ISoundManager *sound_manager)
 {
+	if (cur_formspec && cur_formspec->getReferenceCount() == 1) {
+		/*
+			Why reference count == 1? Reason:
+			1 on creation (see "drop()" remark below)
+			+1 for being a guiroot child
+			+1 when focused (CGUIEnvironment::setFocus)
+
+			Hence re-create the formspec when it's existing without any parent.
+		*/
+		cur_formspec->drop();
+		cur_formspec = nullptr;
+	}
+
 	if (cur_formspec == nullptr) {
 		cur_formspec = new GUIFormSpecMenu(joystick, guiroot, -1, &g_menumgr,
 			client, guienv, client->getTextureSource(), sound_manager, fs_src,
 			txt_dest, formspecPrepend);
-		cur_formspec->doPause = false;
 
 		/*
 			Caution: do not call (*cur_formspec)->drop() here --
@@ -151,12 +163,13 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
 			remaining reference (i.e. the menu was removed)
 			and delete it in that case.
 		*/
-
 	} else {
 		cur_formspec->setFormspecPrepend(formspecPrepend);
 		cur_formspec->setFormSource(fs_src);
 		cur_formspec->setTextDest(txt_dest);
 	}
+
+	cur_formspec->doPause = false;
 }
 
 void GUIFormSpecMenu::removeTooltip()
@@ -3484,46 +3497,58 @@ void GUIFormSpecMenu::legacySortElements(std::list<IGUIElement *>::iterator from
 }
 
 #ifdef __ANDROID__
-bool GUIFormSpecMenu::getAndroidUIInput()
+void GUIFormSpecMenu::getAndroidUIInput()
 {
-	if (!hasAndroidUIInput())
-		return false;
+	porting::AndroidDialogState dialogState = getAndroidUIInputState();
+	if (dialogState == porting::DIALOG_SHOWN) {
+		return;
+	} else if (dialogState == porting::DIALOG_CANCELED) {
+		m_jni_field_name.clear();
+		return;
+	}
 
-	// still waiting
-	if (porting::getInputDialogState() == -1)
-		return true;
+	porting::AndroidDialogType dialog_type = porting::getLastInputDialogType();
 
 	std::string fieldname = m_jni_field_name;
 	m_jni_field_name.clear();
 
 	for (const FieldSpec &field : m_fields) {
 		if (field.fname != fieldname)
-			continue;
+			continue; // Iterate until found
 
 		IGUIElement *element = getElementFromId(field.fid, true);
 
-		if (!element || element->getType() != irr::gui::EGUIET_EDIT_BOX)
-			return false;
+		if (!element)
+			return;
 
-		gui::IGUIEditBox *editbox = (gui::IGUIEditBox *)element;
-		std::string text = porting::getInputDialogValue();
-		editbox->setText(utf8_to_wide(text).c_str());
+		auto element_type = element->getType();
+		if (dialog_type == porting::TEXT_INPUT && element_type == irr::gui::EGUIET_EDIT_BOX) {
+			gui::IGUIEditBox *editbox = (gui::IGUIEditBox *)element;
+			std::string text = porting::getInputDialogMessage();
+			editbox->setText(utf8_to_wide(text).c_str());
 
-		bool enter_after_edit = false;
-		auto iter = field_enter_after_edit.find(fieldname);
-		if (iter != field_enter_after_edit.end()) {
-			enter_after_edit = iter->second;
+			bool enter_after_edit = false;
+			auto iter = field_enter_after_edit.find(fieldname);
+			if (iter != field_enter_after_edit.end()) {
+				enter_after_edit = iter->second;
+			}
+			if (enter_after_edit && editbox->getParent()) {
+				SEvent enter;
+				enter.EventType = EET_GUI_EVENT;
+				enter.GUIEvent.Caller = editbox;
+				enter.GUIEvent.Element = nullptr;
+				enter.GUIEvent.EventType = gui::EGET_EDITBOX_ENTER;
+				editbox->getParent()->OnEvent(enter);
+			}
+		} else if (dialog_type == porting::SELECTION_INPUT &&
+				element_type == irr::gui::EGUIET_COMBO_BOX) {
+			auto dropdown = (gui::IGUIComboBox *) element;
+			int selected = porting::getInputDialogSelection();
+			dropdown->setAndSendSelected(selected);
 		}
-		if (enter_after_edit && editbox->getParent()) {
-			SEvent enter;
-			enter.EventType = EET_GUI_EVENT;
-			enter.GUIEvent.Caller = editbox;
-			enter.GUIEvent.Element = nullptr;
-			enter.GUIEvent.EventType = gui::EGET_EDITBOX_ENTER;
-			editbox->getParent()->OnEvent(enter);
-		}
+
+		return; // Early-return after found
 	}
-	return false;
 }
 #endif
 
@@ -3643,22 +3668,18 @@ void GUIFormSpecMenu::drawMenu()
 			NULL, m_client, IT_ROT_HOVERED);
 	}
 
-	// On touchscreens, m_pointer is set by GUIModalMenu::preprocessEvent instead.
-#ifndef HAVE_TOUCHSCREENGUI
-	m_pointer = RenderingEngine::get_raw_device()->getCursorControl()->getPosition();
-#endif
-
 	/*
 		Draw fields/buttons tooltips and update the mouse cursor
 	*/
 	gui::IGUIElement *hovered =
 			Environment->getRootGUIElement()->getElementFromPoint(m_pointer);
 
-#ifndef HAVE_TOUCHSCREENGUI
 	gui::ICursorControl *cursor_control = RenderingEngine::get_raw_device()->
 			getCursorControl();
-	gui::ECURSOR_ICON current_cursor_icon = cursor_control->getActiveIcon();
-#endif
+	gui::ECURSOR_ICON current_cursor_icon = gui::ECI_NORMAL;
+	if (cursor_control)
+		current_cursor_icon = cursor_control->getActiveIcon();
+
 	bool hovered_element_found = false;
 
 	if (hovered) {
@@ -3702,11 +3723,10 @@ void GUIFormSpecMenu::drawMenu()
 							m_tooltips[field.fname].bgcolor);
 				}
 
-#ifndef HAVE_TOUCHSCREENGUI
-				if (field.ftype != f_HyperText && // Handled directly in guiHyperText
+				if (cursor_control &&
+						field.ftype != f_HyperText && // Handled directly in guiHyperText
 						current_cursor_icon != field.fcursor_icon)
 					cursor_control->setActiveIcon(field.fcursor_icon);
-#endif
 
 				hovered_element_found = true;
 
@@ -3717,10 +3737,8 @@ void GUIFormSpecMenu::drawMenu()
 
 	if (!hovered_element_found) {
 		// no element is hovered
-#ifndef HAVE_TOUCHSCREENGUI
-		if (current_cursor_icon != ECI_NORMAL)
+		if (cursor_control && current_cursor_icon != ECI_NORMAL)
 			cursor_control->setActiveIcon(ECI_NORMAL);
-#endif
 	}
 
 	m_tooltip_element->draw();
@@ -3751,16 +3769,13 @@ void GUIFormSpecMenu::showTooltip(const std::wstring &text,
 	v2u32 screenSize = Environment->getVideoDriver()->getScreenSize();
 	int tooltip_offset_x = m_btn_height;
 	int tooltip_offset_y = m_btn_height;
-#ifdef HAVE_TOUCHSCREENGUI
-	tooltip_offset_x *= 3;
-	tooltip_offset_y  = 0;
-	if (m_pointer.X > (s32)screenSize.X / 2)
-		tooltip_offset_x = -(tooltip_offset_x + tooltip_width);
 
-	// Hide tooltip after ETIE_LEFT_UP
-	if (m_pointer.X == 0)
-		return;
-#endif
+	if (m_pointer_type == PointerType::Touch) {
+		tooltip_offset_x *= 3;
+		tooltip_offset_y  = 0;
+		if (m_pointer.X > (s32)screenSize.X / 2)
+			tooltip_offset_x = -(tooltip_offset_x + tooltip_width);
+	}
 
 	// Calculate and set the tooltip position
 	s32 tooltip_x = m_pointer.X + tooltip_offset_x;
@@ -4057,6 +4072,11 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
 
 bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
 {
+	// This must be done first so that GUIModalMenu can set m_pointer_type
+	// correctly.
+	if (GUIModalMenu::preprocessEvent(event))
+		return true;
+
 	// The IGUITabControl renders visually using the skin's selected
 	// font, which we override for the duration of form drawing,
 	// but computes tab hotspots based on how it would have rendered
@@ -4134,7 +4154,7 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
 		return handled;
 	}
 
-	return GUIModalMenu::preprocessEvent(event);
+	return false;
 }
 
 void GUIFormSpecMenu::tryClose()
@@ -4200,14 +4220,16 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 	}
 
 	/* Mouse event other than movement, or crossing the border of inventory
-	  field while holding left, right, or middle mouse button
+	   field while holding left, right, or middle mouse button
+	   or touch event (for touch screen devices)
 	 */
-	if (event.EventType == EET_MOUSE_INPUT_EVENT &&
-		(event.MouseInput.Event != EMIE_MOUSE_MOVED ||
-			((event.MouseInput.isLeftPressed() ||
-				event.MouseInput.isRightPressed() ||
-				event.MouseInput.isMiddlePressed()) &&
-			getItemAtPos(m_pointer).i != getItemAtPos(m_old_pointer).i))) {
+	if ((event.EventType == EET_MOUSE_INPUT_EVENT &&
+			(event.MouseInput.Event != EMIE_MOUSE_MOVED ||
+				((event.MouseInput.isLeftPressed() ||
+					event.MouseInput.isRightPressed() ||
+					event.MouseInput.isMiddlePressed()) &&
+				getItemAtPos(m_pointer).i != getItemAtPos(m_old_pointer).i))) ||
+			event.EventType == EET_TOUCH_INPUT_EVENT) {
 
 		// Get selected item and hovered/clicked item (s)
 
@@ -4276,35 +4298,46 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 		ButtonEventType button = BET_OTHER;
 		ButtonEventType updown = BET_OTHER;
-		switch (event.MouseInput.Event) {
-		case EMIE_LMOUSE_PRESSED_DOWN:
-			button = BET_LEFT; updown = BET_DOWN;
-			break;
-		case EMIE_RMOUSE_PRESSED_DOWN:
-			button = BET_RIGHT; updown = BET_DOWN;
-			break;
-		case EMIE_MMOUSE_PRESSED_DOWN:
-			button = BET_MIDDLE; updown = BET_DOWN;
-			break;
-		case EMIE_MOUSE_WHEEL:
-			button = (event.MouseInput.Wheel > 0) ?
-				BET_WHEEL_UP : BET_WHEEL_DOWN;
-			updown = BET_DOWN;
-			break;
-		case EMIE_LMOUSE_LEFT_UP:
-			button = BET_LEFT; updown = BET_UP;
-			break;
-		case EMIE_RMOUSE_LEFT_UP:
-			button = BET_RIGHT; updown = BET_UP;
-			break;
-		case EMIE_MMOUSE_LEFT_UP:
-			button = BET_MIDDLE; updown = BET_UP;
-			break;
-		case EMIE_MOUSE_MOVED:
-			updown = BET_MOVE;
-			break;
-		default:
-			break;
+		bool mouse_shift = false;
+		if (event.EventType == EET_MOUSE_INPUT_EVENT) {
+			mouse_shift = event.MouseInput.Shift;
+			switch (event.MouseInput.Event) {
+			case EMIE_LMOUSE_PRESSED_DOWN:
+				button = BET_LEFT; updown = BET_DOWN;
+				break;
+			case EMIE_RMOUSE_PRESSED_DOWN:
+				button = BET_RIGHT; updown = BET_DOWN;
+				break;
+			case EMIE_MMOUSE_PRESSED_DOWN:
+				button = BET_MIDDLE; updown = BET_DOWN;
+				break;
+			case EMIE_MOUSE_WHEEL:
+				button = (event.MouseInput.Wheel > 0) ?
+					BET_WHEEL_UP : BET_WHEEL_DOWN;
+				updown = BET_DOWN;
+				break;
+			case EMIE_LMOUSE_LEFT_UP:
+				button = BET_LEFT; updown = BET_UP;
+				break;
+			case EMIE_RMOUSE_LEFT_UP:
+				button = BET_RIGHT; updown = BET_UP;
+				break;
+			case EMIE_MMOUSE_LEFT_UP:
+				button = BET_MIDDLE; updown = BET_UP;
+				break;
+			case EMIE_MOUSE_MOVED:
+				updown = BET_MOVE;
+				break;
+			default:
+				break;
+			}
+		}
+
+		// The second touch (see GUIModalMenu::preprocessEvent() function)
+		ButtonEventType touch = BET_OTHER;
+		if (event.EventType == EET_TOUCH_INPUT_EVENT) {
+			if (event.TouchInput.Event == ETIE_LEFT_UP)
+				touch = BET_RIGHT;
 		}
 
 		// Set this number to a positive value to generate a move action
@@ -4332,6 +4365,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 			if (m_held_mouse_button != BET_OTHER)
 				break;
+
 			if (button == BET_LEFT || button == BET_RIGHT || button == BET_MIDDLE)
 				m_held_mouse_button = button;
 
@@ -4351,13 +4385,13 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				// Craft preview has been clicked: craft
 				if (button == BET_MIDDLE)
 					craft_amount = 10;
-				else if (event.MouseInput.Shift && button == BET_LEFT)
+				else if (mouse_shift && button == BET_LEFT)
 					craft_amount = list_s->getItem(s.i).getStackMax(m_client->idef());
 				else
 					craft_amount = 1;
 
 				// Holding shift moves the crafted item to the inventory
-				m_shift_move_after_craft = event.MouseInput.Shift;
+				m_shift_move_after_craft = mouse_shift;
 
 			} else if (!m_selected_item && button != BET_WHEEL_UP && !empty) {
 				// Non-empty stack has been clicked: select or shift-move it
@@ -4371,7 +4405,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				else if (button == BET_LEFT)
 					count = s_count;
 
-				if (event.MouseInput.Shift) {
+				if (mouse_shift) {
 					// Shift pressed: move item, right click moves 1
 					shift_move_amount = button == BET_RIGHT ? 1 : count;
 				} else {
@@ -4392,7 +4426,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				else if (button == BET_LEFT)
 					move_amount = m_selected_amount;
 
-				if (event.MouseInput.Shift && !identical && matching) {
+				if (mouse_shift && !identical && matching) {
 					// Shift-move all items the same as the selected item to the next list
 					move_amount = 0;
 
@@ -4530,7 +4564,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 			if (!s.isValid() || s.listname == "craftpreview")
 				break;
 
-			if (!m_selected_item && event.MouseInput.Shift) {
+			if (!m_selected_item && mouse_shift) {
 				// Shift-move items while dragging
 				if (m_held_mouse_button == BET_RIGHT)
 					shift_move_amount = 1;
@@ -4580,7 +4614,8 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 		case BET_OTHER: {
 			// Some other mouse event has occured
 			// Currently only left-double-click should trigger this
-			if (!s.isValid() || event.MouseInput.Event != EMIE_LMOUSE_DOUBLE_CLICK)
+			if (!s.isValid() || event.EventType != EET_MOUSE_INPUT_EVENT ||
+					event.MouseInput.Event != EMIE_LMOUSE_DOUBLE_CLICK)
 				break;
 
 			// Only do the pickup all thing when putting down an item.
@@ -4648,11 +4683,32 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 			break;
 		}
 
+		if (touch == BET_RIGHT && m_selected_item && !m_left_dragging) {
+			if (!s.isValid()) {
+				// Not a valid slot
+				if (!getAbsoluteClippingRect().isPointInside(m_pointer))
+					// Is outside the menu
+					drop_amount = 1;
+			} else {
+				// Over a valid slot
+				move_amount = 1;
+				if (identical) {
+					// Change the selected amount instead of moving
+					if (move_amount >= m_selected_amount)
+						m_selected_amount = 0;
+					else
+						m_selected_amount -= move_amount;
+					move_amount = 0;
+				}
+			}
+		}
+
 		// Update left-dragged slots
 		if (m_left_dragging && m_left_drag_stacks.size() > 1) {
 			// The split amount will always at least one, because the number
 			// of slots will never be greater than the selected amount
 			u16 split_amount = m_left_drag_amount / m_left_drag_stacks.size();
+			u16 split_remaining = m_left_drag_amount % m_left_drag_stacks.size();
 
 			ItemStack stack_from = m_left_drag_stack;
 			m_selected_amount = m_left_drag_amount;
@@ -4663,7 +4719,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 				if (ds.first == *m_selected_item) {
 					// Adding to the source stack, just change the selected amount
-					m_selected_amount -= split_amount;
+					m_selected_amount -= split_amount + split_remaining;
 
 				} else {
 					// Reset the stack to its original state
@@ -5013,6 +5069,9 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 			}
 		}
 	}
+
+	if (m_second_touch)
+		return true; // Stop propagating the event
 
 	return Parent ? Parent->OnEvent(event) : false;
 }
