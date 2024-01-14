@@ -124,6 +124,12 @@ jobs:
       - name: Integration test + devtest
         run: |
           ./util/test_multiplayer.sh
+      
+      - name: Setup mambaforge
+        run: |
+          source ./util/ci/common.sh
+          install_mambaforge
+          
 
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:
