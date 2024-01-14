@@ -35,7 +35,6 @@ cd zmqpp && make && make install
 
 cd ~/minetest
 
-mkdir -p ./build
 cmake -B build -S . \
 	-DCMAKE_FIND_FRAMEWORK=LAST \
 	-DRUN_IN_PLACE=TRUE -DENABLE_GETTEXT=TRUE \
