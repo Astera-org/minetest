@@ -4,9 +4,9 @@ set -x
 
 # Linux build only
 install_linux_deps() {
-	# ZMQ is not available in the default repos for 22.04
-	echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
-	curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+	# # ZMQ is not available in the default repos for 22.04
+	# echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+	# curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
 
 	local pkgs=(
 		cmake gettext postgresql
