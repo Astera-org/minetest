@@ -129,7 +129,10 @@ jobs:
         run: |
           source ./util/ci/common.sh
           install_mambaforge
-          
+      
+      - name: Run pytest
+        run: |
+          ./util/ci/run_pytest.sh
 
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:

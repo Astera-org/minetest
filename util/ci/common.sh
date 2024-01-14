@@ -65,6 +65,6 @@ install_mambaforge() {
 	# Initialize Mambaforge
 	eval "$($HOME/mambaforge/bin/conda shell.bash hook)"
 
-	# Update Mamba
-	mamba update -n base -c defaults mamba
+	# Create minetest env
+	mamba env create
 }
