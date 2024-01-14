@@ -51,7 +51,7 @@ class MinetestEnv(gym.Env):
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
-        display_size: Tuple[int, int] = (1728, 1051),
+        display_size: Tuple[int, int] = (600, 400),
         render_mode: str = "rgb_array",
         fov: int = 72,
         base_seed: int = 0,
