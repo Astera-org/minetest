@@ -33,7 +33,7 @@ install_linux_deps() {
 	git submodule update --init --recursive
 
 	pushd lib/zmqpp && make && sudo make install && popd
-	pushd lib/SDL2 && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make && make install && popd && popd
+	pushd lib/SDL && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make && make install && popd && popd
 }
 
 # macOS build only
