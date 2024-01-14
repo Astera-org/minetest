@@ -3,6 +3,7 @@
 #include "inputhandler.h"
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
+#include <zmqpp/zmqpp.hpp>
 
 class RemoteInputHandler : public InputHandler
 {
@@ -13,7 +14,7 @@ public:
             m_context(),
 			m_socket(m_context, zmqpp::socket_type::reply), m_receiver(receiver)
 	{
-		infostream << "RemoteInputHandler: Binding to " << endpoint << std::endl;
+		infostream << "RemoteInputHandler: Binding to " << endpoint << '\n';
 		m_socket.bind(endpoint);
 		// wait for client
 		zmqpp::message message;
@@ -24,7 +25,7 @@ public:
 		capnp::FlatArrayMessageReader reader(words);
 		Action::Reader action = reader.getRoot<Action>();
 		if (action.hasKeyEvents()){
-			throw std::runtime_error("INVALID HANDSHAKE: Got key events in handshake");
+			throw std::runtime_error("INVALID HANDSHAKE: Got key events in handshake, expected 'action.hasKeyEvents() == false'");
 		}
 	}
 

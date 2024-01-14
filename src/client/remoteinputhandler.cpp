@@ -1,8 +1,5 @@
 #include "remoteinputhandler.h"
-#include "IEventReceiver.h"
 #include "client/keycode.h"
-#include "client/keys.h"
-#include "clientiface.h"
 #include "hud.h"
 #include "irr_v2d.h"
 #include "remoteclient.capnp.h"
