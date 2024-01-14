@@ -18,16 +18,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "cmake_config.h"
 #include "core.h"
 #include "plain.h"
 #include "client/shadows/dynamicshadowsrender.h"
 #include "settings.h"
+#include "client/renderingengine.h"
+#include "client/client.h"
 
 RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud,
 		ShadowRenderer *_shadow_renderer, RenderPipeline *_pipeline, v2f _virtual_size_scale)
 	: device(_device), client(_client), hud(_hud), shadow_renderer(_shadow_renderer),
 	pipeline(_pipeline), virtual_size_scale(_virtual_size_scale)
 {
+	if (client->getRenderingEngine()->headless) {
+		m_buffer = pipeline->createOwned<TextureBuffer>();
+		m_buffer->setTexture(0, v2f(1.0f, 1.0f), "idk_lol", video::ECF_R8G8B8);
+	}
 }
 
 RenderingCore::~RenderingCore()
@@ -48,8 +55,40 @@ void RenderingCore::draw(video::SColor _skycolor, bool _show_hud, bool _show_min
 	context.show_hud = _show_hud;
 	context.show_minimap = _show_minimap;
 
-	pipeline->reset(context);
-	pipeline->run(context);
+	if (client->getRenderingEngine()->headless) {
+		auto tex = new TextureBufferOutput(m_buffer, 0);
+		pipeline->setRenderTarget(tex);
+		pipeline->reset(context);
+		pipeline->run(context);
+
+		auto t = tex->buffer->getTexture(0);
+		auto raw_image = device->getVideoDriver()->createImageFromData(
+				t->getColorFormat(), screensize,
+				t->lock(irr::video::E_TEXTURE_LOCK_MODE::ETLM_READ_ONLY),
+				false // copy mem
+		);
+		if (screenshot)
+			screenshot->drop();
+		screenshot = device->getVideoDriver()->createImage(video::ECF_R8G8B8, screensize);
+		raw_image->copyTo(screenshot);
+		t->unlock();
+
+		raw_image->drop();
+		delete tex;
+	} else {
+		pipeline->reset(context);
+		pipeline->run(context);
+	}
+}
+
+video::IImage *RenderingCore::get_screenshot()
+{
+	if (!screenshot)
+		return nullptr;
+	auto copyScreenshot = device->getVideoDriver()->createImage(
+			video::ECF_R8G8B8, screenshot->getDimension());
+	screenshot->copyTo(copyScreenshot);
+	return copyScreenshot;
 }
 
 v2u32 RenderingCore::getVirtualSize() const
