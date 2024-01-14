@@ -1,6 +1,9 @@
 #! /bin/bash -e
 
-cmake -B build \
+set -x
+
+cmake -B build -S . \
+	-DCMAKE_FIND_FRAMEWORK=LAST \
 	-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Debug} \
 	-DRUN_IN_PLACE=TRUE \
 	-DSDL2_DIR=lib/SDL/build/lib/cmake/SDL2/ \

@@ -22,7 +22,6 @@ install_linux_deps() {
 	fi
 
 	sudo apt-get update
-	sudo apt-get remove libzmq5
 	sudo apt-get install -y "${pkgs[@]}" "$@"
 
 	sudo systemctl start postgresql.service
