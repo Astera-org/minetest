@@ -3,6 +3,7 @@
 cmake -B build -DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
 	-DRUN_IN_PLACE=TRUE \
+	-DSDL2_DIR=lib/SDL/build/lib/cmake/SDL2/ \
 	-DENABLE_GETTEXT=FALSE \
 	-DBUILD_SERVER=TRUE
 cmake --build build --target GenerateVersion
