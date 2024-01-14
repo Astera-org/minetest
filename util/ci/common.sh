@@ -33,7 +33,9 @@ install_linux_deps() {
 	git submodule update --init --recursive
 
 	pwd
-	pushd lib/SDL && pwd && popd
+	pushd lib/SDL
+	pwd
+	popd
 	cd lib/zmqpp && make && sudo make install
 
 	
