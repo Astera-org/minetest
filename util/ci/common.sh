@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+set -x
+
 # Linux build only
 install_linux_deps() {
 	# ZMQ is not available in the default repos for 22.04
@@ -24,6 +26,7 @@ install_linux_deps() {
 	fi
 
 	sudo apt-get update
+	sudo apt-get remove libzmq5
 	sudo apt-get install -y "${pkgs[@]}" "$@"
 
 	sudo systemctl start postgresql.service
