@@ -51,20 +51,3 @@ install_macos_deps() {
 	brew unlink $(brew ls --formula)
 	brew link "${pkgs[@]}"
 }
-
-install_mambaforge() {
-	# Download Mambaforge installer
-	wget -qO- https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh -O mambaforge.sh
-
-	# Install Mambaforge silently
-	bash mambaforge.sh -b -p $HOME/mambaforge
-
-	# Remove installer
-	rm mambaforge.sh
-
-	# Initialize Mambaforge
-	eval "$($HOME/mambaforge/bin/conda shell.bash hook)"
-
-	# Create minetest env
-	mamba env create
-}

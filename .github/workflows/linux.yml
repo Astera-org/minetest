@@ -124,15 +124,34 @@ jobs:
       - name: Integration test + devtest
         run: |
           ./util/test_multiplayer.sh
-      
-      - name: Setup mambaforge
+
+  pytest:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install deps
         run: |
           source ./util/ci/common.sh
-          install_mambaforge
+          install_linux_deps clang-14 gdb
+
+      - name: Build
+        run: |
+          ./util/ci/build.sh
+        env:
+          CC: clang-14
+          CXX: clang++-14
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
       
       - name: Run pytest
         run: |
-          ./util/ci/run_pytest.sh
+          pytest -v
 
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:
