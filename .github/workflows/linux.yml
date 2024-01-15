@@ -143,19 +143,17 @@ jobs:
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: 3.11
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
+          python-version: '3.11'
+          mamba-version: "*"
           channels: conda-forge,nodefaults
           activate-environment: minetest
           environment-file: environment.yml
-          use-only-tar-bz2: true
-          use-mamba: true
       
       - name: Run pytest
         shell: bash -x -l {0}
         run: |
-          python -m pytest -v .
+          pytest -v 
+        
 
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:
