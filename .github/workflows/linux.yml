@@ -146,6 +146,7 @@ jobs:
           python-version: 3.11
           miniforge-variant: Mambaforge
           miniforge-version: latest
+          channels: conda-forge,nodefaults
           activate-environment: minetest
           environment-file: environment.yml
           use-only-tar-bz2: true
