@@ -8,6 +8,7 @@ import uuid
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+import socket
 
 import capnp
 import gymnasium as gym
@@ -46,23 +47,21 @@ class MinetestEnv(gym.Env):
 
     def __init__(
         self,
-        env_port: int = 5555,
-        minetest_executable: Optional[os.PathLike] = None,
+        minetest_executable: os.PathLike,
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
+        env_port: Optional[int] = None,
         display_size: Tuple[int, int] = (600, 400),
         render_mode: str = "rgb_array",
         fov: int = 72,
         base_seed: int = 0,
         world_seed: Optional[int] = None,
-        start_minetest: bool = True,
-        game_id: str = "minetest",
-        client_name: str = "minetester",
         config_dict: Dict[str, Any] = None,
-        start_xvfb: bool = False,
+        start_xvfb: bool = True,
         x_display: Optional[int] = None,
-        headless: bool = False,
+        headless: bool = True,
+        verbose_logging: bool = False,
     ):
         if config_dict is None:
             config_dict = {}
@@ -94,14 +93,9 @@ class MinetestEnv(gym.Env):
             self.minetest_executable.exists()
         ), f"Minetest executable not found: {self.minetest_executable}"
 
-        # Whether to start minetest server and client
-        self.start_minetest = start_minetest
-
-        # Used ports
-        self.env_port = env_port  # MT env <-> MT client
-
-        # Client Name
-        self.client_name = client_name
+        # ZMQ port
+        self.env_port = get_free_port() if env_port is None else env_port
+        self.verbose_logging = verbose_logging
 
         # ZMQ objects
         self.socket = None
@@ -136,9 +130,6 @@ class MinetestEnv(gym.Env):
             datefmt="%H:%M:%S",
             level=logging.DEBUG,
         )
-
-        # Configure game and mods
-        self.game_id = game_id
 
         # Start X server virtual frame buffer
         self.default_display = x_display or 0
@@ -220,7 +211,7 @@ class MinetestEnv(gym.Env):
             self.client_process.kill()
 
         # (Re)start Minetest client
-        self.client_process = start_minetest_client(
+        self.client_process = self._start_minetest_client(
             self.minetest_executable,
             self.config_path,
             log_path,
@@ -319,12 +310,11 @@ class MinetestEnv(gym.Env):
         self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None
     ):
         self.seed(seed=seed)
-        if self.start_minetest:
-            if self.reset_world:
-                self._delete_world()
-                if self.reseed_on_reset:
-                    self.world_seed = self._np_random.randint(np.iinfo(np.int64).max)
-            self._reset_minetest()
+        if self.reset_world:
+            self._delete_world()
+            if self.reseed_on_reset:
+                self.world_seed = self._np_random.randint(np.iinfo(np.int64).max)
+        self._reset_minetest()
         self._reset_zmq()
         self._perform_client_handshake()
 
@@ -341,6 +331,10 @@ class MinetestEnv(gym.Env):
         return obs, {}
 
     def step(self, action: Dict[str, Any]):
+        assert (
+            self.client_process.poll() is None
+        ), f"Client process has terminated! Return code: {self.client_process.returncode}"
+
         # Send action
         if isinstance(action["MOUSE"], np.ndarray):
             action["MOUSE"] = action["MOUSE"].tolist()
@@ -383,6 +377,47 @@ class MinetestEnv(gym.Env):
         if self.clean_config:
             self._delete_config()
 
+    def _start_minetest_client(
+        self,
+        log_path: str,
+    ):
+        cmd = [
+            self.minetest_executable,
+            "--go",  # skip menu
+            "--world",
+            self.world_dir,
+            "--config",
+            self.config_path,
+            "--remote-input",
+            f"localhost:{self.env_port}",
+        ]
+        if self.headless:
+            cmd.append("--headless")
+        if self.verbose_logging:
+            cmd.append("--verbose")
+
+        stdout_file = log_path.format("client_stdout")
+        stderr_file = log_path.format("client_stderr")
+        with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
+            client_env = os.environ.copy()
+            if self.display is not None:
+                client_env["DISPLAY"] = ":" + str(self.display)
+            # enable GPU usage
+            client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+            client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+            # disable vsync
+            client_env["__GL_SYNC_TO_VBLANK"] = "0"
+            client_env["vblank_mode"] = "0"
+            out.write(
+                f"Starting client with command: {' '.join(str(x) for x in cmd)}\n"
+            )
+            out.write(f"Client environment: {client_env}\n")
+            client_process = subprocess.Popen(
+                cmd, stdout=out, stderr=err, env=client_env
+            )
+            out.write(f"Client started with pid {client_process.pid}\n")
+        return client_process
+
 
 def unpack_pb_obs(received_obs: str):
     with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_proto:
@@ -410,52 +445,6 @@ def pack_pb_action(action: Dict[str, Any]):
             keyEvents[setIdx] = KEY_MAP[idx]
             setIdx += 1
     return pb_action
-
-
-def start_minetest_client(
-    minetest_executable: str,
-    config_path: str,
-    log_path: str,
-    client_socket: str,
-    display: int = None,
-    headless: bool = True,
-    set_gpu_vars=True,
-    set_vsync_vars=True,
-):
-    cmd = [
-        minetest_executable,
-        "--go",
-        "--worldname",
-        "test_world",  # TODO don't hardcode this
-        "--config",
-        config_path,
-        "--remote-input",
-        client_socket,
-        "--verbose",
-    ]
-    if headless:
-        # don't render to screen
-        cmd.append("--headless")
-
-    stdout_file = log_path.format("client_stdout")
-    stderr_file = log_path.format("client_stderr")
-    with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
-        client_env = os.environ.copy()
-        if display is not None:
-            client_env["DISPLAY"] = ":" + str(display)
-        if set_gpu_vars:
-            # enable GPU usage
-            client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
-            client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
-        if set_vsync_vars:
-            # disable vsync
-            client_env["__GL_SYNC_TO_VBLANK"] = "0"
-            client_env["vblank_mode"] = "0"
-        out.write(f"Starting client with command: {' '.join(str(x) for x in cmd)}\n")
-        out.write(f"Client environment: {client_env}\n")
-        client_process = subprocess.Popen(cmd, stdout=out, stderr=err, env=client_env)
-        out.write(f"Client started with pid {client_process.pid}\n")
-    return client_process
 
 
 def read_config_file(file_path):
@@ -499,3 +488,14 @@ def start_xserver(
     ]
     xserver_process = subprocess.Popen(cmd)
     return xserver_process
+
+
+# take a lucky guess at a free port
+# this works by having the OS return a free port, then immediately closing the socket
+# not guaranteed to be free, but should be good enough for our purposes
+def get_free_port():
+    s = socket.socket()
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
