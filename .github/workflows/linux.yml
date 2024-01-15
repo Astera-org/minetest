@@ -148,6 +148,11 @@ jobs:
           channels: conda-forge,nodefaults
           activate-environment: minetest
           environment-file: environment.yml
+
+      - name: Setup Minetest env
+        shell: bash -x -l {0}
+        run: |
+          pushd python && pip install -e . && popd
       
       - name: Run pytest
         shell: bash -x -l {0}
