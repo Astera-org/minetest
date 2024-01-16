@@ -185,7 +185,7 @@ class MinetestEnv(gym.Env):
 
         if world_dir is None:
             self.reset_world = True
-            self.world_dir = os.path.join(self.artifact_dir, self.unique_env_id)
+            self.world_dir = None
         else:
             self.reset_world = False
             self.world_dir = world_dir
@@ -233,7 +233,7 @@ class MinetestEnv(gym.Env):
             )
 
     def _delete_world(self):
-        if os.path.exists(self.world_dir):
+        if self.world_dir and os.path.exists(self.world_dir):
             shutil.rmtree(self.world_dir, ignore_errors=True)
 
     def _check_config_path(self):
@@ -276,7 +276,7 @@ class MinetestEnv(gym.Env):
             emergequeue_limit_total=1000000,
             emergequeue_limit_diskonly=1000000,
             emergequeue_limit_generate=1000000,
-            game_dir="games/minetest_game"
+            game_dir="games/minetest_game",
         )
 
         # Seed the map generator if not using a custom map
@@ -386,8 +386,6 @@ class MinetestEnv(gym.Env):
         cmd = [
             self.minetest_executable,
             "--go",  # skip menu
-            "--world",
-            self.world_dir,
             "--config",
             self.config_path,
             "--remote-input",
@@ -397,6 +395,8 @@ class MinetestEnv(gym.Env):
             cmd.append("--headless")
         if self.verbose_logging:
             cmd.append("--verbose")
+        if self.world_dir is not None:
+            cmd.extend(["--world", self.world_dir])
         if self.gameid is not None:
             cmd.extend(["--gameid", self.gameid])
 

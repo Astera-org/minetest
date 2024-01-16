@@ -1,8 +1,8 @@
+import sys
 from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
-import sys
 
 from minetester.minetest_env import INVERSE_KEY_MAP
 
