@@ -30,7 +30,6 @@ void RemoteInputHandler::step(float dtime) {
   assert(m_player && "Player is null");
   for (u32 i = 0; i < m_player->maxHudId(); ++i) {
     auto hudElement = m_player->getHud(i);
-    std::cout << hudElement->name << '\n';
     if (hudElement->name == "reward") {
       // parse 'Reward: <reward>' from hud
       std::string rewardString = hudElement->text;
@@ -42,7 +41,6 @@ void RemoteInputHandler::step(float dtime) {
 
   obs_builder.initImage();
   auto image_builder = obs_builder.getImage();
-  // draw() is called after step(), so there won't be an image on the first step
   image_builder.setWidth(image->getDimension().Width);
   image_builder.setHeight(image->getDimension().Height);
   image_builder.setData(
