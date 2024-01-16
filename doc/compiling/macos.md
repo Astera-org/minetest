@@ -31,6 +31,8 @@ cd build
 cmake .. \
     -DCMAKE_FIND_FRAMEWORK=LAST \
     -DCMAKE_INSTALL_PREFIX=../build/macos/ \
+    -DSDL2_DIR= \
+    -DBUILD_HEADLESS=FALSE \
     -DRUN_IN_PLACE=FALSE -DENABLE_GETTEXT=TRUE
 
 make -j$(sysctl -n hw.logicalcpu)

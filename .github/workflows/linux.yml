@@ -157,8 +157,7 @@ jobs:
       - name: Run pytest
         shell: bash -x -l {0}
         run: |
-          timeout 3m pytest -v 
-          find artifacts/logs -type f -name '*.log' -exec cat {} \;
+          timeout 3m pytest -v || find artifacts/logs -type f -name '*.log' -exec cat {} \;
         
 
   # Build with prometheus-cpp (server-only)
