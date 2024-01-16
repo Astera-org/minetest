@@ -8,10 +8,13 @@ from minetester.minetest_env import INVERSE_KEY_MAP
 
 
 def test_minetest_basic():
-    minetest_executable = Path(__file__).parent.parent.parent / "bin" / "minetest"
-    assert minetest_executable.exists()
-
     isMac = sys.platform == "darwin"
+    repo_root = Path(__file__).parent.parent.parent
+    if isMac:
+        minetest_executable = repo_root / "build" / "macos" / "minetest.app" / "Contents" / "MacOS" / "minetest" 
+    else:
+        minetest_executable = repo_root / "bin" / "minetest"
+    assert minetest_executable.exists()
 
     env = gym.make(
         "minetest",
