@@ -22,6 +22,8 @@ cd minetest
 
 ## Build
 
+If `conda` is installed, it's a good idea to `conda deactivate` to make sure no conda env (not even base) is active, else it may lead to errors with `iconv` during linking.
+
 ```bash
 mkdir build
 cd build

@@ -20,8 +20,10 @@ cd minetest
 git checkout siboehm/gymInterface
 git submodule update --init --recursive
 
-cd lib/zmqpp
-sudo make && sudo make install
+# build zmqpp
+pushd lib/zmqpp && make -j $(nproc) && sudo make install && popd
+# build SDL
+pushd lib/SDL && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
 
 cmake -B build -S . \
 	-DCMAKE_FIND_FRAMEWORK=LAST \
