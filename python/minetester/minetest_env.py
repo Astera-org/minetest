@@ -2,13 +2,13 @@ import datetime
 import logging
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import uuid
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
-import socket
 
 import capnp
 import gymnasium as gym
@@ -54,6 +54,7 @@ class MinetestEnv(gym.Env):
         env_port: Optional[int] = None,
         display_size: Tuple[int, int] = (600, 400),
         render_mode: str = "rgb_array",
+        gameid: Optional[str] = None,
         fov: int = 72,
         base_seed: int = 0,
         world_seed: Optional[int] = None,
@@ -73,6 +74,10 @@ class MinetestEnv(gym.Env):
         self.render_mode = render_mode
         self.headless = headless
         self.start_xvfb = start_xvfb and self.headless
+        self.gameid = gameid
+        assert gameid is not None or world_dir is not None, (
+            "Either a gameid or a world_dir must be provided!",
+        )
 
         assert (
             not self.start_xvfb or sys.platform == "linux"
@@ -212,11 +217,7 @@ class MinetestEnv(gym.Env):
 
         # (Re)start Minetest client
         self.client_process = self._start_minetest_client(
-            self.minetest_executable,
-            self.config_path,
             log_path,
-            f"localhost:{self.env_port}",
-            display=self.x_display,
         )
 
     def _perform_client_handshake(self):
@@ -275,6 +276,7 @@ class MinetestEnv(gym.Env):
             emergequeue_limit_total=1000000,
             emergequeue_limit_diskonly=1000000,
             emergequeue_limit_generate=1000000,
+            game_dir="games/minetest_game"
         )
 
         # Seed the map generator if not using a custom map
@@ -333,7 +335,7 @@ class MinetestEnv(gym.Env):
     def step(self, action: Dict[str, Any]):
         assert (
             self.client_process.poll() is None
-        ), f"Client process has terminated! Return code: {self.client_process.returncode}"
+        ), f"Client process has terminated! Return code: {self.client_process.returncode}, logs in {self.log_dir}"
 
         # Send action
         if isinstance(action["MOUSE"], np.ndarray):
@@ -395,13 +397,15 @@ class MinetestEnv(gym.Env):
             cmd.append("--headless")
         if self.verbose_logging:
             cmd.append("--verbose")
+        if self.gameid is not None:
+            cmd.extend(["--gameid", self.gameid])
 
         stdout_file = log_path.format("client_stdout")
         stderr_file = log_path.format("client_stderr")
         with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
             client_env = os.environ.copy()
-            if self.display is not None:
-                client_env["DISPLAY"] = ":" + str(self.display)
+            if self.x_display is not None:
+                client_env["DISPLAY"] = ":" + str(self.x_display)
             # enable GPU usage
             client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
             client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"

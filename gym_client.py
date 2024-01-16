@@ -91,15 +91,19 @@ if __name__ == "__main__":
     pygame.init()
 
     # The Makefile puts the binary into build/macos
+    is_mac = sys.platform == "darwin"
     minetest_executable = "/home/simon/minetest/build/macos/bin/minetest"
-    if sys.platform == "darwin":
-        minetest_executable = "/Users/siboehm/repos/minetest/build/macos/minetest.app/Contents/MacOS/minetest"
+    if is_mac:
+        minetest_executable = "/Users/siboehm/repos/minetest/minetest"
 
     env = gym.make(
         "minetest",
         minetest_executable=minetest_executable,
         render_mode="human",
         display_size=(1600, 1200),
+        start_xvfb=False,
+        headless=False,
+        env_port=54321,
     )
     env.reset()
     game_loop()

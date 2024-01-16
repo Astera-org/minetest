@@ -2,6 +2,7 @@ from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
+import sys
 
 from minetester.minetest_env import INVERSE_KEY_MAP
 
@@ -10,12 +11,15 @@ def test_minetest_basic():
     minetest_executable = Path(__file__).parent.parent.parent / "bin" / "minetest"
     assert minetest_executable.exists()
 
+    isMac = sys.platform == "darwin"
+
     env = gym.make(
         "minetest",
         minetest_executable=minetest_executable,
         render_mode="rgb_array",
         display_size=(223, 111),
-        start_xvfb=True,
+        gameid="minetest",
+        start_xvfb=not isMac,
         headless=True,
     )
     env.reset()
