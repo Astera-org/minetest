@@ -41,7 +41,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DBUILD_HEADLESS=FALSE \
             -GNinja
-            -DCMAKE_INSTALL_PREFIX=../build/macos/ \
+            -DCMAKE_INSTALL_PREFIX=build/macos/ \
             -DSDL2_DIR= \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=1
           cmake --build build
