@@ -125,6 +125,42 @@ jobs:
         run: |
           ./util/test_multiplayer.sh
 
+  pytest:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install deps
+        run: |
+          source ./util/ci/common.sh
+          install_linux_deps clang-14 gdb
+
+      - name: Build
+        run: |
+          ./util/ci/build.sh
+        env:
+          CC: clang-14
+          CXX: clang++-14
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
+      - name: Setup Minetest env
+        shell: bash -x -l {0}
+        run: |
+          pushd python && pip install -e . && popd
+      
+      - name: Run pytest
+        shell: bash -l {0}
+        run: |
+          set -euo pipefail
+          timeout 5m pytest -v || find artifacts/log -type f -name '*.log' -exec cat {} \;
+        
+
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:
     name: "clang_9 (PROMETHEUS=1)"
