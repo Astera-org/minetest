@@ -389,7 +389,7 @@ class MinetestEnv(gym.Env):
             "--config",
             self.config_path,
             "--remote-input",
-            f"localhost:{self.env_port}",
+            f"127.0.0.1:{self.env_port}",
         ]
         if self.headless:
             cmd.append("--headless")
