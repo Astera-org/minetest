@@ -17,6 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "client/inputhandler.h"
+#include "client/remoteinputhandler.h"
 #include "gui/mainmenumanager.h"
 #include "clouds.h"
 #include "server.h"
@@ -31,6 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gui/guiEngine.h"
 #include "fontengine.h"
 #include "clientlauncher.h"
+#include "settings.h"
 #include "version.h"
 #include "renderingengine.h"
 #include "network/networkexceptions.h"
@@ -330,6 +333,20 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	random_input = g_settings->getBool("random_input")
 			|| cmd_args.getFlag("random-input");
+	// setting is defaulted to empty string
+	bool isRemote = !g_settings->get("remote_input").empty() || cmd_args.exists("remote-input");
+	if (isRemote){
+		// cmd args have priority over settings
+		if (cmd_args.exists("remote-input"))
+			remote_input_socket = cmd_args.get("remote-input");
+		else
+			remote_input_socket = g_settings->get("remote_input");
+		if (remote_input_socket.find(':') == std::string::npos) {
+			errorstream << "Invalid remote input socket: " << remote_input_socket << std::endl;
+			remote_input_socket.clear();
+		}
+	}
+
 	start_data.headless = isRemote && cmd_args.getFlag("headless");
 }
 
@@ -344,6 +361,8 @@ void ClientLauncher::init_input()
 {
 	if (random_input)
 		input = new RandomInputHandler();
+	else if (!remote_input_socket.empty())
+		input = new RemoteInputHandler("tcp://" + remote_input_socket, m_rendering_engine, receiver);
 	else
 		input = new RealInputHandler(receiver);
 
