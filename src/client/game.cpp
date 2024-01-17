@@ -1221,7 +1221,7 @@ bool Game::startup(bool *kill,
 	if (!createClient(start_data))
 		return false;
 
-	m_rendering_engine->initialize(client, hud);
+	m_rendering_engine->initialize(client, hud, start_data.isHeadless());
 
 	return true;
 }

@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 #include "irrlichttypes_extrabloated.h"
+#include "pipeline.h"
 
 class ShadowRenderer;
 class Camera;
@@ -41,6 +42,8 @@ protected:
 
 	v2f virtual_size_scale;
 	v2u32 virtual_size { 0, 0 };
+	video::IImage *screenshot = nullptr;
+	TextureBuffer *m_buffer = nullptr;
 
 public:
 	RenderingCore(IrrlichtDevice *device, Client *client, Hud *hud,
@@ -59,4 +62,5 @@ public:
 	v2u32 getVirtualSize() const;
 
 	ShadowRenderer *get_shadow_renderer() { return shadow_renderer; };
+	video::IImage *get_screenshot();
 };

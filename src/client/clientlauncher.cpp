@@ -330,6 +330,7 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 	random_input = g_settings->getBool("random_input")
 			|| cmd_args.getFlag("random-input");
+	start_data.headless = isRemote && cmd_args.getFlag("headless");
 }
 
 bool ClientLauncher::init_engine()

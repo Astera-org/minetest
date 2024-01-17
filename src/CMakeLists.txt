@@ -36,6 +36,19 @@ set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
 # Set some random things default to not being visible in the GUI
 mark_as_advanced(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 
+if(BUILD_CLIENT AND BUILD_HEADLESS)
+	find_package(SDL2 REQUIRED NO_DEFAULT_PATH)
+	# SDL2 exports targets since 2.0.6, but some distributions override config.
+	if(NOT TARGET SDL2::SDL2)
+		add_library(SDL2::SDL2 INTERFACE IMPORTED)
+		set_target_properties(SDL2::SDL2 PROPERTIES
+			INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS}
+			INTERFACE_LINK_LIBRARIES ${SDL2_LIBRARIES}
+		)
+	endif()
+	get_target_property(SDL2_LIB_LOCATION SDL2::SDL2 LOCATION)
+	message(STATUS "SDL2 library location: ${SDL2_LIB_LOCATION}")
+endif()
 
 if(NOT (BUILD_CLIENT OR BUILD_SERVER))
 	message(WARNING "Neither BUILD_CLIENT nor BUILD_SERVER is set! Setting BUILD_SERVER=true")
@@ -498,10 +511,10 @@ list(SORT server_SRCS)
 
 # Avoid source_group on broken CMake version.
 # see issue #7074 #7075
-if (CMAKE_VERSION VERSION_GREATER 3.8.1)
-	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${client_SRCS})
-	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
-endif()
+# if (CMAKE_VERSION VERSION_GREATER 3.8.1)
+# 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${client_SRCS})
+# 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
+# endif()
 
 include_directories(
 	${PROJECT_BINARY_DIR}
@@ -547,13 +560,18 @@ if(BUILD_CLIENT)
 		add_executable(${PROJECT_NAME} ${client_SRCS} ${extra_windows_SRCS})
 	endif()
 	add_dependencies(${PROJECT_NAME} GenerateVersion)
+	if(BUILD_HEADLESS)
+		set(SDL2_TARGET SDL2::SDL2)
+	endif()
 	target_link_libraries(
 		${PROJECT_NAME}
 		${ZLIB_LIBRARIES}
 		IrrlichtMt::IrrlichtMt
+		${SDL2_TARGET}
 		${ZSTD_LIBRARY}
 		${SOUND_LIBRARIES}
 		${SQLITE3_LIBRARY}
+		${SDL2_LIBRARIES}
 		${LUA_LIBRARY}
 		${GMP_LIBRARY}
 		${JSON_LIBRARY}
