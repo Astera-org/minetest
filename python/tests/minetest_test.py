@@ -11,7 +11,15 @@ def test_minetest_basic():
     isMac = sys.platform == "darwin"
     repo_root = Path(__file__).parent.parent.parent
     if isMac:
-        minetest_executable = repo_root / "build" / "macos" / "minetest.app" / "Contents" / "MacOS" / "minetest" 
+        minetest_executable = (
+            repo_root
+            / "build"
+            / "macos"
+            / "minetest.app"
+            / "Contents"
+            / "MacOS"
+            / "minetest"
+        )
     else:
         minetest_executable = repo_root / "bin" / "minetest"
     assert minetest_executable.exists()
@@ -21,7 +29,7 @@ def test_minetest_basic():
         minetest_executable=minetest_executable,
         render_mode="rgb_array",
         display_size=(223, 111),
-        gameid="minetest",
+        world_dir=repo_root / "python" / "tests" / "worlds" / "test_world",
         start_xvfb=not isMac,
         headless=True,
     )
