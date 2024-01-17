@@ -52,6 +52,9 @@ install_macos_deps() {
 	brew unlink $(brew ls --formula)
 	brew link "${pkgs[@]}"
 
+	# just for debugging
+	brew ls
+
 	git submodule update --init --recursive
 
 	pushd lib/SDL && mkdir -p build
