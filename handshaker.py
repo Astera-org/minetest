@@ -6,7 +6,7 @@ from PIL import Image
 
 """
 Useful for debugging:
-- lldb -- /home/simon/minetest/bin/minetest --go --worldname test_world --config /home/simon/minetest/artifacts/2dd22d78-8c03-445e-83ad-8fff429569d4.conf --remote-input localhost:5555 --headless
+- lldb -- /home/simon/minetest/bin/minetest --go --worldname test_world_minetestenv --config /home/simon/minetest/artifacts/2dd22d78-8c03-445e-83ad-8fff429569d4.conf --remote-input localhost:5555 --headless
 - Then run handshaker.py
 """
 
