@@ -8,7 +8,7 @@
 Install dependencies with homebrew:
 
 ```
-brew install cmake freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext
+brew install cmake freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp
 ```
 
 ## Download
@@ -20,25 +20,19 @@ git clone --depth 1 https://github.com/minetest/minetest.git
 cd minetest
 ```
 
-Download Minetest's fork of Irrlicht:
-
-```bash
-git clone --depth 1 --branch "$(cat misc/irrlichtmt_tag.txt)" https://github.com/minetest/irrlicht.git lib/irrlichtmt
-```
-
 ## Build
 
-```bash
-mkdir build
-cd build
+If `conda` is installed, it's a good idea to `conda deactivate` to make sure no conda env (not even base) is active, else it may lead to errors with `iconv` during linking.
 
-cmake .. \
+```bash
+cmake -B build -S . \
     -DCMAKE_FIND_FRAMEWORK=LAST \
     -DCMAKE_INSTALL_PREFIX=../build/macos/ \
+    -DSDL2_DIR= \
+    -DBUILD_HEADLESS=FALSE \
     -DRUN_IN_PLACE=FALSE -DENABLE_GETTEXT=TRUE
-
-make -j$(sysctl -n hw.logicalcpu)
-make install
+cmake --build build
+cmake --install build
 
 # M1 Macs w/ MacOS >= BigSur
 codesign --force --deep -s - macos/minetest.app
@@ -46,6 +40,6 @@ codesign --force --deep -s - macos/minetest.app
 
 ## Run
 
-```
-open ./build/macos/minetest.app
+```bash
+./build/macos/minetest.app/Contents/MacOS/minetest
 ```
