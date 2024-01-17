@@ -11,6 +11,7 @@ install_linux_deps() {
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
 		capnproto libcapnp-dev xvfb
 		libzmq3-dev
+		ninja-build
 	)
 
 	if [[ "$1" == "--no-irr" ]]; then
@@ -41,7 +42,7 @@ install_linux_deps() {
 install_macos_deps() {
 	local pkgs=(
 		cmake gettext freetype gmp jpeg-turbo jsoncpp leveldb
-		libogg libpng libvorbis luajit zstd zmqpp
+		libogg libpng libvorbis luajit zstd zmqpp ninja
 	)
 	export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 	export HOMEBREW_NO_INSTALL_CLEANUP=1

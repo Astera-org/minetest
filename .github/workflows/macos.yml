@@ -33,17 +33,19 @@ jobs:
 
       - name: Build
         run: |
-          git clone https://github.com/minetest/irrlicht lib/irrlichtmt --depth 1 -b $(cat misc/irrlichtmt_tag.txt)
-          mkdir build
-          cd build
-          cmake .. \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
+          cmake -B build -S . \
             -DCMAKE_FIND_FRAMEWORK=LAST \
+            -DCMAKE_INSTALL_PREFIX=build/macos/ \
+            -DRUN_IN_PLACE=FALSE \
+            -DENABLE_GETTEXT=TRUE \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_HEADLESS=FALSE \
+            -GNinja
             -DCMAKE_INSTALL_PREFIX=../build/macos/ \
-            -DRUN_IN_PLACE=FALSE -DENABLE_GETTEXT=TRUE \
-            -DINSTALL_DEVTEST=TRUE
-          cmake --build . -j$(sysctl -n hw.logicalcpu)
-          make install
+            -DSDL2_DIR= \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+          cmake --build build
+          cmake --install build
 
       - name: Test
         run: |
