@@ -9,7 +9,9 @@ install_linux_deps() {
 		libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev
 		libsqlite3-dev libhiredis-dev libogg-dev libgmp-dev libvorbis-dev
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
+		capnproto libcapnp-dev
 		xvfb
+		libzmq3-dev
 		ninja-build
 	)
 
@@ -32,6 +34,7 @@ install_linux_deps() {
 
 	git submodule update --init --recursive
 
+	pushd lib/zmqpp && make -j $(nproc) && sudo make install && popd
 	pushd lib/SDL && mkdir -p build
 	pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
 }
@@ -41,6 +44,7 @@ install_macos_deps() {
 	local pkgs=(
 		cmake gettext freetype gmp jpeg-turbo jsoncpp leveldb
 		libogg libpng libvorbis luajit zstd
+		zeromq zmqpp capnp
 		ninja
 	)
 	export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
