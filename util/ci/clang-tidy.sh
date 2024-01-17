@@ -11,6 +11,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Debug \
 	-DBUILD_SERVER=TRUE \
 	-DBUILD_HEADLESS=FALSE
 cmake --build build --target GenerateVersion
+cmake --build build --target src/network/proto/remoteclient.capnp.h 
 
 ./util/ci/run-clang-tidy.py \
 	-clang-tidy-binary=$CLANG_TIDY -p build \

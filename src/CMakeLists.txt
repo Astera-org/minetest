@@ -208,6 +208,24 @@ endif(ENABLE_REDIS)
 find_package(SQLite3 REQUIRED)
 
 
+OPTION(ENABLE_CAPNPROTO "Enable Cap'n Proto" TRUE)
+if(ENABLE_CAPNPROTO)
+    # TODO error handling
+    message(STATUS "Cap'n Proto enabled.")
+    find_package(CapnProto CONFIG REQUIRED)
+    message(STATUS "Cap'n Proto include dir: ${CAPNP_INCLUDE_DIRS}")
+    include_directories(${CAPNP_INCLUDE_DIRS})
+    get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
+    file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.capnp)
+	# set(CAPNPC_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS ${PROTO_FILES})
+    add_custom_target(capnproto ALL DEPENDS ${CAPNP_SRCS} ${CAPNP_HDRS})
+	include_directories(${CMAKE_CURRENT_BINARY_DIR}/network/proto)
+	message("Adding ${CMAKE_CURRENT_BINARY_DIR}/network/proto to include directories")
+	message("Adding ${CAPNP_LIBRARIES} to target_link_libraries")
+endif(ENABLE_CAPNPROTO)
+
+
 OPTION(ENABLE_PROMETHEUS "Enable prometheus client support" FALSE)
 set(USE_PROMETHEUS FALSE)
 
@@ -491,6 +509,7 @@ set(client_SRCS
 	${client_network_SRCS}
 	${client_irrlicht_changes_SRCS}
 	${client_SCRIPT_SRCS}
+	${CAPNP_SRCS}
 )
 
 if(BUILD_UNITTESTS)
@@ -524,6 +543,8 @@ include_directories(
 include_directories(SYSTEM
 	${ZLIB_INCLUDE_DIR}
 	${ZSTD_INCLUDE_DIR}
+	${ZMQ_INCLUDE_DIR}
+	${ZMQPP_INCLUDE_DIR}
 	${SQLITE3_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 	${GMP_INCLUDE_DIR}
@@ -569,6 +590,8 @@ if(BUILD_CLIENT)
 		IrrlichtMt::IrrlichtMt
 		${SDL2_TARGET}
 		${ZSTD_LIBRARY}
+		${ZMQ_LIBRARY}
+		${ZMQPP_LIBRARY}
 		${SOUND_LIBRARIES}
 		${SQLITE3_LIBRARY}
 		${SDL2_LIBRARIES}
@@ -579,6 +602,10 @@ if(BUILD_CLIENT)
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 	)
+	if (ENABLE_CAPNPROTO)
+		target_link_libraries(${PROJECT_NAME} ${CAPNP_LIBRARIES})
+	endif()
+
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
 			# This is necessary for dynamic Lua modules
