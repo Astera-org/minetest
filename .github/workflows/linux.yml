@@ -155,7 +155,7 @@ jobs:
           pushd python && pip install -e . && popd
       
       - name: Run pytest
-        shell: bash -x -l {0}
+        shell: bash -l {0}
         run: |
           set -euo pipefail
           timeout 5m pytest -v || find artifacts/log -type f -name '*.log' -exec cat {} \;

@@ -35,12 +35,12 @@ jobs:
         run: |
           cmake -B build -S . \
             -DCMAKE_FIND_FRAMEWORK=LAST \
-            -DCMAKE_INSTALL_PREFIX=../build/macos/ \
+            -DCMAKE_INSTALL_PREFIX=build/macos/ \
             -DRUN_IN_PLACE=FALSE \
             -DENABLE_GETTEXT=TRUE \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBUILD_HEADLESS=FALSE \
-            -GNinja
+            -GNinja \
             -DSDL2_DIR= \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=1
           cmake --build build
