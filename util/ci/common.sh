@@ -51,4 +51,10 @@ install_macos_deps() {
 	brew install --display-times "${pkgs[@]}"
 	brew unlink $(brew ls --formula)
 	brew link "${pkgs[@]}"
+
+	git submodule update --init --recursive
+
+	pushd lib/zmqpp && make -j $(nproc) && sudo make install && popd
+	pushd lib/SDL && mkdir -p build
+	pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
 }
