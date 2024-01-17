@@ -1,13 +1,28 @@
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
+import pytest
 
 from minetester.minetest_env import INVERSE_KEY_MAP
 
 
-def test_minetest_basic():
+@pytest.fixture
+def world_dir():
+    repo_root = Path(__file__).parent.parent.parent
+    original_world_dir = (
+        repo_root / "python" / "tests" / "worlds" / "test_world_minetestenv"
+    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_world_dir = Path(temp_dir) / "test_world_minetestenv"
+        shutil.copytree(original_world_dir, temp_world_dir)
+        yield temp_world_dir
+
+
+def test_minetest_basic(world_dir):
     isMac = sys.platform == "darwin"
     repo_root = Path(__file__).parent.parent.parent
     if isMac:
@@ -29,7 +44,7 @@ def test_minetest_basic():
         minetest_executable=minetest_executable,
         render_mode="rgb_array",
         display_size=(223, 111),
-        world_dir=repo_root / "python" / "tests" / "worlds" / "test_world_minetestenv",
+        world_dir=world_dir,
         start_xvfb=not isMac,
         headless=True,
     )
