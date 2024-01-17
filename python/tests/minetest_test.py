@@ -29,7 +29,7 @@ def test_minetest_basic():
         minetest_executable=minetest_executable,
         render_mode="rgb_array",
         display_size=(223, 111),
-        world_dir=repo_root / "python" / "tests" / "worlds" / "test_world",
+        world_dir=repo_root / "python" / "tests" / "worlds" / "test_world_minetestenv",
         start_xvfb=not isMac,
         headless=True,
     )
