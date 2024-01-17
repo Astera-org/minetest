@@ -1,0 +1,7 @@
+[submodule "lib/SDL"]
+	path = lib/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "lib/irrlichtmt"]
+	path = lib/irrlichtmt
+	url = https://github.com/Astera-org/irrlicht
+	branch = headless

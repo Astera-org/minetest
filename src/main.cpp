@@ -384,6 +384,8 @@ static void set_allowed_options(OptionList *allowed_options)
 			_("Run speed tests"))));
 	allowed_options->insert(std::make_pair("address", ValueSpec(VALUETYPE_STRING,
 			_("Address to connect to. ('' = local game)"))));
+	allowed_options->insert(std::make_pair(
+		"headless", ValueSpec(VALUETYPE_FLAG, _("Start client in headless mode."))));
 	allowed_options->insert(std::make_pair("random-input", ValueSpec(VALUETYPE_FLAG,
 			_("Enable random user input, for testing"))));
 	allowed_options->insert(std::make_pair("server", ValueSpec(VALUETYPE_FLAG,
