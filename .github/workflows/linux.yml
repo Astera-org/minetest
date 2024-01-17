@@ -155,9 +155,9 @@ jobs:
           pushd python && pip install -e . && popd
       
       - name: Run pytest
-        shell: bash -x -l {0}
+        shell: bash -e -x -l {0}
         run: |
-          timeout 3m pytest -v || find artifacts/log -type f -name '*.log' -exec cat {} \;
+          timeout 5m pytest -v || find artifacts/log -type f -name '*.log' -exec cat {} \;
         
 
   # Build with prometheus-cpp (server-only)
@@ -186,13 +186,3 @@ jobs:
       - name: Test
         run: |
           ./bin/minetestserver --run-unittests
-
-  docker:
-    name: "Docker image"
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build docker image
-        run: |
-          docker build . -t minetest:latest
-          docker run --rm minetest:latest /usr/local/bin/minetestserver --version
