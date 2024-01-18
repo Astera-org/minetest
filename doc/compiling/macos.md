@@ -8,7 +8,7 @@
 Install dependencies with homebrew:
 
 ```
-brew install cmake freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp
+brew install cmake freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp ninja
 ```
 
 ## Download
@@ -29,6 +29,7 @@ cmake -B build -S . \
     -DCMAKE_FIND_FRAMEWORK=LAST \
     -DCMAKE_INSTALL_PREFIX=../build/macos/ \
     -DSDL2_DIR= \
+    -GNinja
     -DBUILD_HEADLESS=FALSE \
     -DRUN_IN_PLACE=FALSE -DENABLE_GETTEXT=TRUE
 cmake --build build
