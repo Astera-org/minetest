@@ -12,7 +12,7 @@ sudo apt install g++ make libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl
 # irrlicht deps
 sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev -yq
 
-# not strictly necessary, but much faster build time
+# not strictly necessary, but much faster build time. Mold requires using Clang.
 sudo apt-get install ninja-build mold -yq
 
 git clone git@github.com:Astera-org/minetest.git
