@@ -29,9 +29,11 @@ cmake -B build -S . \
     -DCMAKE_FIND_FRAMEWORK=LAST \
     -DCMAKE_INSTALL_PREFIX=../build/macos/ \
     -DSDL2_DIR= \
-    -GNinja
+    -GNinja \
     -DBUILD_HEADLESS=FALSE \
-    -DRUN_IN_PLACE=FALSE -DENABLE_GETTEXT=TRUE
+    -DRUN_IN_PLACE=FALSE  \
+    -DENABLE_GETTEXT=TRUE \
+    -DINSTALL_DEVTEST=TRUE \
 cmake --build build
 cmake --install build
 
