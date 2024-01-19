@@ -51,10 +51,11 @@ class MinetestEnv(gym.Env):
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
-        env_port: Optional[int] = None,
+        zmq_host: str = "127.0.0.1",
+        zmq_port: Optional[int] = None,
         display_size: Tuple[int, int] = (600, 400),
         render_mode: str = "rgb_array",
-        gameid: Optional[str] = None,
+        game_dir: Optional[os.PathLike] = None,
         fov: int = 72,
         base_seed: int = 0,
         world_seed: Optional[int] = None,
@@ -74,9 +75,9 @@ class MinetestEnv(gym.Env):
         self.render_mode = render_mode
         self.headless = headless
         self.start_xvfb = start_xvfb and self.headless
-        self.gameid = gameid
-        assert gameid is not None or world_dir is not None, (
-            "Either a gameid or a world_dir must be provided!",
+        self.game_dir = game_dir
+        assert game_dir or world_dir, (
+            "Either a game_dir or a world_dir must be provided!",
         )
 
         assert (
@@ -99,7 +100,9 @@ class MinetestEnv(gym.Env):
         ), f"Minetest executable not found: {self.minetest_executable}"
 
         # ZMQ port
-        self.env_port = get_free_port() if env_port is None else env_port
+        if zmq_host == "localhost":
+            zmq_host = "127.0.0.1" # see https://stackoverflow.com/questions/6024003/why-doesnt-zeromq-work-on-localhost
+        self.zmq_socket_addr = f"{zmq_host}:{zmq_port or get_free_port()}"
         self.verbose_logging = verbose_logging
 
         # ZMQ objects
@@ -174,13 +177,11 @@ class MinetestEnv(gym.Env):
         else:
             self.artifact_dir = artifact_dir
 
-        self.clean_config = True
         if config_path is None:
             self.config_path = os.path.join(
                 self.artifact_dir, f"{self.unique_env_id}.conf"
             )
         else:
-            self.clean_config = True
             self.config_path = config_path
 
         if world_dir is None:
@@ -201,21 +202,18 @@ class MinetestEnv(gym.Env):
             self.socket.close()
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect(f"tcp://localhost:{self.env_port}")
+        self.socket.connect(f"tcp://{self.zmq_socket_addr}")
 
     def _reset_minetest(self):
-        # Determine log paths
         reset_timestamp = datetime.datetime.now().strftime("%m-%d-%Y,%H:%M:%S")
         log_path = os.path.join(
             self.log_dir,
             f"{{}}_{reset_timestamp}_{self.unique_env_id}.log",
         )
 
-        # Close Mintest processes
         if self.client_process:
             self.client_process.kill()
 
-        # (Re)start Minetest client
         self.client_process = self._start_minetest_client(
             log_path,
         )
@@ -237,7 +235,7 @@ class MinetestEnv(gym.Env):
             shutil.rmtree(self.world_dir, ignore_errors=True)
 
     def _check_config_path(self):
-        if self.config_path is None:
+        if not self.config_path:
             raise RuntimeError(
                 "Minetest config path was not set. Please, provide a config path "
                 "in the constructor or seed the environment!",
@@ -258,9 +256,10 @@ class MinetestEnv(gym.Env):
             screen_w=self.display_size[0],
             screen_h=self.display_size[1],
             fov=self.fov_y,
+            game_dir=self.game_dir,
             # Adapt HUD size to display size, based on (1024, 600) default
             hud_scaling=self.display_size[0] / 1024,
-            # Experimental settings to improve performance
+            # Attempt to improve performance. Impact unclear.
             server_map_save_interval=1000000,
             profiler_print_interval=0,
             active_block_range=2,
@@ -276,7 +275,6 @@ class MinetestEnv(gym.Env):
             emergequeue_limit_total=1000000,
             emergequeue_limit_diskonly=1000000,
             emergequeue_limit_generate=1000000,
-            game_dir="games/minetest_game",
         )
 
         # Seed the map generator if not using a custom map
@@ -327,7 +325,7 @@ class MinetestEnv(gym.Env):
             obs,
             _,
             _,
-        ) = unpack_pb_obs(byte_obs)
+        ) = deserialize_obs(byte_obs)
         self.last_obs = obs
         logging.debug(f"Received first obs: {obs.shape}")
         return obs, {}
@@ -340,18 +338,20 @@ class MinetestEnv(gym.Env):
         # Send action
         if isinstance(action["MOUSE"], np.ndarray):
             action["MOUSE"] = action["MOUSE"].tolist()
-        pb_action = pack_pb_action(action)
+        pb_action = serialize_action(action)
         logging.debug(f"Sending action: {pb_action}")
         self.socket.send(pb_action.to_bytes())
 
         # TODO more robust check for whether a server/client is alive while receiving observations
-        if self.client_process is not None and self.client_process.poll() is not None:
+        # poll() returns None if the process is still running, retcode otherwise
+        # check for None to avoid falsy on 0 return code
+        if self.client_process.poll() is not None:
             return self.last_obs, 0.0, True, False, {}
 
         # Receive observation
         logging.debug("Waiting for obs...")
         byte_obs = self.socket.recv()
-        next_obs, rew, done = unpack_pb_obs(byte_obs)
+        next_obs, rew, done = deserialize_obs(byte_obs)
 
         self.last_obs = next_obs
         logging.debug(f"Received obs - {next_obs.shape}; reward - {rew}")
@@ -370,14 +370,11 @@ class MinetestEnv(gym.Env):
     def close(self):
         if self.socket is not None:
             self.socket.close()
-        # TODO improve process termination
-        # i.e. don't kill, but close signal
-        if self.client_process is not None:
+        if self.client_process:
             self.client_process.kill()
         if self.reset_world:
             self._delete_world()
-        if self.clean_config:
-            self._delete_config()
+        self._delete_config()
 
     def _start_minetest_client(
         self,
@@ -389,7 +386,7 @@ class MinetestEnv(gym.Env):
             "--config",
             self.config_path,
             "--remote-input",
-            f"127.0.0.1:{self.env_port}",
+            self.zmq_socket_addr,
         ]
         if self.headless:
             cmd.append("--headless")
@@ -397,8 +394,6 @@ class MinetestEnv(gym.Env):
             cmd.append("--verbose")
         if self.world_dir is not None:
             cmd.extend(["--world", self.world_dir])
-        if self.gameid is not None:
-            cmd.extend(["--gameid", self.gameid])
 
         stdout_file = log_path.format("client_stdout")
         stderr_file = log_path.format("client_stderr")
@@ -423,34 +418,36 @@ class MinetestEnv(gym.Env):
         return client_process
 
 
-def unpack_pb_obs(received_obs: str):
-    with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_proto:
+def deserialize_obs(received_obs: bytes):
+    with remoteclient_capnp.Observation.from_bytes(received_obs) as obs_msg:
         # Convert the response to a numpy array
-        img = obs_proto.image
+        img = obs_msg.image
         img_data = np.frombuffer(img.data, dtype=np.uint8).reshape(
             (img.height, img.width, 3)
         )
         # Reshape the numpy array to the correct dimensions
-        reward = obs_proto.reward
-        done = obs_proto.done
+        reward = obs_msg.reward
+        done = obs_msg.done
     return img_data, reward, done
 
 
-def pack_pb_action(action: Dict[str, Any]):
-    pb_action = remoteclient_capnp.Action.new_message()
+def serialize_action(action: Dict[str, Any]):
+    action_msg = remoteclient_capnp.Action.new_message()
 
-    pb_action.mouseDx = action["MOUSE"][0]
-    pb_action.mouseDy = action["MOUSE"][1]
+    action_msg.mouseDx = action["MOUSE"][0]
+    action_msg.mouseDy = action["MOUSE"][1]
 
-    keyEvents = pb_action.init("keyEvents", action["KEYS"].sum())
+    keyEvents = action_msg.init("keyEvents", action["KEYS"].sum())
     setIdx = 0
     for idx, pressed in enumerate(action["KEYS"]):
         if pressed:
             keyEvents[setIdx] = KEY_MAP[idx]
             setIdx += 1
-    return pb_action
+    return action_msg
 
 
+# Python impl of Minetest's config file parser in main.cpp:read_config_file
+# https://github.com/Astera-org/minetest/blob/b18fb18138c3ec658d9fef9fc84b085a7f4f9a01/src/main.cpp#L731
 def read_config_file(file_path):
     config = {}
     with open(file_path) as f:

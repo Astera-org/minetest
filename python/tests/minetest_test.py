@@ -23,9 +23,9 @@ def world_dir():
 
 
 def test_minetest_basic(world_dir):
-    isMac = sys.platform == "darwin"
+    is_mac = sys.platform == "darwin"
     repo_root = Path(__file__).parent.parent.parent
-    if isMac:
+    if is_mac:
         minetest_executable = (
             repo_root
             / "build"
@@ -45,7 +45,7 @@ def test_minetest_basic(world_dir):
         render_mode="rgb_array",
         display_size=(223, 111),
         world_dir=world_dir,
-        start_xvfb=not isMac,
+        start_xvfb=not is_mac,
         headless=True,
     )
     env.reset()
