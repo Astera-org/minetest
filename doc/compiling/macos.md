@@ -34,6 +34,7 @@ cmake -B build -S . \
     -DRUN_IN_PLACE=FALSE  \
     -DENABLE_GETTEXT=TRUE \
     -DINSTALL_DEVTEST=TRUE \
+    -DINSTALL_MINETEST_GAME=TRUE \
 cmake --build build
 cmake --install build
 
