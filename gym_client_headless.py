@@ -31,7 +31,7 @@ with open_world_dir() as world_dir:
         display_size=(300, 200),
         start_xvfb=True,
         headless=True,
-        world_dir = world_dir,
+        world_dir=world_dir,
     )
     env.reset()
 

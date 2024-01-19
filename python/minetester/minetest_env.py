@@ -101,7 +101,7 @@ class MinetestEnv(gym.Env):
 
         # ZMQ port
         if zmq_host == "localhost":
-            zmq_host = "127.0.0.1" # see https://stackoverflow.com/questions/6024003/why-doesnt-zeromq-work-on-localhost
+            zmq_host = "127.0.0.1"  # see https://stackoverflow.com/questions/6024003/why-doesnt-zeromq-work-on-localhost
         self.zmq_socket_addr = f"{zmq_host}:{zmq_port or get_free_port()}"
         self.verbose_logging = verbose_logging
 
