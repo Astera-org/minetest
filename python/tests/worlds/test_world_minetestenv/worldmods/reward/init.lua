@@ -2,7 +2,6 @@ playerRewardsHUD = {}
 playerReturnsHUD = {}
 
 minetest.register_on_joinplayer(function(player)
-	-- Get the dig and place count from storage, or default to 0
 	local meta = player:get_meta()
 	meta:set_int("reward", 0)
 	meta:set_int("return", 0)
