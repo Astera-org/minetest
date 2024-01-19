@@ -338,12 +338,12 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 	if (isRemote){
 		// cmd args have priority over settings
 		if (cmd_args.exists("remote-input"))
-			remote_input_socket = cmd_args.get("remote-input");
+			remote_input_addr = cmd_args.get("remote-input");
 		else
-			remote_input_socket = g_settings->get("remote_input");
-		if (remote_input_socket.find(':') == std::string::npos) {
-			errorstream << "Invalid remote input socket: " << remote_input_socket << std::endl;
-			remote_input_socket.clear();
+			remote_input_addr = g_settings->get("remote_input");
+		if (remote_input_addr.find(':') == std::string::npos) {
+			errorstream << "Invalid remote input socket: " << remote_input_addr << std::endl;
+			remote_input_addr.clear();
 		}
 	}
 
@@ -361,8 +361,8 @@ void ClientLauncher::init_input()
 {
 	if (random_input)
 		input = new RandomInputHandler();
-	else if (!remote_input_socket.empty())
-		input = new RemoteInputHandler("tcp://" + remote_input_socket, m_rendering_engine, receiver);
+	else if (!remote_input_addr.empty())
+		input = new RemoteInputHandler("tcp://" + remote_input_addr, m_rendering_engine, receiver);
 	else
 		input = new RealInputHandler(receiver);
 
