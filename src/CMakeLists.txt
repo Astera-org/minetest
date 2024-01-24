@@ -200,22 +200,13 @@ endif(ENABLE_REDIS)
 find_package(SQLite3 REQUIRED)
 
 
-OPTION(ENABLE_CAPNPROTO "Enable Cap'n Proto" TRUE)
-if(ENABLE_CAPNPROTO)
-    # TODO error handling
-    message(STATUS "Cap'n Proto enabled.")
-    find_package(CapnProto CONFIG REQUIRED)
-    message(STATUS "Cap'n Proto include dir: ${CAPNP_INCLUDE_DIRS}")
-    include_directories(${CAPNP_INCLUDE_DIRS})
-    get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
-    file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.capnp)
-	# set(CAPNPC_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-    capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS ${PROTO_FILES})
-    add_custom_target(capnproto ALL DEPENDS ${CAPNP_SRCS} ${CAPNP_HDRS})
-	include_directories(${CMAKE_CURRENT_BINARY_DIR}/network/proto)
-	message("Adding ${CMAKE_CURRENT_BINARY_DIR}/network/proto to include directories")
-	message("Adding ${CAPNP_LIBRARIES} to target_link_libraries")
-endif(ENABLE_CAPNPROTO)
+find_package(CapnProto CONFIG REQUIRED)
+include_directories(${CAPNP_INCLUDE_DIRS})
+get_filename_component(PROTO_PARENT ${PROJECT_SOURCE_DIR}/.. ABSOLUTE)
+file(GLOB PROTO_FILES ${PROTO_PARENT}/src/network/proto/*.capnp)
+capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS ${PROTO_FILES})
+add_custom_target(capnproto ALL DEPENDS ${CAPNP_SRCS} ${CAPNP_HDRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/network/proto)
 
 
 OPTION(ENABLE_PROMETHEUS "Enable prometheus client support" FALSE)
@@ -587,9 +578,7 @@ if(BUILD_CLIENT)
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 	)
-	if (ENABLE_CAPNPROTO)
-		target_link_libraries(${PROJECT_NAME} ${CAPNP_LIBRARIES})
-	endif()
+	target_link_libraries(${PROJECT_NAME} ${CAPNP_LIBRARIES})
 
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
