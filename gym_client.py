@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     with open_world_dir() as world_dir:
         env = gym.make(
-            "minetest",
+            "minetest-v0",
             minetest_executable=minetest_executable,
             render_mode="human",
             display_size=(1600, 1200),

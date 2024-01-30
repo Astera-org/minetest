@@ -40,7 +40,7 @@ def test_minetest_basic(world_dir):
     assert minetest_executable.exists()
 
     env = gym.make(
-        "minetest",
+        "minetest-v0",
         minetest_executable=minetest_executable,
         render_mode="rgb_array",
         display_size=(223, 111),
