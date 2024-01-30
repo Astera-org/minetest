@@ -149,17 +149,18 @@ jobs:
           activate-environment: minetest
           environment-file: environment.yml
 
-      - name: Setup Minetest env
-        shell: bash -x -l {0}
-        run: |
-          pushd python && pip install -e . && popd
-      
       - name: Run pytest
+        # Needed so conda environment is active
         shell: bash -l {0}
         run: |
-          set -euo pipefail
-          timeout 5m pytest -v || find artifacts/log -type f -name '*.log' -exec cat {} \;
-        
+          set +o errexit
+          timeout --signal=KILL 5m pytest -v
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            echo "test failed, printing minetest logs"
+            find artifacts/log -type f -name '*.log' -exec cat {} \;
+          fi
+          exit $exit_code
 
   # Build with prometheus-cpp (server-only)
   clang_9_prometheus:
