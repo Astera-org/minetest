@@ -8,7 +8,7 @@ minetest.register_on_joinplayer(function(player)
 
 	local player_name = player:get_player_name()
 	local idxReward = player:hud_add({
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 1, y = 0}, -- right, top
 		offset = {x=-40, y = 0},
 		scale = {x = 100, y = 100},
@@ -17,7 +17,7 @@ minetest.register_on_joinplayer(function(player)
 		name = "reward",
 	})
 	local idxReturn = player:hud_add({
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 1, y = 0}, -- right, top
 		offset = {x=-40, y = 20},
 		scale = {x = 100, y = 100},
