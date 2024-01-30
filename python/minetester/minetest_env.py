@@ -5,6 +5,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import time
 import uuid
 from collections import namedtuple
 from pathlib import Path
@@ -222,6 +223,12 @@ class MinetestEnv(gym.Env):
         # handshake is an empty action
         pb_action = remoteclient_capnp.Action.new_message()
         self.socket.send(pb_action.to_bytes())
+        time.sleep(1)
+        if self.client_process.poll() is not None:
+            raise RuntimeError(
+                "Minetest process has terminated! Return code: "
+                f"{self.client_process.returncode}, logs in {self.log_dir}",
+            )
 
     def _check_world_dir(self):
         if self.world_dir is None:
@@ -402,8 +409,10 @@ class MinetestEnv(gym.Env):
             if self.x_display is not None:
                 client_env["DISPLAY"] = ":" + str(self.x_display)
             # enable GPU usage
+            # TODO: should probably check for NVidia GPU before doing this.
             client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
             client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+            client_env["SDL_RENDER_DRIVER"] = "software"
             # disable vsync
             client_env["__GL_SYNC_TO_VBLANK"] = "0"
             client_env["vblank_mode"] = "0"
