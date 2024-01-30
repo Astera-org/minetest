@@ -4,6 +4,7 @@
 #include "irr_v2d.h"
 #include "remoteclient.capnp.h"
 
+
 std::unique_ptr<Action::Reader> deserializeAction(zmqpp::message &message) {
   std::string data;
   message >> data;
@@ -63,7 +64,7 @@ void RemoteInputHandler::step(float dtime) {
       // parse 'Reward: <reward>' from hud
       constexpr char kRewardHUDPrefix[] = "Reward: ";
       std::string_view reward_string = hud_element->text;
-      reward_string.remove_prefix(std::size(kRewardHUDPrefix));
+      reward_string.remove_prefix(std::size(kRewardHUDPrefix) - 1); // -1 for null terminator
       obs_builder.setReward(stof(std::string(reward_string)));
       break;
     }
@@ -88,7 +89,15 @@ void RemoteInputHandler::step(float dtime) {
   // receive next key
   zmqpp::message message;
   m_socket.receive(message);
-  std::unique_ptr<Action::Reader> action = deserializeAction(message);
+
+  std::string data;
+  message >> data;
+  kj::ArrayPtr<const capnp::word> words(
+      reinterpret_cast<const capnp::word *>(data.data()),
+      data.size() / sizeof(capnp::word));
+
+  capnp::FlatArrayMessageReader reader(words);
+  Action::Reader action = reader.getRoot<Action>();
 
   // We don't model key release events, keys need to be re-pressed every step.
   // Rationale: there's only one place in the engine were keyRelease events are
@@ -97,7 +106,7 @@ void RemoteInputHandler::step(float dtime) {
 
   KeyPress new_key_code;
 
-  for (auto keyEvent : action->getKeyEvents()) {
+  for (auto keyEvent : action.getKeyEvents()) {
     new_key_code = keycache.key[static_cast<int>(keyEvent)];
     if (!m_key_is_down[new_key_code]) {
       m_key_was_pressed.set(new_key_code);
@@ -105,7 +114,7 @@ void RemoteInputHandler::step(float dtime) {
     m_key_is_down.set(new_key_code);
     m_key_was_down.set(new_key_code);
   }
-  m_mouse_speed = v2s32(action->getMouseDx(), action->getMouseDy());
+  m_mouse_speed = v2s32(action.getMouseDx(), action.getMouseDy());
   // mousepos is reset to (WIDTH/2, HEIGHT/2) after every iteration of main game
   // loop unit is pixels, origin is top left corner, bounds is (0,0) to (WIDTH,
   // HEIGHT)
