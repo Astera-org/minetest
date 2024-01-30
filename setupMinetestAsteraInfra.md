@@ -37,6 +37,5 @@ cmake -B build -S . \
 	cmake --build build
 
 mamba env create && conda activate minetest
-pushd python && pip install -e . && popd
 pytest .
 ```

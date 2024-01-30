@@ -11,8 +11,9 @@ dependencies:
   - pytest
   # for dummy client only
   - pygame
-  - pillow 
+  - pillow
   # more requirements
   - pip
   - pip:
     - pycapnp # not available on conda-forge for M1 macs
+    - -e python
