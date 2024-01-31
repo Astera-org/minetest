@@ -4,18 +4,6 @@
 #include "irr_v2d.h"
 #include "remoteclient.capnp.h"
 
-
-std::unique_ptr<Action::Reader> deserializeAction(zmqpp::message &message) {
-  std::string data;
-  message >> data;
-  kj::ArrayPtr<const capnp::word> words(
-      reinterpret_cast<const capnp::word *>(data.data()),
-      data.size() / sizeof(capnp::word));
-
-  capnp::FlatArrayMessageReader reader(words);
-  return std::make_unique<Action::Reader>(reader.getRoot<Action>());
-}
-
 RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
                                        RenderingEngine *rendering_engine,
                                        MyEventReceiver *receiver)
@@ -26,8 +14,19 @@ RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
   // wait for client
   zmqpp::message message;
   m_socket.receive(message);
-  auto action = deserializeAction(message);
-  if (action->hasKeyEvents()) {
+  // TODO(https://github.com/Astera-org/minetest/issues/22):
+  // extract Action deserialization into a helper function.
+  std::string data;
+  for(size_t part = 0; part < message.parts(); ++part) {
+      data += message.get(part);
+  }
+  kj::ArrayPtr<const capnp::word> words(
+      reinterpret_cast<const capnp::word *>(data.data()),
+      data.size() / sizeof(capnp::word));
+
+  capnp::FlatArrayMessageReader reader(words);
+  auto action = reader.getRoot<Action>();
+  if (action.hasKeyEvents()) {
     throw std::runtime_error(
         "INVALID HANDSHAKE: Got key events in handshake, expected "
         "'action.hasKeyEvents() == false'");
@@ -88,10 +87,14 @@ void RemoteInputHandler::step(float dtime) {
 
   // receive next key
   zmqpp::message message;
+  // TODO(https://github.com/Astera-org/minetest/issues/22):
+  // extract Action deserialization into a helper function.
   m_socket.receive(message);
 
   std::string data;
-  message >> data;
+  for(size_t part = 0; part < message.parts(); ++part) {
+      data += message.get(part);
+  }
   kj::ArrayPtr<const capnp::word> words(
       reinterpret_cast<const capnp::word *>(data.data()),
       data.size() / sizeof(capnp::word));
