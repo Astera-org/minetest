@@ -23,7 +23,7 @@ git submodule update --init --recursive
 # build zmqpp
 pushd lib/zmqpp && make -j $(nproc) && sudo make install && popd
 # build SDL
-pushd lib/SDL && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
+pushd lib/SDL && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu) && make install && popd && popd
 
 cmake -B build -S . \
 	-DCMAKE_FIND_FRAMEWORK=LAST \
@@ -31,7 +31,7 @@ cmake -B build -S . \
 	-DBUILD_HEADLESS=1 \
 	-GNinja \
 	-DCMAKE_CXX_FLAGS="-fuse-ld=mold" \
-	-DSDL2_DIR=lib/SDL/build/lib/cmake/SDL2/ \
+	-DSDL2_DIR=$(pwd)/lib/SDL/build/lib/cmake/SDL2/ \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=1 && \
 	cmake --build build

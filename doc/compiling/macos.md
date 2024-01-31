@@ -8,7 +8,7 @@
 Install dependencies with homebrew:
 
 ```
-brew install cmake freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp ninja
+brew install cmake capnp freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp ninja
 ```
 
 ## Download
@@ -27,19 +27,19 @@ If `conda` is installed, it's a good idea to `conda deactivate` to make sure no 
 ```bash
 cmake -B build -S . \
     -DCMAKE_FIND_FRAMEWORK=LAST \
-    -DCMAKE_INSTALL_PREFIX=../build/macos/ \
-    -DSDL2_DIR= \
+    -DCMAKE_INSTALL_PREFIX=$(pwd)/build/macos/ \
     -GNinja \
     -DBUILD_HEADLESS=FALSE \
     -DRUN_IN_PLACE=FALSE  \
     -DENABLE_GETTEXT=TRUE \
     -DINSTALL_DEVTEST=TRUE \
     -DINSTALL_MINETEST_GAME=TRUE \
+    -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
 cmake --build build
 cmake --install build
 
 # M1 Macs w/ MacOS >= BigSur
-codesign --force --deep -s - macos/minetest.app
+codesign --force --deep -s - build/macos/minetest.app
 ```
 
 ## Run
