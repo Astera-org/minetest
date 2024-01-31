@@ -1,8 +1,19 @@
 #include "remoteinputhandler.h"
 #include "client/keycode.h"
 #include "hud.h"
-#include "irr_v2d.h"
 #include "remoteclient.capnp.h"
+
+#include <cassert>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+
+#include <capnp/blob.h>
+#include <capnp/message.h>
+#include <capnp/serialize.h>
+#include <kj/array.h>
+#include <zmqpp/zmqpp.hpp>
+
 
 RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
                                        RenderingEngine *rendering_engine,
