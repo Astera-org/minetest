@@ -153,6 +153,7 @@ jobs:
         # Needed so conda environment is active
         shell: bash -l {0}
         run: |
+          cd python
           set +o errexit
           timeout --signal=KILL 5m pytest -v
           exit_code=$?

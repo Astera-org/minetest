@@ -14,14 +14,11 @@ from typing import Any, Dict, Optional, Tuple
 import capnp
 import gymnasium as gym
 import numpy as np
-import pkg_resources
 import pygame
 import zmq
 
 remoteclient_capnp = capnp.load(
-    pkg_resources.resource_filename(
-        "minetester", "../../src/network/proto/remoteclient.capnp"
-    )
+    os.path.join(os.path.dirname(__file__), "../../src/network/proto/remoteclient.capnp")
 )
 
 
