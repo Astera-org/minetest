@@ -104,9 +104,6 @@ private:
   // Event receiver to simulate events
   MyEventReceiver *m_receiver = nullptr;
 
-  // Whether a GUI (inventory/menu) was open
-  bool m_was_gui_open = false;
-
   // The state of the mouse wheel
   s32 m_mouse_wheel = 0;
 
@@ -126,8 +123,6 @@ private:
   v2s32 m_mouse_pos;
   v2s32 m_mouse_speed;
 
-  // Player observables
-  float m_movement_speed;
   float m_movement_direction;
 
   bool m_is_first_loop = true;
