@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "fontengine.h"
 #include "client.h"
 #include "clouds.h"
+#include "settings.h"
 #include "util/numeric.h"
 #include "guiscalingfilter.h"
 #include "localplayer.h"
@@ -153,7 +154,9 @@ RenderingEngine::RenderingEngine(IEventReceiver *receiver)
 	params.OGLES2ShaderPath = (porting::path_share + DIR_DELIM + rel_path + DIR_DELIM).c_str();
 
 #if BUILD_HEADLESS
-	SDL_VideoInit("offscreen");
+	if (g_settings->getBool("headless")) {
+		SDL_VideoInit("offscreen");
+	}
 #endif
 
 	m_device = createDevice(params, driverType);
