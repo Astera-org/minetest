@@ -45,7 +45,6 @@ def test_minetest_basic(world_dir):
         render_mode="rgb_array",
         display_size=(223, 111),
         world_dir=world_dir,
-        start_xvfb=not is_mac,
         headless=True,
     )
     env.reset()

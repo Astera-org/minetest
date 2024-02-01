@@ -8,7 +8,7 @@ Requires conda to be installed.
 set -euox pipefail
 
 # minetest deps
-sudo apt install g++ make libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev libzstd-dev libluajit-5.1-dev gettext capnproto libcapnp-dev xvfb libzmq3-dev -yq
+sudo apt install g++ make libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev libzstd-dev libluajit-5.1-dev gettext capnproto libcapnp-dev libzmq3-dev -yq
 # irrlicht deps
 sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev -yq
 

@@ -127,7 +127,6 @@ if __name__ == "__main__":
             minetest_executable=minetest_executable,
             render_mode="human",
             display_size=(1600, 1200),
-            start_xvfb=False,
             headless=False,
             world_dir=world_dir,
         )

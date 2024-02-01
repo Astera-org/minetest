@@ -4,7 +4,6 @@ import os
 import shutil
 import socket
 import subprocess
-import sys
 import time
 import uuid
 from collections import namedtuple
@@ -18,7 +17,9 @@ import pygame
 import zmq
 
 remoteclient_capnp = capnp.load(
-    os.path.join(os.path.dirname(__file__), "../../src/network/proto/remoteclient.capnp")
+    os.path.join(
+        os.path.dirname(__file__), "../../src/network/proto/remoteclient.capnp"
+    )
 )
 
 
@@ -58,8 +59,6 @@ class MinetestEnv(gym.Env):
         base_seed: int = 0,
         world_seed: Optional[int] = None,
         config_dict: Dict[str, Any] = None,
-        start_xvfb: bool = True,
-        x_display: Optional[int] = None,
         headless: bool = True,
         verbose_logging: bool = False,
     ):
@@ -72,15 +71,10 @@ class MinetestEnv(gym.Env):
         self.fov_x = self.fov_y * self.display_size.width / self.display_size.height
         self.render_mode = render_mode
         self.headless = headless
-        self.start_xvfb = start_xvfb and self.headless
         self.game_dir = game_dir
         assert game_dir or world_dir, (
             "Either a game_dir or a world_dir must be provided!",
         )
-
-        assert (
-            not self.start_xvfb or sys.platform == "linux"
-        ), "Xvfb is only supported on Linux."
 
         if render_mode == "human":
             self._start_pygame()
@@ -136,16 +130,6 @@ class MinetestEnv(gym.Env):
             datefmt="%H:%M:%S",
             level=logging.DEBUG,
         )
-
-        # Start X server virtual frame buffer
-        self.default_display = x_display or 0
-        if "DISPLAY" in os.environ:
-            self.default_display = int(os.environ["DISPLAY"].split(":")[1])
-        self.x_display = x_display or self.default_display
-        self.xserver_process = None
-        if self.start_xvfb:
-            self.x_display = x_display or self.default_display + 4
-            self.xserver_process = start_xserver(self.x_display, self.display_size)
 
     def _configure_spaces(self):
         # Define action and observation space
@@ -403,8 +387,6 @@ class MinetestEnv(gym.Env):
         stderr_file = log_path.format("client_stderr")
         with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
             client_env = os.environ.copy()
-            if self.x_display is not None:
-                client_env["DISPLAY"] = ":" + str(self.x_display)
             # enable GPU usage
             # TODO: should probably check for NVidia GPU before doing this.
             client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
@@ -479,22 +461,6 @@ def write_config_file(file_path, config):
     with open(file_path, "w") as f:
         for key, value in config.items():
             f.write(f"{key} = {value}\n")
-
-
-def start_xserver(
-    display_idx: int = 1,
-    display_size: Tuple[int, int] = (1024, 600),
-    display_depth: int = 24,
-):
-    cmd = [
-        "Xvfb",
-        f":{display_idx}",
-        "-screen",
-        "0",  # screennum param
-        f"{display_size[0]}x{display_size[1]}x{display_depth}",
-    ]
-    xserver_process = subprocess.Popen(cmd)
-    return xserver_process
 
 
 # take a lucky guess at a free port

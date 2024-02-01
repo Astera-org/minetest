@@ -10,7 +10,6 @@ install_linux_deps() {
 		libsqlite3-dev libhiredis-dev libogg-dev libgmp-dev libvorbis-dev
 		libopenal-dev libpq-dev libleveldb-dev libcurl4-openssl-dev libzstd-dev
 		capnproto libcapnp-dev
-		xvfb
 		libzmq3-dev
 		ninja-build
 	)

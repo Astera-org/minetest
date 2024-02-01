@@ -29,7 +29,6 @@ with open_world_dir() as world_dir:
         minetest_executable=minetest_executable,
         render_mode="human",
         display_size=(300, 200),
-        start_xvfb=True,
         headless=True,
         world_dir=world_dir,
     )
