@@ -88,9 +88,8 @@ def signal_handler(sig, frame):
 
 @contextmanager
 def open_world_dir():
-    repo_root = Path(__file__).parent
     original_world_dir = (
-        repo_root / "python" / "tests" / "worlds" / "test_world_minetestenv"
+        Path(__file__).parent / "tests" / "worlds" / "test_world_minetestenv"
     )
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_world_dir = Path(temp_dir) / "test_world_minetestenv"
@@ -107,7 +106,7 @@ if __name__ == "__main__":
     pygame.init()
 
     # The Makefile puts the binary into build/macos
-    repo_root = Path(__file__).parent
+    repo_root = Path(__file__).parent.parent.parent
     is_mac = sys.platform == "darwin"
     minetest_executable = repo_root / "bin" / "minetest"
     if is_mac:

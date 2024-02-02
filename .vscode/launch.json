@@ -13,10 +13,10 @@
             // pushd python && pytest . && popd
             // Then get the name of a config file in the artifacts/ dir and paste it below.
             // Then you can use this launch config to start the client.
-            // Then use handshaker.py to connect to the minetest client from Python.
+            // Then use python/tools/handshaker.py to connect to the minetest client.
             "args": [
                 "--config",
-                "${workspaceFolder}/artifacts/4d6f9722-de8e-4fb4-a705-8d2390c05f32.conf",
+                "${workspaceFolder}/python/artifacts/7fe1c8de-e46b-42f7-9211-db31694e1e2a.conf",
                 "--go",
                 "--remote-input",
                 "127.0.0.1:54321",

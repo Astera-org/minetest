@@ -9,7 +9,7 @@ from gym_client import open_world_dir
 from PIL import Image  # only needed to save images to disk
 
 STORE_FILES = False
-repo_root = Path(__file__).parent
+repo_root = Path(__file__).parent.parent.parent
 minetest_executable = repo_root / "bin" / "minetest"
 # On mac, the default build instructions put the binary into build/macos
 if sys.platform == "darwin":

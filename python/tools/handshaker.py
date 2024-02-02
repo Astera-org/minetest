@@ -1,13 +1,15 @@
-import capnp
 import os
-import zmq
+from pathlib import Path
+
+import capnp
 import numpy as np
+import zmq
 from PIL import Image
 
 """
 For debugging, it's useful to do something like this:
 - lldb -- bin/minetest --go --worldname test_world_minetestenv --config artifacts/2dd22d78-8c03-445e-83ad-8fff429569d4.conf --remote-input 127.0.01:54321 --headless
-- Then run handshaker.py
+- Then run python tools/handshaker.py
 """
 
 
@@ -24,7 +26,7 @@ def deserialize_obs(received_obs: str):
 
 remoteclient_capnp = capnp.load(
     os.path.join(
-        os.path.dirname(__file__), "src/network/proto/remoteclient.capnp"
+        Path(__file__).parent.parent.parent, "src/network/proto/remoteclient.capnp"
     )
 )
 context = zmq.Context()
