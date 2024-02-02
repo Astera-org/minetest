@@ -1,8 +1,18 @@
 {
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": false, // to avoid conflict with upstream
     "python.testing.pytestArgs": [
         "python"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+    "[jsonc]": {
+        "editor.formatOnSave": true
+    }
 }
