@@ -3,9 +3,14 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"runArgs": [
+		// Allows debuggers to disable ASLR
+		"--privileged"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"charliermarsh.ruff",
 				"llvm-vs-code-extensions.vscode-clangd",
 				"ms-python.python",
                 "ms-vscode.cmake-tools",
