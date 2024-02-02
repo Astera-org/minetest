@@ -7,6 +7,28 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug for handshaker.py",
+            "program": "${workspaceFolder}/bin/minetest",
+            // You can generate the config file by running the python tests:
+            // pushd python && pytest . && popd
+            // Then get the name of a config file in the artifacts/ dir and paste it below.
+            // Then you can use this launch config to start the client.
+            // Then use handshaker.py to connect to the minetest client from Python.
+            "args": [
+                "--config",
+                "${workspaceFolder}/artifacts/4d6f9722-de8e-4fb4-a705-8d2390c05f32.conf",
+                "--go",
+                "--remote-input",
+                "127.0.0.1:54321",
+                "--gameid",
+                "devtest",
+                "--verbose"
+            ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug multiplayer client",
             "program": "${workspaceFolder}/bin/minetest",
             // taken from test_multiplayer.sh.
@@ -15,7 +37,13 @@
             // Then start the server manually:
             // ./bin/minetest --debugger --server --config ./tests/server.conf --world ./tests/world --gameid devtest
             // Then you can use this launch config to start the client.
-            "args": ["--config", "${workspaceFolder}/tests/client1.conf", "--go", "--address", "127.0.0.1"],
+            "args": [
+                "--config",
+                "${workspaceFolder}/tests/client1.conf",
+                "--go",
+                "--address",
+                "127.0.0.1"
+            ],
             "cwd": "${workspaceFolder}"
         }
     ]
