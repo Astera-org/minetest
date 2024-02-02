@@ -236,7 +236,7 @@ class MinetestEnv(gym.Env):
     def _write_config(self):
         config = dict(
             # Base config
-            mute_sound=True,
+            enable_sound=False,
             show_debug=False,
             enable_client_modding=True,
             csm_restriction_flags=0,
