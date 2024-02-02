@@ -7,6 +7,8 @@ Requires conda to be installed.
 ```bash
 set -euox pipefail
 
+# BEGIN unnecessary if using dev container
+
 # minetest deps
 sudo apt install g++ make libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev libzstd-dev libluajit-5.1-dev gettext capnproto libcapnp-dev libzmq3-dev -yq
 # irrlicht deps
@@ -17,13 +19,21 @@ sudo apt-get install ninja-build mold -yq
 
 git clone git@github.com:Astera-org/minetest.git
 cd minetest
-git checkout siboehm/gymInterface
+
+# END unnecessary if using dev container
 git submodule update --init --recursive
 
 # build zmqpp
-pushd lib/zmqpp && make -j $(nproc) && sudo make install && popd
+pushd lib/zmqpp && make -j $(nproc)
+if command -v sudo &> /dev/null
+then
+    sudo make install
+else
+    make install
+fi
+popd
 # build SDL
-pushd lib/SDL && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu) && make install && popd && popd
+pushd lib/SDL && rm -rf build && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
 
 cmake -B build -S . \
 	-DCMAKE_FIND_FRAMEWORK=LAST \
@@ -37,5 +47,5 @@ cmake -B build -S . \
 	cmake --build build
 
 mamba env create && conda activate minetest
-pytest .
+pushd python && pytest .; popd
 ```
