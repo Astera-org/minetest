@@ -46,7 +46,7 @@ class MinetestEnv(gym.Env):
 
     def __init__(
         self,
-        minetest_executable: os.PathLike,
+        minetest_executable: Optional[os.PathLike] = None,
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
@@ -72,9 +72,10 @@ class MinetestEnv(gym.Env):
         self.render_mode = render_mode
         self.headless = headless
         self.game_dir = game_dir
-        assert game_dir or world_dir, (
-            "Either a game_dir or a world_dir must be provided!",
-        )
+        if not ((zmq_host and zmq_port) or game_dir or world_dir):
+            raise ValueError(
+                "Either zmq_host and zmq_port or game_dir or a world_dir must be provided!"
+            )
 
         if render_mode == "human":
             self._start_pygame()
@@ -86,10 +87,21 @@ class MinetestEnv(gym.Env):
         self._set_artifact_dirs(
             artifact_dir, world_dir, config_path
         )  # Stores minetest artifacts and outputs
-        self.minetest_executable = Path(minetest_executable)
-        assert (
-            self.minetest_executable.exists()
-        ), f"Minetest executable not found: {self.minetest_executable}"
+        if minetest_executable:
+            self.minetest_executable = Path(minetest_executable)
+            assert (
+                self.minetest_executable.exists()
+            ), f"minetest_executable not found: {self.minetest_executable}"
+        else:
+            self.minetest_executable = None
+            logging.debug(
+                "minetest_executable not specified, will attempt to connect "
+                "to running minetest instance."
+            )
+            if not (zmq_host and zmq_port):
+                raise ValueError(
+                    "if minetest_executable not specified, zmq_host and zmq_port must be"
+                )
 
         # ZMQ port
         if zmq_host == "localhost":
@@ -187,6 +199,9 @@ class MinetestEnv(gym.Env):
         self.socket.connect(f"tcp://{self.zmq_socket_addr}")
 
     def _reset_minetest(self):
+        if not self.minetest_executable:
+            logging.warning("Minetest executable not provided, reset is a no-op.")
+            return None
         reset_timestamp = datetime.datetime.now().strftime("%m-%d-%Y,%H:%M:%S")
         log_path = os.path.join(
             self.log_dir,
@@ -204,12 +219,14 @@ class MinetestEnv(gym.Env):
         # handshake is an empty action
         pb_action = remoteclient_capnp.Action.new_message()
         self.socket.send(pb_action.to_bytes())
-        time.sleep(1)
-        if self.client_process.poll() is not None:
-            raise RuntimeError(
-                "Minetest process has terminated! Return code: "
-                f"{self.client_process.returncode}, logs in {self.log_dir}",
-            )
+        if self.client_process:
+            # Check for crash triggered by first action
+            time.sleep(1)
+            if self.client_process.poll() is not None:
+                raise RuntimeError(
+                    "Minetest terminated during handshake! Return code: "
+                    f"{self.client_process.returncode}, logs in {self.log_dir}",
+                )
 
     def _check_world_dir(self):
         if self.world_dir is None:
@@ -319,9 +336,11 @@ class MinetestEnv(gym.Env):
         return obs, {}
 
     def step(self, action: Dict[str, Any]):
-        assert (
-            self.client_process.poll() is None
-        ), f"Client process has terminated! Return code: {self.client_process.returncode}, logs in {self.log_dir}"
+        if self.client_process and self.client_process.poll() is not None:
+            raise RuntimeError(
+                "Minetest terminated! Return code: "
+                f"{self.client_process.returncode}, logs in {self.log_dir}",
+            )
 
         # Send action
         if isinstance(action["MOUSE"], np.ndarray):
@@ -331,9 +350,7 @@ class MinetestEnv(gym.Env):
         self.socket.send(pb_action.to_bytes())
 
         # TODO more robust check for whether a server/client is alive while receiving observations
-        # poll() returns None if the process is still running, retcode otherwise
-        # check for None to avoid falsy on 0 return code
-        if self.client_process.poll() is not None:
+        if self.client_process and self.client_process.poll() is not None:
             return self.last_obs, 0.0, True, False, {}
 
         # Receive observation
@@ -362,7 +379,12 @@ class MinetestEnv(gym.Env):
             self.client_process.kill()
         if self.reset_world:
             self._delete_world()
-        self._delete_config()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def _start_minetest_client(
         self,
@@ -389,8 +411,10 @@ class MinetestEnv(gym.Env):
             client_env = os.environ.copy()
             # enable GPU usage
             # TODO: should probably check for NVidia GPU before doing this.
-            client_env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+            client_env["__GLX_VENDOR_LIBRARY_NAME"] = "indirect"  # "nvidia"
             client_env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+            # TODO: this seems to be in conflict with the above, which suggets we
+            # want to use OpenGL but this suggests we want to use software rendering.
             client_env["SDL_RENDER_DRIVER"] = "software"
             # disable vsync
             client_env["__GL_SYNC_TO_VBLANK"] = "0"

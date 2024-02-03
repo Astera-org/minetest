@@ -1,15 +1,16 @@
-from contextlib import contextmanager
-from pathlib import Path
+import argparse
 import shutil
-import tempfile
-import gymnasium as gym
-import pygame
-from dataclasses import dataclass
-import numpy as np
-from minetester.minetest_env import KEY_MAP, INVERSE_KEY_MAP
 import signal
 import sys
+import tempfile
+from dataclasses import dataclass
+from pathlib import Path
 
+import gymnasium as gym
+import numpy as np
+import pygame
+
+from minetester.minetest_env import INVERSE_KEY_MAP, KEY_MAP
 
 KEY_TO_KEYTYPE = {
     "W": "forward",
@@ -86,50 +87,59 @@ def signal_handler(sig, frame):
     pygame.quit()
 
 
-@contextmanager
-def open_world_dir():
-    original_world_dir = (
-        Path(__file__).parent / "tests" / "worlds" / "test_world_minetestenv"
-    )
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_world_dir = Path(temp_dir) / "test_world_minetestenv"
-        shutil.copytree(original_world_dir, temp_world_dir)
-        yield temp_world_dir
-
+arg_parser = argparse.ArgumentParser()
+arg_parser.add_argument(
+    "--host_port",
+    type=str,
+    default=None,
+    help=(
+        "Minetest host:port to connect to. If set, will not "
+        "start minetest (will assume it's already running)."
+    ),
+)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
 
     keys_down = set()
     mouse = Mouse(0, 0)
-    # Initialize Pygame
     pygame.init()
 
-    # The Makefile puts the binary into build/macos
-    repo_root = Path(__file__).parent.parent.parent
-    is_mac = sys.platform == "darwin"
-    minetest_executable = repo_root / "bin" / "minetest"
-    if is_mac:
-        minetest_executable = (
-            repo_root
-            / "build"
-            / "macos"
-            / "minetest.app"
-            / "Contents"
-            / "MacOS"
-            / "minetest"
+    gym_make_args = {
+        "id": "minetest-v0",
+        "render_mode": "human",
+        "display_size": (1024, 768),
+    }
+    if arg_parser.parse_args().host_port:
+        host, port = arg_parser.parse_args().host_port.split(":")
+        gym_make_args["zmq_host"] = host
+        gym_make_args["zmq_port"] = int(port)
+    else:
+        original_world_dir = (
+            Path(__file__).parent / "tests" / "worlds" / "test_world_minetestenv"
         )
+        temp_dir = tempfile.TemporaryDirectory()
+        temp_world_dir = Path(temp_dir) / "test_world_minetestenv"
+        shutil.copytree(original_world_dir, temp_world_dir)
+        gym_make_args["world_dir"] = temp_world_dir
+        # The Makefile puts the binary into build/macos
+        repo_root = Path(__file__).parent.parent.parent
+        minetest_executable = repo_root / "bin" / "minetest"
+        if sys.platform == "darwin":
+            minetest_executable = (
+                repo_root
+                / "build"
+                / "macos"
+                / "minetest.app"
+                / "Contents"
+                / "MacOS"
+                / "minetest"
+            )
+        gym_make_args["minetest_executable"] = minetest_executable
+        gym_make_args["headless"] = False
 
-    with open_world_dir() as world_dir:
-        env = gym.make(
-            "minetest-v0",
-            minetest_executable=minetest_executable,
-            render_mode="human",
-            display_size=(1600, 1200),
-            headless=False,
-            world_dir=world_dir,
-        )
-        env.reset()
-        game_loop()
+    env = gym.make(**gym_make_args)
+    env.reset()
+    game_loop()
     env.close()
     pygame.quit()
