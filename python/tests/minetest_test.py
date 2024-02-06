@@ -9,6 +9,8 @@ import pytest
 
 from minetester.minetest_env import INVERSE_KEY_MAP
 
+from PIL import Image
+
 
 @pytest.fixture
 def world_dir():
@@ -49,21 +51,26 @@ def test_minetest_basic(world_dir):
     )
     env.reset()
 
-    for i in range(5):
-        action = {
-            "KEYS": np.zeros(len(INVERSE_KEY_MAP), dtype=bool),
-            "MOUSE": np.array([0.0, 0.0]),
-        }
+    # Context manager to make sure close() is called even if test fails.
+    with env:
+        for i in range(5):
+            action = {
+                "KEYS": np.zeros(len(INVERSE_KEY_MAP), dtype=bool),
+                "MOUSE": np.array([0.0, 0.0]),
+            }
 
-        if i == 3:
-            action["KEYS"][INVERSE_KEY_MAP["forward"]] = True
-            action["KEYS"][INVERSE_KEY_MAP["left"]] = True
-            action["MOUSE"] = np.array([0.0, 1.0])
+            if i == 3:
+                action["KEYS"][INVERSE_KEY_MAP["forward"]] = True
+                action["KEYS"][INVERSE_KEY_MAP["left"]] = True
+                action["MOUSE"] = np.array([0.0, 1.0])
 
-        obs, reward, terminated, truncated, info = env.step(action)
-        assert not terminated and not truncated
-        assert obs.shape == (111, 223, 3)
-        assert obs.sum() > 0, "All black image"
-        assert reward == 1  # default game has only alive reward
-
-    env.close()
+            obs, reward, terminated, truncated, info = env.step(action)
+            assert not terminated and not truncated
+            # TODO: I've seen the system get into a mode where the output is always 480, 640, 3
+            # Seems like something to do with OpenGL driver initialization.
+            assert obs.shape == (111, 223, 3)
+            assert obs.sum() > 0, "All black image"
+            if reward != 1:
+                screenshot_path = f"minetst_test_obs_{i}.png"
+                Image.fromarray(obs).save(screenshot_path)
+                assert reward == 1, f"Reward was {reward}, see {screenshot_path}"

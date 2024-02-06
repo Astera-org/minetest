@@ -9,6 +9,7 @@ dependencies:
   - pre-commit
   - gymnasium
   - pytest
+  - pytest-repeat # useful for debugging flakiness
   # for dummy client only
   - pygame
   - pillow
