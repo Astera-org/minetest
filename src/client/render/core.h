@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
+#include <memory>
+
 #include "irrlichttypes_extrabloated.h"
 #include "pipeline.h"
 
@@ -32,6 +34,14 @@ class RenderTarget;
 
 class RenderingCore
 {
+private:
+	struct DropDeleter {
+		template<typename T>
+		void operator()(T* ptr) const {
+			if (ptr) ptr->drop();
+		}
+	};
+
 protected:
 	IrrlichtDevice *device;
 	Client *client;
@@ -42,8 +52,8 @@ protected:
 
 	v2f virtual_size_scale;
 	v2u32 virtual_size { 0, 0 };
-	video::IImage *screenshot = nullptr;
-	TextureBuffer *m_buffer = nullptr;
+	std::unique_ptr<video::IImage, DropDeleter> screenshot = nullptr;
+	TextureBuffer *headless_buffer = nullptr;
 
 public:
 	RenderingCore(IrrlichtDevice *device, Client *client, Hud *hud,
