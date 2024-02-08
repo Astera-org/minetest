@@ -19,4 +19,5 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 filterwarnings = [
     'ignore::DeprecationWarning:pygame.pkgdata.*',
+    'ignore:.*PYGAME_DETECT_AVX2=1.*:RuntimeWarning',
 ]
