@@ -1,3 +1,5 @@
+import logging
+import os
 import shutil
 import sys
 import tempfile
@@ -6,10 +8,9 @@ from pathlib import Path
 import gymnasium as gym
 import numpy as np
 import pytest
+from PIL import Image
 
 from minetester.minetest_env import INVERSE_KEY_MAP
-
-from PIL import Image
 
 
 @pytest.fixture
@@ -24,7 +25,8 @@ def world_dir():
         yield temp_world_dir
 
 
-def test_minetest_basic(world_dir):
+def test_minetest_basic(world_dir, caplog):
+    caplog.set_level(logging.DEBUG)
     is_mac = sys.platform == "darwin"
     repo_root = Path(__file__).parent.parent.parent
     if is_mac:
@@ -41,9 +43,11 @@ def test_minetest_basic(world_dir):
         minetest_executable = repo_root / "bin" / "minetest"
     assert minetest_executable.exists()
 
+    artifact_dir = tempfile.mkdtemp()
     env = gym.make(
         "minetest-v0",
         minetest_executable=minetest_executable,
+        artifact_dir=artifact_dir,
         render_mode="rgb_array",
         display_size=(223, 111),
         world_dir=world_dir,
@@ -68,9 +72,21 @@ def test_minetest_basic(world_dir):
             assert not terminated and not truncated
             # TODO: I've seen the system get into a mode where the output is always 480, 640, 3
             # Seems like something to do with OpenGL driver initialization.
-            assert obs.shape == (111, 223, 3)
-            assert obs.sum() > 0, "All black image"
-            if reward != 1:
-                screenshot_path = f"minetst_test_obs_{i}.png"
+            expected_shape = (111, 223, 3)
+            obs_sum = obs.sum()
+            expected_reward = 1
+            # clunky `if`` and then assert to make sure we get a screenshot if the test fails.
+            if (
+                (obs.shape != expected_shape)
+                or (obs_sum <= 0)
+                or (reward != expected_reward)
+            ):
+                screenshot_path = os.path.join(
+                    artifact_dir, f"minetst_test_obs_{i}.png"
+                )
                 Image.fromarray(obs).save(screenshot_path)
-                assert reward == 1, f"Reward was {reward}, see {screenshot_path}"
+                assert obs.shape == expected_shape, f"see image: {screenshot_path}"
+                assert obs.sum() > 0, f"All black image, see image: {screenshot_path}"
+                assert reward == expected_reward, f"see image: {screenshot_path}"
+
+    shutil.rmtree(artifact_dir)  # Only on success so we can inspect artifacts.

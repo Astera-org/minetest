@@ -40,6 +40,20 @@ INVERSE_KEY_MAP = {name: idx for idx, name in enumerate(KEY_MAP)}
 
 DisplaySize = namedtuple("DisplaySize", ["width", "height"])
 
+_still_loading_colors = (
+    np.array([59, 59, 59], dtype=np.uint8),
+    np.array([58, 58, 58], dtype=np.uint8),
+    np.array([57, 57, 57], dtype=np.uint8),
+)
+
+
+def _is_loading(obs) -> bool:
+    # Best way I've thought of to deal with this is to check if the image is
+    # mostly the particular color.
+    return any(
+        (obs == color).all(axis=2).mean() > 0.5 for color in _still_loading_colors
+    )
+
 
 class MinetestEnv(gym.Env):
     metadata = {"render_modes": ["rgb_array", "human"]}
@@ -215,19 +229,6 @@ class MinetestEnv(gym.Env):
             log_path,
         )
 
-    def _perform_client_handshake(self):
-        # handshake is an empty action
-        pb_action = remoteclient_capnp.Action.new_message()
-        self.socket.send(pb_action.to_bytes())
-        if self.client_process:
-            # Check for crash triggered by first action
-            time.sleep(1)
-            if self.client_process.poll() is not None:
-                raise RuntimeError(
-                    "Minetest terminated during handshake! Return code: "
-                    f"{self.client_process.returncode}, logs in {self.log_dir}",
-                )
-
     def _check_world_dir(self):
         if self.world_dir is None:
             raise RuntimeError(
@@ -321,19 +322,43 @@ class MinetestEnv(gym.Env):
                 self.world_seed = self._np_random.randint(np.iinfo(np.int64).max)
         self._reset_minetest()
         self._reset_zmq()
-        self._perform_client_handshake()
 
-        # Receive initial observation
+        empty_action_bytes = remoteclient_capnp.Action.new_message().to_bytes()
+        # Annoyingly sometimes minetest returns observations but has not finished loading.
+        valid_obs_max_attempts = 100
+        # And sometimes it goes valid -> invalid -> valid.
+        min_num_valid_obs = 3
+        valid_obs_seen = 0
         logging.debug("Waiting for first obs...")
-        byte_obs = self.socket.recv()
-        (
-            obs,
-            _,
-            _,
-        ) = deserialize_obs(byte_obs)
-        self.last_obs = obs
-        logging.debug(f"Received first obs: {obs.shape}")
-        return obs, {}
+        for attempt in range(valid_obs_max_attempts):
+            self.socket.send(empty_action_bytes)
+            if not attempt:
+                time.sleep(1)
+                # Check for crash triggered by first action
+                if self.client_process.poll() is not None:
+                    raise RuntimeError(
+                        "Minetest terminated during handshake! Return code: "
+                        f"{self.client_process.returncode}, logs in {self.log_dir}",
+                    )
+
+            byte_obs = self.socket.recv()
+            (
+                obs,
+                _,
+                _,
+            ) = deserialize_obs(byte_obs)
+            if _is_loading(obs):
+                valid_obs_seen = 0
+                logging.debug(f"Still loading... {attempt}/{valid_obs_max_attempts}")
+                continue
+            valid_obs_seen += 1
+            if valid_obs_seen >= min_num_valid_obs:
+                logging.debug(f"Received first obs: {obs.shape}")
+                self.last_obs = obs
+                return obs, {}
+        raise RuntimeError(
+            f"Failed to get a valid observation after {valid_obs_max_attempts} attempts"
+        )
 
     def step(self, action: Dict[str, Any]):
         if self.client_process and self.client_process.poll() is not None:
@@ -353,8 +378,6 @@ class MinetestEnv(gym.Env):
         if self.client_process and self.client_process.poll() is not None:
             return self.last_obs, 0.0, True, False, {}
 
-        # Receive observation
-        logging.debug("Waiting for obs...")
         byte_obs = self.socket.recv()
         next_obs, rew, done = deserialize_obs(byte_obs)
 
@@ -409,6 +432,8 @@ class MinetestEnv(gym.Env):
         stderr_file = log_path.format("client_stderr")
         with open(stdout_file, "w") as out, open(stderr_file, "w") as err:
             client_env = os.environ.copy()
+            # Avoids error in logs about missing XDG_RUNTIME_DIR
+            client_env["XDG_RUNTIME_DIR"] = self.artifact_dir
             # enable GPU usage
             # TODO: should probably check for NVidia GPU before doing this.
             client_env["__GLX_VENDOR_LIBRARY_NAME"] = "indirect"  # "nvidia"

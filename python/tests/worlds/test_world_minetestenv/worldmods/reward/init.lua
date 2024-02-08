@@ -3,7 +3,7 @@ playerReturnsHUD = {}
 
 minetest.register_on_joinplayer(function(player)
 	local meta = player:get_meta()
-	meta:set_int("reward", 0)
+	meta:set_int("reward", 1)
 	meta:set_int("return", 0)
 
 	local player_name = player:get_player_name()
