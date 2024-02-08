@@ -17,5 +17,9 @@
 				"vadimcn.vscode-lldb"
 			]
 		}
-	}
+	},
+	"features": {
+		"ghcr.io/rocker-org/devcontainer-features/miniforge:1": {}
+	},
+	"postCreateCommand": "bash -c 'mamba init && mamba env create'"
 }

@@ -39,7 +39,6 @@ mark_as_advanced(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 if(BUILD_CLIENT AND BUILD_HEADLESS)
 	find_package(SDL2 REQUIRED NO_DEFAULT_PATH)
 	get_target_property(SDL2_LIB_LOCATION SDL2::SDL2 LOCATION)
-	message(STATUS "SDL2 library location: ${SDL2_LIB_LOCATION}")
 endif()
 
 if(NOT (BUILD_CLIENT OR BUILD_SERVER))
@@ -313,6 +312,8 @@ else()
 	mark_as_advanced(ICONV_LIBRARY)
 	if (ICONV_LIBRARY)
 		set(PLATFORM_LIBS ${PLATFORM_LIBS} ${ICONV_LIBRARY})
+		# TODO: remove just for debugging
+		message(STATUS "ICONV_LIBRARY library location: ${ICONV_LIBRARY}")
 	endif()
 
 	if (HAIKU)

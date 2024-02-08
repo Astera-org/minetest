@@ -43,7 +43,17 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps g++-7
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
         run: |
           ./util/ci/build.sh
         env:
@@ -64,7 +74,17 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps g++-12 libluajit-5.1-dev
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
         run: |
           ./util/ci/build.sh
         env:
@@ -85,12 +105,23 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps clang-7 valgrind
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
         run: |
           ./util/ci/build.sh
         env:
           CC: clang-7
           CXX: clang++-7
+          CMAKE_FLAGS: "-DENABLE_CURSES=FALSE"
 
       - name: Unittest
         run: |
@@ -110,7 +141,17 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps clang-14 gdb
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
         run: |
           ./util/ci/build.sh
         env:
@@ -134,13 +175,6 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps clang-14
 
-      - name: Build
-        run: |
-          ./util/ci/build.sh
-        env:
-          CC: clang-14
-          CXX: clang++-14
-
       - uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: '3.11'
@@ -148,6 +182,15 @@ jobs:
           channels: conda-forge,nodefaults
           activate-environment: minetest
           environment-file: environment.yml
+
+      - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
+        run: |
+          ./util/ci/build.sh
+        env:
+          CC: clang-14
+          CXX: clang++-14
 
       - name: Run pytest
         # Needed so conda environment is active
@@ -174,17 +217,28 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps clang-9
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Build prometheus-cpp
+        shell: bash -l {0}
         run: |
           ./util/ci/build_prometheus_cpp.sh
 
       - name: Build
+        # Needed so conda environment is active
+        shell: bash -l {0}
         run: |
           ./util/ci/build.sh
         env:
           CC: clang-9
           CXX: clang++-9
-          CMAKE_FLAGS: "-DENABLE_PROMETHEUS=1 -DBUILD_CLIENT=0"
+          CMAKE_FLAGS: "-DENABLE_PROMETHEUS=1 -DBUILD_CLIENT=0 -DENABLE_CURSES=FALSE"
 
       - name: Test
         run: |

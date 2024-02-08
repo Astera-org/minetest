@@ -14,5 +14,6 @@
     },
     "[jsonc]": {
         "editor.formatOnSave": true
-    }
+    },
+    "cmake.cmakePath": "/opt/conda/envs/minetest/bin/cmake"
 }

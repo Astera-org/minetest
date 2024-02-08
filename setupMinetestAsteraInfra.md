@@ -9,43 +9,29 @@ set -euox pipefail
 
 # BEGIN unnecessary if using dev container
 
-# minetest deps
-sudo apt install g++ make libc6-dev cmake libpng-dev libjpeg-dev libxi-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev libzstd-dev libluajit-5.1-dev gettext capnproto libcapnp-dev libzmq3-dev -yq
-# irrlicht deps
-sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev -yq
-
-# not strictly necessary, but much faster build time. Mold requires using Clang.
-sudo apt-get install ninja-build mold -yq
+# minetest deps. Only the ones not available in conda.
+sudo apt install g++ libgl1-mesa-dev mold -yq
 
 git clone git@github.com:Astera-org/minetest.git
 cd minetest
 
+# activate conda environment
+mamba env create && conda activate minetest
+
 # END unnecessary if using dev container
 git submodule update --init --recursive
 
-# build zmqpp
-pushd lib/zmqpp && make -j $(nproc)
-if command -v sudo &> /dev/null
-then
-    sudo make install
-else
-    make install
-fi
-popd
-# build SDL
-pushd lib/SDL && rm -rf build && mkdir -p build && pushd build && ../configure --prefix=$(pwd) && make -j $(nproc) && make install && popd && popd
-
 cmake -B build -S . \
 	-DCMAKE_FIND_FRAMEWORK=LAST \
-	-DRUN_IN_PLACE=TRUE -DENABLE_GETTEXT=TRUE \
-	-DBUILD_HEADLESS=1 \
+	-DRUN_IN_PLACE=TRUE \
+	-DENABLE_SOUND=FALSE \
+	-DENABLE_GETTEXT=TRUE \
+	-DBUILD_HEADLESS=TRUE \
 	-GNinja \
 	-DCMAKE_CXX_FLAGS="-fuse-ld=mold" \
-	-DSDL2_DIR=$(pwd)/lib/SDL/build/lib/cmake/SDL2/ \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=1 && \
 	cmake --build build
 
-mamba env create && conda activate minetest
 pushd python && pytest .; popd
 ```

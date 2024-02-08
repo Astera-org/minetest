@@ -1,5 +1,9 @@
 # Compiling on MacOS
 
+Note: the conda environment.yml file currently doesn't work on arm64,
+and that's what's tested on the CI (which uses x86-64).
+So these instructions should work aren't tested.
+
 ## Requirements
 
 - [Homebrew](https://brew.sh/)
@@ -8,7 +12,7 @@
 Install dependencies with homebrew:
 
 ```
-brew install cmake capnp freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext zeromq zmqpp ninja
+brew install cmake capnp freetype gettext gmp hiredis jpeg jsoncpp leveldb libogg libpng libvorbis luajit zstd gettext sdl2 zeromq zmqpp ninja
 ```
 
 ## Download
@@ -22,7 +26,8 @@ cd minetest
 
 ## Build
 
-If `conda` is installed, it's a good idea to `conda deactivate` to make sure no conda env (not even base) is active, else it may lead to errors with `iconv` during linking.
+Note the `-DICONV_LIBRARY` should only be set if a conda environment is active
+(even an empty conda environment seems to have libiconv which conflicts with system iconv).
 
 ```bash
 cmake -B build -S . \
@@ -34,11 +39,12 @@ cmake -B build -S . \
     -DENABLE_GETTEXT=TRUE \
     -DINSTALL_DEVTEST=TRUE \
     -DINSTALL_MINETEST_GAME=TRUE \
-    -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+    -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" \
+    -DICONV_LIBRARY="${CONDA_PREFIX}/lib/libiconv.dylib"
 cmake --build build
 cmake --install build
 
-# M1 Macs w/ MacOS >= BigSur
+# arm64 Macs w/ MacOS >= BigSur
 codesign --force --deep -s - build/macos/minetest.app
 ```
 

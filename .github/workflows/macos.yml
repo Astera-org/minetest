@@ -26,12 +26,22 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          mamba-version: "*"
+          channels: conda-forge,nodefaults
+          activate-environment: minetest
+          environment-file: environment.yml
+
       - name: Install deps
         run: |
           source ./util/ci/common.sh
           install_macos_deps
 
       - name: Build
+        shell: bash -l {0}
         run: |
           cmake -B build -S . \
             -DCMAKE_FIND_FRAMEWORK=LAST \
@@ -41,24 +51,12 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DBUILD_HEADLESS=FALSE \
             -GNinja \
-            -DSDL2_DIR= \
             -DINSTALL_DEVTEST=TRUE \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+            -DICONV_LIBRARY="${CONDA_PREFIX}/lib/libiconv.dylib" \
+            -DCMAKE_INSTALL_RPATH="${CONDA_PREFIX}/lib"
           cmake --build build
           cmake --install build
 
       - name: Test
         run: |
           ./build/macos/minetest.app/Contents/MacOS/minetest --run-unittests
-
-      # Zipping the built .app preserves permissions on the contained files,
-      #   which the GitHub artifact pipeline would otherwise strip away.
-      - name: CPack
-        run: |
-          cd build
-          cpack -G ZIP -B macos
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: minetest-macos
-          path: ./build/macos/*.zip
