@@ -23,6 +23,7 @@ requirements:
     - sel(linux): '{{ cdt("mesa-dri-drivers") }}'
     - sel(linux): '{{ cdt("mesa-libgl-devel") }}'
   host:
+    # minetest deps
     - capnproto
     - freetype
     - gmp
@@ -40,6 +41,12 @@ requirements:
     - zlib
     - zmqpp
     - zstd
+    # python deps
+    - gymnasium
+    - numpy
+    - pycapnp
+    - python
+    - pyzmq
   run:
     # I think needed because their recipe doesn't specify run_exports.
     # Otherwise this should be inferred from presence in host.
@@ -50,6 +57,19 @@ about:
   summary: 'Minetest + gymnasium interface'
 
 test:
+  # We should probably run minetest --run-unittests, but last time I tried
+  # it failed in a way that seemed pretty unrelated to anything I had changed.
   exists:
     bin:
       - minetest
+  source_files:
+    - python/tests
+    - python/pyproject.toml
+  requires:
+    - pillow
+    - pytest
+  commands:
+    - cd python && pytest .
+  test:
+    imports:
+      - minetester

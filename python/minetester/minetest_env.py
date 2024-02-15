@@ -62,7 +62,7 @@ class MinetestEnv(gym.Env):
 
     def __init__(
         self,
-        minetest_executable: Optional[os.PathLike] = None,
+        minetest_executable: Optional[os.PathLike] = "minetest",
         world_dir: Optional[os.PathLike] = None,
         artifact_dir: Optional[os.PathLike] = None,
         config_path: Optional[os.PathLike] = None,
@@ -105,8 +105,8 @@ class MinetestEnv(gym.Env):
         )  # Stores minetest artifacts and outputs
         if minetest_executable:
             self.minetest_executable = Path(minetest_executable)
-            assert (
-                self.minetest_executable.exists()
+            assert shutil.which(
+                self.minetest_executable
             ), f"minetest_executable not found: {self.minetest_executable}"
         else:
             self.minetest_executable = None

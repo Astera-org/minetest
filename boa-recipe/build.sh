@@ -20,3 +20,5 @@ cmake -B build \
 
 cmake --build build
 cmake --install build
+
+python -m pip install --no-deps --ignore-installed python
