@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "client/localplayer.h"
+#include "client/gameui.h"
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
 #include <list>
@@ -275,7 +276,7 @@ public:
 
 	virtual s32 getMouseWheel() = 0;
 
-	virtual void step(float dtime) {}
+	virtual void step(float dtime, GameUI& game_ui) {}
 
 	virtual void clear() {}
 	virtual void releaseAllKeys() {}
@@ -454,7 +455,7 @@ public:
 
 	virtual s32 getMouseWheel() { return 0; }
 
-	virtual void step(float dtime);
+	virtual void step(float dtime, GameUI& game_ui);
 
 	s32 Rand(s32 min, s32 max);
 

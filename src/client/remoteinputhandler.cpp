@@ -1,9 +1,10 @@
 #include "remoteinputhandler.h"
 #include "client/keycode.h"
+#include "gui/guiFormSpecMenu.h"
 #include "hud.h"
+#include "log.h"
 
 #include <cassert>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -99,12 +100,34 @@ void RemoteInputHandler::fill_observation(
   image->drop();
 }
 
-void RemoteInputHandler::step(float dtime) {
+void RemoteInputHandler::step(float dtime, GameUI& game_ui) {
   // skip first loop, because we don't have an observation yet
   // as draw is called after step
   if (m_is_first_loop) {
     m_is_first_loop = false;
     return;
+  }
+
+  // TODO: get the GUIFormSpecMenu from the game_ui.
+  // Then change GUIFormSpecMenu to expose m_text_dst.
+  // If m_text_dst.m_formname == MT_DEATH_SCREEN,
+  // call simulateEvent().
+  // If that doesn't work, call m_text_dt.gotText() with "quit" as argument.
+  GUIFormSpecMenu*& formspec_gui = game_ui.getFormspecGUI();
+  if (formspec_gui != nullptr) {
+    TextDest* text_dst = formspec_gui->getTextDest();
+    if (text_dst != nullptr) {
+      if (text_dst->m_formname == "MT_DEATH_SCREEN") {
+        infostream << "RemoteInputHandler: detected death screen, attempting to respawn\n";
+        SEvent event;
+        bzero(&event, sizeof(SEvent));
+				event.EventType = irr::EET_KEY_INPUT_EVENT;
+				event.KeyInput.Key = KEY_RETURN;
+				event.KeyInput.PressedDown = true;
+        simulateEvent(event);
+        return;
+      }
+    }
   }
 
   // We don't model key release events, keys need to be re-pressed every step.

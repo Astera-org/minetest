@@ -123,7 +123,7 @@ public:
   virtual void clearWasKeyReleased() override { m_key_was_released.clear(); }
   void clearInput();
 
-  virtual void step(float dtime) override;
+  virtual void step(float dtime, GameUI& game_ui) override;
   void simulateEvent(const SEvent &event) {
     if (event.EventType == EET_MOUSE_INPUT_EVENT) {
       // we need this call to trigger GUIEvents

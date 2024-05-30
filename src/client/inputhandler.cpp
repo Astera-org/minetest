@@ -213,7 +213,7 @@ struct RandomInputHandlerSimData {
 	int time_max;
 };
 
-void RandomInputHandler::step(float dtime)
+void RandomInputHandler::step(float dtime, GameUI&)
 {
 	static RandomInputHandlerSimData rnd_data[] = {
 		{ "keymap_jump", 0.0f, 40 },

@@ -216,6 +216,11 @@ public:
 		m_text_dst = text_dst;
 	}
 
+	TextDest *getTextDest()
+	{
+		return m_text_dst;
+	}
+
 	void allowClose(bool value)
 	{
 		m_allowclose = value;

@@ -2052,7 +2052,7 @@ void Game::processUserInput(f32 dtime)
 	}
 
 	// Input handler step() (used by the random input generator)
-	input->step(dtime);
+	input->step(dtime, *m_game_ui);
 
 #ifdef __ANDROID__
 	auto formspec = m_game_ui->getFormspecGUI();
