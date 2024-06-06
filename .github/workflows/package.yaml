@@ -12,6 +12,11 @@ jobs:
   rattler-build:
     runs-on: ubuntu-latest
     steps:
+      # Needed to run the tests
+      - name: install libgl
+        run: |
+          apt-get update
+          apt-get install -y libgl1-mesa-dev
       - name: write rattler credentials
         # Can be removed once https://github.com/prefix-dev/rattler-build-action/issues/4
         run: |
