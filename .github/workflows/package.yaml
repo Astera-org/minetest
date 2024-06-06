@@ -19,6 +19,8 @@ jobs:
           echo '{"repo.prefix.dev":{"BearerToken":"${{ secrets.PREFIX_DEV_API_KEY }}"}}' > "${RATTLER_AUTH_FILE}"
           echo "RATTLER_AUTH_FILE=$RATTLER_AUTH_FILE" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: build minetest
         uses: prefix-dev/rattler-build-action@v0.2.9
         with:
