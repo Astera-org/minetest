@@ -30,7 +30,7 @@ jobs:
         uses: prefix-dev/rattler-build-action@v0.2.9
         with:
           recipe-path: ./rattler-build-recipe/minetest-gymnasium/recipe.yaml
-          build-args: --channel=./output --channel=conda-forge
+          build-args: --channel=conda-forge
       - name: upload
         run: |
           for pkg in $(find ./output -type f \( -name "*.conda" \) ); do
