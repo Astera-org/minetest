@@ -36,6 +36,7 @@ jobs:
         with:
           recipe-path: ./rattler-build-recipe/minetest-gymnasium/recipe.yaml
           build-args: --channel=conda-forge
+          upload-artifact: false # don't upload to GitHub
       - name: upload
         run: |
           for pkg in $(find ./output -type f \( -name "*.conda" \) ); do
