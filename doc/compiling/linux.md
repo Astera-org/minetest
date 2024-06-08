@@ -89,14 +89,14 @@ Download IrrlichtMt, without using Git:
 
 ## Build
 
-Build a version that runs directly from the source directory:
+Build a server that runs directly from the source directory:
 
-    cmake -B build -S . -DRUN_IN_PLACE=TRUE -GNinja
+    cmake -B build -S . -DRUN_IN_PLACE=TRUE -GNinja -DBUILD_SERVER=TRUE
     cmake --build build
 
 Run it:
 
-    ./bin/minetest
+    ./bin/minetestserver # This will create a server in which you can access from your local machine
 
 - Use `cmake . -LH` to see all CMake options and their current state.
 - If you want to install it system-wide (or are making a distribution package),
