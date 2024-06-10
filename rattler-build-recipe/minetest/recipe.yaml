@@ -3,7 +3,7 @@
 context: {}
 package:
   name: minetest
-  version: "0.10"
+  version: "0.11"
 
 source:
   path: ../../
@@ -26,7 +26,7 @@ requirements:
         - ${{ cdt("mesa-libgl-devel") }}
   host:
     # minetest deps
-    - capnproto >=1.0.2,<2
+    - capnproto =0.10.2 # pinned to be compatible with the version of pycapnp we're using in minetest-gymnasium recipe
     - freetype
     - gmp
     - jsoncpp
