@@ -1,17 +1,20 @@
 #:schema https://raw.githubusercontent.com/prefix-dev/pixi/main/schema/schema.json
 [project]
 name = "examples"
-channels = ["conda-forge"]
+channels = ["conda-forge",   "https://repo.prefix.dev/obelisk"]
 platforms = ["linux-64"]
 
 [dependencies]
 moviepy = "*"
 jupyter = "*"
-pycapnp = ">=1.1.1"
+pycapnp = ">=2,<3"
+minetest-gymnasium = { version = ">=0.15,<1", channel = "https://repo.prefix.dev/obelisk" }
 
 [host-dependencies]
 python = ">=3.10,<3.11"
 
 [pypi-dependencies]
 # This relies on pyproject.toml to determine how to build / install the package
-minetest = { path = "../", editable = true }
+# TODO: when run this way it's much slower! Like 20FPS instead of 60!
+# No idea what's going on.
+# minetest = { path = "../", editable = true }
