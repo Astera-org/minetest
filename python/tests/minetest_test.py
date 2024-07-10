@@ -14,6 +14,7 @@ from PIL import Image
 
 from minetest import minetest_env
 from minetest.minetest_env import INVERSE_KEY_MAP
+from minetest.utils import get_free_port
 
 
 @pytest.fixture
