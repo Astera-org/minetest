@@ -7,6 +7,15 @@
         {
             "type": "debugpy",
             "request": "launch",
+            "name": "gym_client.py",
+            "program": "python/tools/gym_client.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": []
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
             "name": "minetest_test.py",
             "module": "pytest",
             "justMyCode": false,
@@ -17,7 +26,7 @@
             ]
         },
         {
-            "type": "lldb",
+            "type": "node",
             "request": "launch",
             "name": "Debug for handshaker.py",
             "program": "${workspaceFolder}/bin/minetest",
@@ -39,7 +48,7 @@
             "cwd": "${workspaceFolder}"
         },
         {
-            "type": "lldb",
+            "type": "node",
             "request": "launch",
             "name": "devtest mac",
             "program": "${workspaceFolder}/build/macos/minetest.app/Contents/MacOS/minetest",
@@ -72,10 +81,10 @@
             "cwd": "${workspaceFolder}"
         },
         {
-            "type": "lldb",
+            "type": "node",
             "request": "attach",
             "name": "lldb attach",
-            "pid": "${command:pickMyProcess}"
+            // "pid": "${command:pickMyProcess}"
         },
         {
             "type": "cppdbg",
