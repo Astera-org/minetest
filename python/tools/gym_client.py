@@ -81,8 +81,8 @@ class GymClient:
                     self._handle_key_event(event)
 
             action = self._get_action_from_key_cache(self._keys_down, self._mouse)
-            state, reward, terminated, truncated, info = env.step(action)
-            env.render()
+            state, reward, terminated, truncated, info = self._env.step(action)
+            self._env.render()
             print(reward)
 
             if terminated or truncated:
