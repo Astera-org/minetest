@@ -940,7 +940,7 @@ static bool auto_select_world(GameParams *game_params)
 		std::uniform_int_distribution<> dis(0, 0xF);
 		constexpr size_t num_rand_chars = 5;
 		char rand_buf[num_rand_chars];
-		for (int i = 0; i < num_rand_chars; ++i) {
+		for (size_t i = 0; i < num_rand_chars; ++i) {
 			int random_num = dis(rd);
 			rand_buf[i] = "0123456789ABCDEF"[random_num];
 		}
