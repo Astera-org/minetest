@@ -5,6 +5,7 @@ import gymnasium as gym
 import numpy as np
 
 from minetest.discrete_actions import MOVEMENT_KEYS
+from minetest.utils import DataProcessor
 
 BOAD_KEYBOARD_ACTION_KEYS = MOVEMENT_KEYS + ["dig"]
 
@@ -35,3 +36,23 @@ def _get_boad_config(
 STARVE_2_MUL={thirst_rate}
 ALLOW_NIGHT={int(allow_night)}
 """
+
+
+class BoadDataProcessor(DataProcessor):
+    @staticmethod
+    def get_padded_int(arr: np.ndarray) -> str:
+        return f"{int(arr[0]):03d}"
+
+    def __init__(self):
+        self._prev_obs = {"health": "", "hunger": "", "thirst": "", "reward": 0}
+
+    def process(self, obs: dict[str, np.ndarray], reward: float) -> None:
+        obs = {
+            k: BoadDataProcessor.get_padded_int(v)
+            for k, v in obs.items()
+            if k != "image"
+        }
+        obs["reward"] = reward
+        if obs != self._prev_obs:
+            print(obs)
+            self._prev_obs = obs

@@ -10,6 +10,7 @@ from minetest.boad_setup import (
     BOAD_KEYBOARD_ACTION_KEYS,
     BOAD_MOUSE_ACTION_KEYS,
     BOAD_NOOP_IDX,
+    BoadDataProcessor,
 )
 from minetest.minetest_discrete import MinetestDiscrete
 from minetest.wrappers import DiscreteActionWrapper
@@ -87,5 +88,8 @@ if __name__ == "__main__":
     )
     args = arg_parser.parse_args()
     repo_root = Path(__file__).parent.parent.parent
-    with get_env(args, repo_root) as env, GymClient(env) as client:
+
+    with get_env(args, repo_root) as env, GymClient(
+        env, data_processor=BoadDataProcessor
+    ) as client:
         client.game_loop()

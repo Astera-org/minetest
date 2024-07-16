@@ -1,4 +1,12 @@
 import socket
+from abc import ABC, abstractmethod
+from typing import Any
+
+
+class DataProcessor(ABC):
+    @abstractmethod
+    def process(self, obs: Any, reward: float) -> None:
+        pass
 
 
 def get_free_port():

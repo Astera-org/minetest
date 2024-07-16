@@ -7,6 +7,7 @@ import pygame
 from pygame.event import Event
 
 from minetest.minetest_env import INVERSE_KEY_MAP, KEY_MAP
+from minetest.utils import DataProcessor
 
 KEY_TO_KEYTYPE = {
     "W": "forward",
@@ -44,6 +45,11 @@ def get_action_from_key_cache(
     return {"keys": keys, "mouse": mouse}
 
 
+class RewardPrinter(DataProcessor):
+    def process(self, _: Any, reward: float) -> None:
+        print(reward)
+
+
 class GymClient:
     def __init__(
         self,
@@ -52,12 +58,14 @@ class GymClient:
         get_action_from_key_cache: Callable[
             [set[str], Mouse], dict[str, np.ndarray]
         ] = get_action_from_key_cache,
+        data_processor: DataProcessor = RewardPrinter,
     ):
         self._env = env
         self._keys_down = set()
         self._mouse = Mouse(0, 0)
         self._mouse_magnitude = mouse_magnitude
         self._get_action_from_key_cache = get_action_from_key_cache
+        self._data_processor = data_processor()
 
     def __enter__(self):
         pygame.init()
@@ -78,9 +86,9 @@ class GymClient:
                     self._handle_key_event(event)
 
             action = self._get_action_from_key_cache(self._keys_down, self._mouse)
-            state, reward, terminated, truncated, info = self._env.step(action)
+            obs, reward, terminated, truncated, info = self._env.step(action)
             self._env.render()
-            print(reward)
+            self._data_processor.process(obs, reward)
 
             if terminated or truncated:
                 print("\n\n--TERMINATED--\n\n")
