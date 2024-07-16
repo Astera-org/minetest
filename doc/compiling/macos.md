@@ -29,7 +29,8 @@ cmake -B build -S . \
     -DINSTALL_MINETEST_GAME=TRUE \
     -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" \
     -DICONV_LIBRARY=".pixi/envs/default/lib/libiconv.dylib" \
-    -DCMAKE_INSTALL_RPATH=".pixi/envs/default/lib"
+    -DCMAKE_INSTALL_RPATH=".pixi/envs/default/lib" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 cmake --build build
 cmake --install build
 
