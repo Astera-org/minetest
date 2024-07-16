@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -14,18 +15,11 @@ from minetest.minetest_discrete import MinetestDiscrete
 from minetest.wrappers import DiscreteActionWrapper
 
 
-def get_server_addr_args(args):
+def get_game_dir_args(repo_root, game_dir):
     return {
-        "server_addr": args.server_addr,
-        "executable": None,
-    }
-
-
-def get_game_dir_args(repo_root):
-    return {
-        "game_dir": "/Users/ericalt/Documents/minetest/games/devtest",
         "executable": get_exeutable(repo_root),
         "headless": False,
+        "game_dir": game_dir,
     }
 
 
@@ -46,36 +40,41 @@ def get_exeutable(repo_root):
 
 
 def get_env(args, repo_root):
-    if args.game == "boad":
-        return DiscreteActionWrapper(
-            MinetestDiscrete(
-                "boad",
-                executable=get_exeutable(repo_root),
-                headless=False,
-            ),
-            keyboard_action_keys=BOAD_KEYBOARD_ACTION_KEYS,
-            mouse_action_keys=BOAD_MOUSE_ACTION_KEYS,
-            noop=BOAD_NOOP_IDX,
-        )
     gym_make_args = {
         "id": "minetest-v0",
         "render_mode": "human",
         "display_size": (512, 512),
     }
-    if args.server_addr:
-        gym_make_args.update(get_server_addr_args(args))
+    if args.game_dir:
+        kwargs = get_game_dir_args(repo_root, args.game_dir)
+        if os.path.basename(args.game_dir) == "boad":
+            return DiscreteActionWrapper(
+                MinetestDiscrete(**kwargs),
+                keyboard_action_keys=BOAD_KEYBOARD_ACTION_KEYS,
+                mouse_action_keys=BOAD_MOUSE_ACTION_KEYS,
+                noop=BOAD_NOOP_IDX,
+            )
+        else:
+            gym_make_args.update(kwargs)
+            return gym.make(**gym_make_args)
     else:
-        gym_make_args.update(get_game_dir_args(repo_root))
-    return gym.make(**gym_make_args)
+        assert args.server_addr, "Must provide either game_dir or server_addr"
+        gym_make_args.update(
+            {
+                "server_addr": args.server_addr,
+                "executable": None,
+            }
+        )
+        return gym.make(**gym_make_args)
 
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument(
-        "--game",
+        "--game_dir",
         type=str,
         default=None,
-        help=("Minetest game (options: [boad])."),
+        help="Path to the game.",
     )
     arg_parser.add_argument(
         "--server_addr",

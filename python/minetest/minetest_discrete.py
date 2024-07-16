@@ -40,7 +40,7 @@ def get_action_dicts(
 class MinetestDiscrete(gym.Wrapper):
     def __init__(
         self,
-        game: str,
+        game_dir: os.PathLike,
         screen_size: int = 128,
         executable: Optional[os.PathLike] = "minetest",
         headless: bool = True,
@@ -57,11 +57,8 @@ class MinetestDiscrete(gym.Wrapper):
         """
 
         temp_dir = tempfile.mkdtemp(prefix="minetest_")
-        game_dir = os.path.join(
-            os.environ["CONDA_PREFIX"], "share/minetest/games/", game
-        )
 
-        if game == "boad":
+        if os.path.basename(game_dir) == "boad":
             from minetest.boad_setup import (
                 BOAD_ADDITIONAL_OBSERVATION_SPACES,
                 BOAD_KEYBOARD_ACTION_KEYS,
@@ -69,7 +66,6 @@ class MinetestDiscrete(gym.Wrapper):
                 write_boad_config,
             )
 
-            game_dir = "/Users/ericalt/Documents/minetest/games/boad"
             write_boad_config(game_dir, config)
             additional_observation_spaces = BOAD_ADDITIONAL_OBSERVATION_SPACES
             keyboard_action_keys = BOAD_KEYBOARD_ACTION_KEYS
