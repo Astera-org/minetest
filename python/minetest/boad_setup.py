@@ -30,11 +30,18 @@ def write_boad_config(game_dir: str, config: Optional[dict[str, Any]] = None) ->
 
 
 def _get_boad_config(
-    hunger_rate: int = 20, thirst_rate: int = 20, allow_night: bool = False, **kwargs
+    hunger_rate: int = 20,
+    thirst_rate: int = 20,
+    allow_night: bool = False,
+    apple_scale: float = 2.5,
+    rose_scale: float = 1.5,
+    **kwargs,
 ) -> str:
     return f"""STARVE_1_MUL={hunger_rate}
 STARVE_2_MUL={thirst_rate}
 ALLOW_NIGHT={int(allow_night)}
+APPLE_SCALE={apple_scale}
+ROSE_SCALE={rose_scale}
 """
 
 
