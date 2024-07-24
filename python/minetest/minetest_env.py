@@ -20,8 +20,6 @@ import capnp
 import gymnasium as gym
 import numpy as np
 
-import minetest.utils as utils
-
 # np.bool8 is removed in newer numpy but some deps still use it.
 np.bool8 = np.bool_
 
