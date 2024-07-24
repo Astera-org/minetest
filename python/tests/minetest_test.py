@@ -65,6 +65,7 @@ def env(artifact_dir, world_dir, minetest_executable):
         headless=sys.platform == "linux",
         display_size=display_size,
         world_dir=world_dir,
+        game_dir=devtest_game_dir,
         verbose_logging=True,
         additional_observation_spaces={
             "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
@@ -88,6 +89,7 @@ def test_new_env_after_exception(artifact_dir, world_dir, minetest_executable, c
     def make_env():
         return gym.make(
             "minetest-v0",
+            game_dir=devtest_game_dir,
             executable=minetest_executable,
             artifact_dir=artifact_dir,
             headless=sys.platform == "linux",
@@ -129,6 +131,7 @@ def test_minetest_basic(artifact_dir, world_dir, minetest_executable, caplog):
         artifact_dir=artifact_dir,
         display_size=display_size,
         world_dir=world_dir,
+        game_dir=devtest_game_dir,
         verbose_logging=True,
         additional_observation_spaces={
             "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
@@ -183,16 +186,13 @@ def test_minetest_basic(artifact_dir, world_dir, minetest_executable, caplog):
 
 def test_minetest_game_dir(artifact_dir, minetest_executable, caplog):
     caplog.set_level(logging.DEBUG)
-    repo_root = Path(__file__).parent.parent.parent
-    devetest_game_dir = repo_root / "games" / "devtest"
-    assert devetest_game_dir.exists()
     env = gym.make(
         "minetest-v0",
         executable=minetest_executable,
         artifact_dir=artifact_dir,
         headless=sys.platform == "linux",
         world_dir=None,
-        game_dir=devetest_game_dir,
+        game_dir=devtest_game_dir,
         verbose_logging=True,
         additional_observation_spaces={
             "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
@@ -222,14 +222,22 @@ def test_async_vector_env(artifact_dir, world_dir, minetest_executable, caplog):
         # https://github.com/Farama-Foundation/Gymnasium/issues/222
         async_env_context = "fork"
         headless = False
+    async_env_context = None
+    headless = True
+    if sys.platform == "darwin":
+        # https://github.com/Farama-Foundation/Gymnasium/issues/222
+        async_env_context = "fork"
+        headless = False
     envs = [
         lambda: gym.make(
             "minetest-v0",
             max_episode_steps=max_episode_steps,
             headless=headless,
+            headless=headless,
             executable=minetest_executable,
             artifact_dir=artifact_dir,
             world_dir=world_dir,
+            game_dir=devtest_game_dir,
             verbose_logging=True,
             additional_observation_spaces={
                 "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
@@ -237,6 +245,7 @@ def test_async_vector_env(artifact_dir, world_dir, minetest_executable, caplog):
         )
         for _ in range(num_envs)
     ]
+    with gym.vector.AsyncVectorEnv(envs, context=async_env_context) as env:
     with gym.vector.AsyncVectorEnv(envs, context=async_env_context) as env:
         initial_obs, info = env.reset()
         assert len(initial_obs["image"]) == num_envs
