@@ -34,6 +34,7 @@ pkg-config = "*"
 sdl2 = "*"
 zlib = "*"
 zstd = "*"
+freetype = ">=2.12.1,<2.13"
 
 [feature.gym.dependencies]
 gymnasium = "*"
@@ -42,7 +43,7 @@ pycapnp = ">=2,<3"
 pygame = "*"
 
 [feature.gym.pypi-dependencies]
-minetest-python = { path = "./python", editable = true }
+minetest-gymnasium = { path = "./python", editable = true }
 
 [feature.gym.host-dependencies]
 python = ">=3.11,<3.12"
@@ -52,6 +53,10 @@ pillow = "*"
 pytest = "*"
 pytest-repeat = "*"
 
+[feature.valgrind.target.linux-64.dependencies]
+valgrind = "*"
+
 [environments]
 gym = ["gym"]
 gym-test = ["gym", "gym-test"]
+valgrind = ["valgrind"]
