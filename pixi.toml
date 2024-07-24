@@ -38,15 +38,8 @@ zstd = "*"
 [feature.gym.dependencies]
 gymnasium = "*"
 numpy = "*"
+pycapnp = ">=2,<3"
 pygame = "*"
-
-# TODO: once https://github.com/conda-forge/pycapnp-feedstock/pull/38 is merged,
-# make this for all targets and remove the osx-arm64 one.
-[feature.gym.target.linux-64.dependencies]
-pycapnp = ">=2,<3"
-
-[feature.gym.target.osx-arm64.pypi-dependencies]
-pycapnp = ">=2,<3"
 
 [feature.gym.pypi-dependencies]
 minetest-python = { path = "./python", editable = true }
