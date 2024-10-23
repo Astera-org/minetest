@@ -73,31 +73,6 @@ RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
   m_chan.m_action_cv.wait(lock, [this] { return m_chan.m_did_init; });
 };
 
-void RemoteInputHandler::fill_observation(
-    irr::video::IImage *image, float reward, std::map<std::string, float> aux) {
-  std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
-  m_chan.m_obs_cv.wait(lock, [this] { return !m_chan.m_has_obs; });
-
-  m_chan.m_obs_builder.setReward(reward);
-  m_chan.m_image_builder.setWidth(image->getDimension().Width);
-  m_chan.m_image_builder.setHeight(image->getDimension().Height);
-  m_chan.m_image_builder.setData(
-      capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()),
-                          image->getImageDataSizeInBytes()));
-
-  auto entries = m_chan.m_aux_map_builder.initEntries(aux.size());
-  size_t i = 0;
-  for (const auto& [key, value] : aux) {
-    auto aux_elem = entries[i];
-    i++;
-    aux_elem.setKey(key);
-    aux_elem.setValue(value);
-  }
-  m_chan.m_has_obs = true;
-  m_chan.m_obs_cv.notify_one();
-  image->drop();
-}
-
 void RemoteInputHandler::step(float dtime) {
   // skip first loop, because we don't have an observation yet
   // as draw is called after step
@@ -163,10 +138,30 @@ void RemoteInputHandler::step(float dtime) {
     }
   }
 
-  // copying the image into the capnp message is slow, so we do it in a separate thread
-  std::thread([this, image, score, aux]() {
-    fill_observation(image, score, aux);
-  }).detach();
+
+  { // fill observation
+    std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
+    m_chan.m_obs_cv.wait(lock, [this] { return !m_chan.m_has_obs; });
+
+    m_chan.m_obs_builder.setReward(score);
+    m_chan.m_image_builder.setWidth(image->getDimension().Width);
+    m_chan.m_image_builder.setHeight(image->getDimension().Height);
+    m_chan.m_image_builder.setData(
+        capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()),
+                            image->getImageDataSizeInBytes()));
+
+    auto entries = m_chan.m_aux_map_builder.initEntries(aux.size());
+    size_t i = 0;
+    for (const auto& [key, value] : aux) {
+      auto aux_elem = entries[i];
+      i++;
+      aux_elem.setKey(key);
+      aux_elem.setValue(value);
+    }
+    m_chan.m_has_obs = true;
+    m_chan.m_obs_cv.notify_one();
+    image->drop();
+  }
 };
 
 void RemoteInputHandler::clearInput() {

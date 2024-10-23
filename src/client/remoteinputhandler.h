@@ -139,8 +139,6 @@ public:
   }
 
 private:
-  void fill_observation(irr::video::IImage *image, float reward, std::map<std::string, float> aux);
-
   RenderingEngine *m_rendering_engine;
 
   detail::Channel m_chan;
