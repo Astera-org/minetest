@@ -1,86 +1,71 @@
-ARG DOCKER_IMAGE=alpine:3.16
-FROM $DOCKER_IMAGE AS dev
+FROM ubuntu:22.04 AS dev
 
-ENV IRRLICHT_VERSION master
-ENV SPATIALINDEX_VERSION 1.9.3
-ENV LUAJIT_VERSION v2.1
+# Use apt in docker best practices, see https://docs.docker.com/reference/dockerfile/#example-cache-apt-packages.
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    # ca-certificates is needed to install pixi
+    ca-certificates \
+    # curl is needed to install pixi
+    curl \
+    # add-apt-repository
+    software-properties-common gpg-agent
 
-RUN apk add --no-cache git build-base cmake curl-dev zlib-dev zstd-dev \
-		sqlite-dev postgresql-dev hiredis-dev leveldb-dev \
-		gmp-dev jsoncpp-dev ninja ca-certificates
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc-13 g++-13 libgl1-mesa-dev \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
-WORKDIR /usr/src/
-RUN git clone --recursive https://github.com/jupp0r/prometheus-cpp/ && \
-		cd prometheus-cpp && \
-		cmake -B build \
-			-DCMAKE_INSTALL_PREFIX=/usr/local \
-			-DCMAKE_BUILD_TYPE=Release \
-			-DENABLE_TESTING=0 \
-			-GNinja && \
-		cmake --build build && \
-		cmake --install build && \
-	cd /usr/src/ && \
-	git clone --recursive https://github.com/libspatialindex/libspatialindex -b ${SPATIALINDEX_VERSION} && \
-		cd libspatialindex && \
-		cmake -B build \
-			-DCMAKE_INSTALL_PREFIX=/usr/local && \
-		cmake --build build && \
-		cmake --install build && \
-	cd /usr/src/ && \
-	git clone --recursive https://luajit.org/git/luajit.git -b ${LUAJIT_VERSION} && \
-		cd luajit && \
-		make && make install && \
-	cd /usr/src/ && \
-	git clone --depth=1 https://github.com/minetest/irrlicht/ -b ${IRRLICHT_VERSION} && \
-		cp -r irrlicht/include /usr/include/irrlichtmt
+RUN curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.34.0 PIXI_HOME=/usr PIXI_NO_PATH_UPDATE=1 bash
 
-FROM dev as builder
+WORKDIR /workspace
 
-COPY .git /usr/src/minetest/.git
-COPY CMakeLists.txt /usr/src/minetest/CMakeLists.txt
-COPY README.md /usr/src/minetest/README.md
-COPY minetest.conf.example /usr/src/minetest/minetest.conf.example
-COPY builtin /usr/src/minetest/builtin
-COPY cmake /usr/src/minetest/cmake
-COPY doc /usr/src/minetest/doc
-COPY fonts /usr/src/minetest/fonts
-COPY lib /usr/src/minetest/lib
-COPY misc /usr/src/minetest/misc
-COPY po /usr/src/minetest/po
-COPY src /usr/src/minetest/src
-COPY textures /usr/src/minetest/textures
 
-WORKDIR /usr/src/minetest
-RUN cmake -B build \
-		-DCMAKE_INSTALL_PREFIX=/usr/local \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DBUILD_SERVER=TRUE \
-		-DENABLE_PROMETHEUS=TRUE \
-		-DBUILD_UNITTESTS=FALSE \
-		-DBUILD_CLIENT=FALSE \
-		-GNinja && \
-	cmake --build build && \
-	cmake --install build
 
-ARG DOCKER_IMAGE=alpine:3.16
-FROM $DOCKER_IMAGE AS runtime
+FROM dev AS build
 
-RUN apk add --no-cache curl gmp libstdc++ libgcc libpq jsoncpp zstd-libs \
-				sqlite-libs postgresql hiredis leveldb && \
-	adduser -D minetest --uid 30000 -h /var/lib/minetest && \
-	chown -R minetest:minetest /var/lib/minetest
+COPY --link pixi.toml pixi.lock ./
+COPY --link python/pyproject.toml python/
+RUN mkdir python/minetest
 
-WORKDIR /var/lib/minetest
+RUN pixi install
 
-COPY --from=builder /usr/local/share/minetest /usr/local/share/minetest
-COPY --from=builder /usr/local/bin/minetestserver /usr/local/bin/minetestserver
-COPY --from=builder /usr/local/share/doc/minetest/minetest.conf.example /etc/minetest/minetest.conf
-COPY --from=builder /usr/local/lib/libspatialindex* /usr/local/lib/
-COPY --from=builder /usr/local/lib/libluajit* /usr/local/lib/
-USER minetest:minetest
+COPY .git/ .git/
+COPY CMakeLists.txt README.md minetest.conf.example ./
+COPY builtin/ builtin/
+COPY client/ client/
+COPY clientmods/ clientmods/
+COPY cmake/ cmake/
+COPY doc/ doc/
+COPY fonts/ fonts/
+COPY games/ games/
+COPY lib/ lib/
+COPY misc/ misc/
+COPY mods/ mods/
+COPY po/ po/
+COPY python/ python/
+COPY src/ src/
+COPY textures/ textures/
+COPY worlds/ worlds/
 
-EXPOSE 30000/udp 30000/tcp
-VOLUME /var/lib/minetest/ /etc/minetest/
-
-ENTRYPOINT ["/usr/local/bin/minetestserver"]
-CMD ["--config", "/etc/minetest/minetest.conf"]
+RUN pixi run -- cmake -B build \
+        -DCMAKE_CXX_FLAGS="-fuse-ld=mold" \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+        -DENABLE_GETTEXT=TRUE \
+        -DENABLE_SOUND=FALSE \
+        -DRUN_IN_PLACE=TRUE \
+        -DUSE_SDL2=ON \
+        -DBUILD_CLIENT=FALSE \
+        -DBUILD_SERVER=TRUE \
+        -DBUILD_UNITTESTS=FALSE \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_FIND_FRAMEWORK=LAST \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DENABLE_PROMETHEUS=TRUE \
+        -GNinja && \
+	pixi run -- cmake --build build && \
+    pixi run -- cmake --install build
