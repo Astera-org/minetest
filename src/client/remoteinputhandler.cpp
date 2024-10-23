@@ -3,7 +3,6 @@
 #include "hud.h"
 #include "server.h"
 #include <cassert>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -88,7 +87,7 @@ void RemoteInputHandler::fill_observation(
 
   auto entries = m_chan.m_aux_map_builder.initEntries(aux.size());
   size_t i = 0;
-  for (auto [key, value] : aux) {
+  for (const auto& [key, value] : aux) {
     auto aux_elem = entries[i];
     i++;
     aux_elem.setKey(key);
