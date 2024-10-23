@@ -81,41 +81,7 @@ void RemoteInputHandler::step(float dtime) {
     return;
   }
 
-  // We don't model key release events, keys need to be re-pressed every step.
-  // Rationale: there's only one place in the engine were keyRelease events are
-  // used, and it doesn't seem important.
-  clearInput();
-
-  KeyPress new_key_code;
-  // receive action
-  {
-    std::unique_lock<std::mutex> lock(m_chan.m_action_mutex);
-    m_chan.m_action_cv.wait(lock, [this] { return m_chan.m_action; });
-
-    for (auto keyEvent : m_chan.m_action->getKeyEvents()) {
-      new_key_code = keycache.key[static_cast<int>(keyEvent)];
-      if (!m_key_is_down[new_key_code]) {
-        m_key_was_pressed.set(new_key_code);
-      }
-      m_key_is_down.set(new_key_code);
-      m_key_was_down.set(new_key_code);
-    }
-    m_mouse_speed = v2s32(m_chan.m_action->getMouseDx(), m_chan.m_action->getMouseDy());
-    // mousepos is reset to (WIDTH/2, HEIGHT/2) after every iteration of main game
-    // loop unit is pixels, origin is top left corner, bounds is (0,0) to (WIDTH,
-    // HEIGHT)
-    m_mouse_pos += m_mouse_speed;
-    m_chan.m_action = nullptr;
-    m_chan.m_action_cv.notify_one();
-  }
-
-  float remote_input_handler_time_step = 0.0f;
-  g_settings->getFloatNoEx("remote_input_handler_time_step", remote_input_handler_time_step);
-  if(remote_input_handler_time_step > 0.0f) {
-	  gServer->AsyncRunStep(remote_input_handler_time_step);
-  }
-
-  // send current observation
+  // send current observation. This is the result of the previous action.
   irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
   irr::video::IImage *image = driver->createScreenShot(video::ECF_R8G8B8);
 
@@ -167,6 +133,40 @@ void RemoteInputHandler::step(float dtime) {
     m_chan.m_has_obs = true;
     m_chan.m_obs_cv.notify_one();
     image->drop();
+  }
+
+  // We don't model key release events, keys need to be re-pressed every step.
+  // Rationale: there's only one place in the engine were keyRelease events are
+  // used, and it doesn't seem important.
+  clearInput();
+
+  KeyPress new_key_code;
+  // receive action
+  {
+    std::unique_lock<std::mutex> lock(m_chan.m_action_mutex);
+    m_chan.m_action_cv.wait(lock, [this] { return m_chan.m_action; });
+
+    for (auto keyEvent : m_chan.m_action->getKeyEvents()) {
+      new_key_code = keycache.key[static_cast<int>(keyEvent)];
+      if (!m_key_is_down[new_key_code]) {
+        m_key_was_pressed.set(new_key_code);
+      }
+      m_key_is_down.set(new_key_code);
+      m_key_was_down.set(new_key_code);
+    }
+    m_mouse_speed = v2s32(m_chan.m_action->getMouseDx(), m_chan.m_action->getMouseDy());
+    // mousepos is reset to (WIDTH/2, HEIGHT/2) after every iteration of main game
+    // loop unit is pixels, origin is top left corner, bounds is (0,0) to (WIDTH,
+    // HEIGHT)
+    m_mouse_pos += m_mouse_speed;
+    m_chan.m_action = nullptr;
+    m_chan.m_action_cv.notify_one();
+  }
+
+  float remote_input_handler_time_step = 0.0f;
+  g_settings->getFloatNoEx("remote_input_handler_time_step", remote_input_handler_time_step);
+  if(remote_input_handler_time_step > 0.0f) {
+	  gServer->AsyncRunStep(remote_input_handler_time_step);
   }
 };
 
