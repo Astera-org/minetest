@@ -22,7 +22,7 @@ requirements:
   run:
     - minetest =0.14
     # python deps
-    - gymnasium
+    - gymnasium <1
     - numpy =1.26
     - pycapnp >=2,<3
 
