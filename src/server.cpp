@@ -127,6 +127,7 @@ void *ServerThread::run()
 
     if(fixed_time_step>0)
     {
+        infostream<<"FIXED TIME STEP"<<std::endl;
         while (!stopRequested()) {
             ScopeProfiler spm(g_profiler, "Server::RunStep() (max)", SPT_MAX);
 
