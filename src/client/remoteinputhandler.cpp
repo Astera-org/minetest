@@ -135,7 +135,8 @@ void RemoteInputHandler::step(float dtime) {
     m_chan.m_action_cv.notify_one();
   }
 
-    float fixed_time_step=g_settings->getFloatNoEx("fixed_time_step");
+    float df = 0.0f;
+    float fixed_time_step=g_settings->getFloatNoEx("fixed_time_step",df);
     if(fixed_time_step>0)
         gServer->AsyncRunStep(fixed_time_step);
 
