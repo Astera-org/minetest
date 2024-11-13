@@ -17,27 +17,16 @@
 namespace detail {
 struct Channel {
   std::condition_variable m_action_cv;
-  std::condition_variable m_obs_cv;
   std::mutex m_action_mutex;
-  std::mutex m_obs_mutex;
-  ::capnp::MallocMessageBuilder m_obs_msg_builder;
-  Observation::Builder m_obs_builder; // GUARDED_BY(m_obs_mutex)
-  Image::Builder m_image_builder; // GUARDED_BY(m_obs_mutex)
-  irr::video::IImage *m_image_builder_data{nullptr}; // GUARDED_BY(m_obs_mutex)
-  AuxMap::Builder m_aux_map_builder; // GUARDED_BY(m_obs_mutex)
-  Action::Reader *m_action; // GUARDED_BY(m_action_mutex)
-  bool m_has_obs{}; // GUARDED_BY(m_obs_mutex)
+  Action::Reader *m_action{nullptr}; // GUARDED_BY(m_action_mutex)
   bool m_did_init{}; // GUARDED_BY(m_action_mutex)
 
-  Channel() : m_obs_builder{m_obs_msg_builder.initRoot<Observation>()},
-              m_image_builder{nullptr},
-              m_aux_map_builder{nullptr},
-              m_action{nullptr} {
-    m_obs_builder.initImage();
-    m_image_builder = m_obs_builder.getImage();
-    m_obs_builder.initAux();
-    m_aux_map_builder = m_obs_builder.getAux();
-  }
+  std::condition_variable m_obs_cv;
+  std::mutex m_obs_mutex;
+  ::capnp::MallocMessageBuilder *m_obs_msg_builder{nullptr}; // GUARDED_BY(m_obs_mutex)
+  bool m_has_obs{}; // GUARDED_BY(m_obs_mutex)
+
+  Channel() {}
 };
 
 class MinetestImpl : public Minetest::Server {

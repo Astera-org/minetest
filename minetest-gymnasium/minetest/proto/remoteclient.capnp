@@ -106,11 +106,22 @@ struct Image {
   data @2 :Data;
 }
 
-struct AuxMap {
+# Generic map type doesn't work for Float32, see https://capnproto.org/language.html#generic-types. So keeping it simple.
+struct MapTextFloat32 {
   entries @0 :List(Entry);
+
   struct Entry {
     key @0 :Text;
     value @1 :Float32;
+  }
+}
+
+struct MapTextText {
+  entries @0 :List(Entry);
+
+  struct Entry {
+    key @0 :Text;
+    value @1 :Text;
   }
 }
 
@@ -119,7 +130,8 @@ struct Observation {
   # TODO: make this optional so that the agent can tell if the game is done loading.
   reward @1 :Float32;
   done @2 :Bool;
-  aux @3 :AuxMap;
+  aux @3 :MapTextFloat32;
+  playerMeta @4 :MapTextText;
 }
 
 interface Minetest {

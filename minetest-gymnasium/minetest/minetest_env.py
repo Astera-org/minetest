@@ -518,6 +518,7 @@ class MinetestEnv(gym.Env):
                 obs,
                 _,
                 _,
+                _,
             ) = deserialize_obs(await step_promise, self.observation_space)
             if _is_loading(obs["image"]):
                 valid_obs_seen = 0
@@ -590,7 +591,7 @@ class MinetestEnv(gym.Env):
         if self.minetest_process and self.minetest_process.poll() is not None:
             return self.last_obs, 0.0, True, False, {}
 
-        next_obs, score, done = deserialize_obs(
+        next_obs, score, done, info = deserialize_obs(
             await step_response, self.observation_space
         )
         self.last_obs = next_obs
@@ -601,7 +602,7 @@ class MinetestEnv(gym.Env):
         reward = 0 if self._prev_score is None else score - self._prev_score
         self._prev_score = score
 
-        return next_obs, reward, done, False, {}
+        return next_obs, reward, done, False, info
 
     def step(self, action: Dict[str, Any]):
         return self._run_on_event_loop(self._async_step(action))
@@ -677,9 +678,10 @@ class MinetestEnv(gym.Env):
 
         stdout_file = log_path.format("minetest_stdout")
         self._minetest_stderr_path = log_path.format("minetest_stderr")
-        with open(stdout_file, "w") as out, open(
-            self._minetest_stderr_path, "w"
-        ) as err:
+        with (
+            open(stdout_file, "w") as out,
+            open(self._minetest_stderr_path, "w") as err,
+        ):
             out.write(
                 f"Starting minetest with command: {' '.join(str(x) for x in cmd)}\n"
             )
@@ -698,7 +700,7 @@ class MinetestEnv(gym.Env):
 
 def deserialize_obs(
     step_response, observation_space: gym.spaces.Dict
-) -> Tuple[Dict[str, Any], float, bool]:
+) -> tuple[dict[str, Any], float, bool, dict[str, str]]:
     img = step_response.observation.image
     img_data = np.frombuffer(img.data, dtype=np.uint8).reshape(
         (img.height, img.width, 3)
@@ -712,12 +714,21 @@ def deserialize_obs(
             "Please set additional_observation_spaces when constructing."
         )
         obs[aux_item.key] = np.array([aux_item.value], dtype=np.float32)
+
     for key in observation_space.spaces:
         if key not in obs:
             obs[key] = np.zeros((1,), dtype=np.float32)
+
+    info = {
+        "player_metadata": {
+            item.key: item.value
+            for item in step_response.observation.playerMeta.entries
+        }
+    }
+
     reward = step_response.observation.reward
     done = step_response.observation.done
-    return obs, reward, done
+    return obs, reward, done, info
 
 
 def _lazy_nonzero(arr):
