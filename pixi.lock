@@ -3579,11 +3579,12 @@ packages:
   name: minetest-gymnasium
   version: 0.5.0
   path: ./minetest-gymnasium
-  sha256: 593d00bbfcba199ef0831415ffa8e06ca093ac0ec64ee174fe50264a20fd387d
+  sha256: e9c0e462beae0bad28196b49350758b041950f7f49ff4524d321a0c0e151629e
   requires_dist:
   - gymnasium
   - numpy
   - pycapnp
+  requires_python: '>=3.11'
   editable: true
 - kind: conda
   name: mold
