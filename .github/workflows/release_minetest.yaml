@@ -1,11 +1,11 @@
 ---
-name: package
+name: release_minetest
 on: # yamllint disable-line rule:truthy
   push:
     branches:
       - master
     paths:
-      - 'rattler-build-recipe/**/recipe.yaml'
+      - 'rattler-build-recipe/minetest/recipe.yaml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
@@ -30,13 +30,8 @@ jobs:
         uses: prefix-dev/rattler-build-action@v0.2.9
         with:
           recipe-path: ./rattler-build-recipe/minetest/recipe.yaml
-          build-args: --channel=conda-forge
-      - name: build minetest-gymnasium
-        uses: prefix-dev/rattler-build-action@v0.2.9
-        with:
-          recipe-path: ./rattler-build-recipe/minetest-gymnasium/recipe.yaml
-          build-args: --channel=conda-forge
-          upload-artifact: false # don't upload to GitHub
+          build-args: --channel=https://repo.prefix.dev/obelisk --channel=conda-forge
+          upload-artifact: false
       - name: upload
         run: |
           for pkg in $(find ./output -type f \( -name "*.conda" \) ); do
