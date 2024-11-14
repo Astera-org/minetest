@@ -456,6 +456,9 @@ public:
 	static u16 getProtocolVersionMin();
 	static u16 getProtocolVersionMax();
 
+	// NOTE(obelisk) Exposed so `remoteinputhandler.cpp` can synchronize env access.
+	ordered_mutex& getEnvMutex() { return m_env_mutex; }
+
 	// Lua files registered for init of async env, pair of modname + path
 	std::vector<std::pair<std::string, std::string>> m_async_init_files;
 	// Identical but for mapgen env
