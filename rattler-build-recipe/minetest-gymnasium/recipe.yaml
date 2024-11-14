@@ -13,33 +13,34 @@ build:
   script: python -m pip install ./minetest-gymnasium -v
   noarch: python
 
-
 requirements:
   host:
     - pip
     - python
-    - setuptools
+    - hatchling
   run:
-    - minetest =0.22
-    # python deps
-    - gymnasium
-    - numpy =1.26
-    - pycapnp >=2,<3
+    - minetest >=0.23
+    # repeated python dependencies from pyproject.toml
+    - gymnasium>=0.29.1,<0.30.0
+    - numpy>=1.26.0,<2.0.0
+    - pycapnp>=2.0.0,<3.0.0
 
 about:
   repository: https://github.com/Astera-org/minetest
   summary: 'Minetest gymnasium interface'
 
 tests:
+  # Ensure the minetest module is available, see: https://prefix-dev.github.io/rattler-build/latest/reference/recipe_file/#python-tests.
   - python:
       imports:
         - minetest
-  - script:
-    # Install the devtest game, which is needed for python test.
-    - mkdir ${CONDA_PREFIX}/share/minetest/games
-    - ln -s -t ${CONDA_PREFIX}/share/minetest/games ${PWD}/games/devtest
-    - if [[ $(minetest --gameid list) != "devtest" ]]; then exit 1; fi
-    - cd minetest-gymnasium && pytest --timeout=60 -v . || (cat /tmp/*/log/*stderr* && exit 1)
+  - script: |
+      # Install the devtest game, which is needed for python test.
+      mkdir ${CONDA_PREFIX}/share/minetest/games
+      ln -s -t ${CONDA_PREFIX}/share/minetest/games ${PWD}/games/devtest
+      if [[ $(minetest --gameid list) != "devtest" ]]; then exit 1; fi
+      cd minetest-gymnasium
+      pytest --timeout=60 -v . || (cat /tmp/*/log/*stderr* && exit 1)
     files:
       source:
         - games/devtest/

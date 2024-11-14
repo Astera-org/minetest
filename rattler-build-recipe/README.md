@@ -21,3 +21,4 @@ rattler-build build --recipe-dir=./rattler-build-recipe -c conda-forge
 ls -lh output/{noarch,linux-64}
 ```
 
+> Can't add channel arguments to recipe, see https://github.com/prefix-dev/rattler-build/issues/262
