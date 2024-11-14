@@ -6,6 +6,7 @@
 
 #include <condition_variable>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 
@@ -23,8 +24,7 @@ struct Channel {
 
   std::condition_variable m_obs_cv;
   std::mutex m_obs_mutex;
-  ::capnp::MallocMessageBuilder *m_obs_msg_builder{nullptr}; // GUARDED_BY(m_obs_mutex)
-  bool m_has_obs{}; // GUARDED_BY(m_obs_mutex)
+  std::unique_ptr<::capnp::MallocMessageBuilder> m_obs_msg_builder{}; // GUARDED_BY(m_obs_mutex)
 
   Channel() {}
 };

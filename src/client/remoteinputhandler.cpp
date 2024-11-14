@@ -6,6 +6,7 @@
 #include "server/player_sao.h"
 #include "threading/ordered_mutex.h"
 #include <cassert>
+#include <cstddef>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -36,12 +37,10 @@ kj::Promise<void> MinetestImpl::step(StepContext context) {
 
   {
     std::unique_lock<std::mutex> lock(m_chan->m_obs_mutex);
-    m_chan->m_obs_cv.wait(lock, [this] { return m_chan->m_has_obs; });
+    m_chan->m_obs_cv.wait(lock, [this] { return m_chan->m_obs_msg_builder != nullptr; });
     auto obs = m_chan->m_obs_msg_builder->getRoot<Observation>();
     context.getResults().setObservation(obs.asReader());
-    delete m_chan->m_obs_msg_builder;
-    m_chan->m_obs_msg_builder = nullptr;
-    m_chan->m_has_obs = false;
+    m_chan->m_obs_msg_builder.reset();
     m_chan->m_obs_cv.notify_one();
   }
 
@@ -182,52 +181,54 @@ void RemoteInputHandler::step_post_render() {
       }
     }
 
-    // NOTE(mickvangelderen): Try to prevent race condition by locking the env before reading data from it.
+    // The non-referential type here ensures that we deep-copy the strings while we hold the lock.
     std::unordered_map<std::string, std::string> player_meta;
     {
       std::lock_guard<ordered_mutex> server_lock = std::lock_guard<ordered_mutex>(gServer->getEnvMutex());
-      auto remote_player= gServer->getEnv().getPlayer(m_player->getName());
+      auto remote_player = gServer->getEnv().getPlayer(m_player->getName());
       assert(remote_player != nullptr);
       player_meta = remote_player->getPlayerSAO()->getMeta().getStrings();
     }
 
-    std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
-    m_chan.m_obs_cv.wait(lock, [this] { return !m_chan.m_has_obs; });
-    m_chan.m_obs_msg_builder = new capnp::MallocMessageBuilder();
-
-    auto obs_builder = m_chan.m_obs_msg_builder->initRoot<Observation>();
-    obs_builder.setReward(score);
-
     {
-      auto img_builder = obs_builder.initImage();
-      img_builder.setWidth(image->getDimension().Width);
-      img_builder.setHeight(image->getDimension().Height);
-      img_builder.setData(capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()), image->getImageDataSizeInBytes()));
-    }
+      auto builder_buffer = new capnp::MallocMessageBuilder();
 
-    {
-      auto aux_builder = obs_builder.initAux();
-      auto entries = aux_builder.initEntries(aux.size());
-      auto entry_it = entries.begin();
-      for (const auto& [key, value] : aux) {
-        entry_it->setKey(key);
-        entry_it->setValue(value);
-        ++entry_it;
+      auto obs_builder = builder_buffer->initRoot<Observation>();
+      obs_builder.setReward(score);
+
+      {
+        auto img_builder = obs_builder.initImage();
+        img_builder.setWidth(image->getDimension().Width);
+        img_builder.setHeight(image->getDimension().Height);
+        img_builder.setData(capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()), image->getImageDataSizeInBytes()));
       }
-    }
 
-    {
-      auto player_meta_builder = obs_builder.initPlayerMeta();
-      auto entries = player_meta_builder.initEntries(player_meta.size());
-      auto entry_it = entries.begin();
-      for (const auto& [key, value] : player_meta) {
-        entry_it->setKey(key);
-        entry_it->setValue(value);
-        ++entry_it;
+      {
+        auto aux_builder = obs_builder.initAux();
+        auto entries = aux_builder.initEntries(aux.size());
+        auto entry_it = entries.begin();
+        for (const auto& [key, value] : aux) {
+          entry_it->setKey(key);
+          entry_it->setValue(value);
+          ++entry_it;
+        }
       }
-    }
 
-    m_chan.m_has_obs = true;
-    m_chan.m_obs_cv.notify_one();
+      {
+        auto player_meta_builder = obs_builder.initPlayerMeta();
+        auto entries = player_meta_builder.initEntries(player_meta.size());
+        auto entry_it = entries.begin();
+        for (const auto& [key, value] : player_meta) {
+          entry_it->setKey(key);
+          entry_it->setValue(value);
+          ++entry_it;
+        }
+      }
+
+      std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
+      m_chan.m_obs_cv.wait(lock, [this] { return m_chan.m_obs_msg_builder == nullptr; });
+      m_chan.m_obs_msg_builder.reset(builder_buffer);
+      m_chan.m_obs_cv.notify_one();
+    }
   }
 }
