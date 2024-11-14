@@ -4,18 +4,15 @@
 #include "remoteplayer.h"
 #include "server.h"
 #include "server/player_sao.h"
-#include "threading/ordered_mutex.h"
+#include "client/content_cao.h"
 #include <cassert>
-#include <cstddef>
 #include <mutex>
 #include <string>
-#include <string_view>
-#include <sstream>
-
 #include <capnp/message.h>
 #include <capnp/serialize.h>
 #include <capnp/rpc.h>
 #include <kj/array.h>
+#include <vector>
 
 
 namespace detail {
@@ -149,86 +146,64 @@ void RemoteInputHandler::step(float dtime) {
 };
 
 void RemoteInputHandler::step_post_render() {
-  if (m_should_send_observation) {
-    m_should_send_observation = false;
+  if (!m_should_send_observation) {
+    return;
+  }
 
-    // send current observation
-    irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
-    irr::video::IImage *image = driver->createScreenShot(video::ECF_R8G8B8);
+  m_should_send_observation = false;
 
-    // parse score from hud
-    // during game startup, the hud is not yet initialized, so there'll be no
-    // score for the first 1-2 steps
-    float score{};
-    std::map<std::string, float> aux{};
-    for (u32 i = 0; i < m_player->maxHudId(); ++i) {
-      auto hud_element = m_player->getHud(i);
-      std::string_view elem_text = hud_element->text;
-      // find the index of the first :
-      const auto colon_pos = elem_text.find(':');
-      if (colon_pos == std::string_view::npos) {
-        continue;
-      }
-      elem_text.remove_prefix(colon_pos + 1); // +1 for space
-      // I'd rather use std::from_chars, but it's not available in libc++ yet.
-      std::stringstream ss{std::string(elem_text)};
-      if (hud_element->name == "score") {
-        ss >> score;
-      } else {
-        float value{};
-        ss >> value;
-        aux[hud_element->name] = value;
-      }
-    }
+  auto builder_buffer = new capnp::MallocMessageBuilder();
+  auto obs_builder = builder_buffer->initRoot<Observation>();
 
-    // The non-referential type here ensures that we deep-copy the strings while we hold the lock.
-    std::unordered_map<std::string, std::string> player_meta;
-    {
-      std::lock_guard<ordered_mutex> server_lock = std::lock_guard<ordered_mutex>(gServer->getEnvMutex());
-      auto remote_player = gServer->getEnv().getPlayer(m_player->getName());
-      assert(remote_player != nullptr);
-      player_meta = remote_player->getPlayerSAO()->getMeta().getStrings();
-    }
+  {
+    irr::video::IImage *image = m_rendering_engine->get_video_driver()->createScreenShot(video::ECF_R8G8B8);
+    auto builder = obs_builder.initImage();
+    builder.setWidth(image->getDimension().Width);
+    builder.setHeight(image->getDimension().Height);
+    builder.setData(capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()), image->getImageDataSizeInBytes()));
+    image->drop();
+  }
 
-    {
-      auto builder_buffer = new capnp::MallocMessageBuilder();
+  {
+    const auto lock_guard = std::lock_guard { m_player->exposeTheMutex() };
+    const auto& hud_elements = m_player->exposeTheHud();
+    constexpr auto is_text = [](const HudElement * element) noexcept { return element->type == HUD_ELEM_TEXT; };
+    const auto text_count = std::count_if(hud_elements.begin(), hud_elements.end(), is_text);
 
-      auto obs_builder = builder_buffer->initRoot<Observation>();
-      obs_builder.setReward(score);
-
-      {
-        auto img_builder = obs_builder.initImage();
-        img_builder.setWidth(image->getDimension().Width);
-        img_builder.setHeight(image->getDimension().Height);
-        img_builder.setData(capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()), image->getImageDataSizeInBytes()));
-      }
-
-      {
-        auto aux_builder = obs_builder.initAux();
-        auto entries = aux_builder.initEntries(aux.size());
-        auto entry_it = entries.begin();
-        for (const auto& [key, value] : aux) {
-          entry_it->setKey(key);
-          entry_it->setValue(value);
-          ++entry_it;
-        }
-      }
-
-      {
-        auto player_meta_builder = obs_builder.initPlayerMeta();
-        auto entries = player_meta_builder.initEntries(player_meta.size());
-        auto entry_it = entries.begin();
-        for (const auto& [key, value] : player_meta) {
-          entry_it->setKey(key);
-          entry_it->setValue(value);
-          ++entry_it;
-        }
-      }
-
-      std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
-      m_chan.m_obs_cv.wait(lock, [this] { return m_chan.m_obs_msg_builder == nullptr; });
-      m_chan.m_obs_msg_builder.reset(builder_buffer);
-      m_chan.m_obs_cv.notify_one();
+    auto builder = obs_builder.initHudElements();
+    auto entries = builder.initEntries(text_count);
+    auto entry_it = entries.begin();
+    for (const auto& hud_element : hud_elements) {
+      if (!is_text(hud_element)) continue;
+      entry_it->setKey(hud_element->name);
+      entry_it->setValue(hud_element->text);
+      ++entry_it;
     }
   }
+
+  obs_builder.setPlayerHealth(m_player->hp);
+  obs_builder.setPlayerHealthMax(m_player->getCAO()->getProperties().hp_max);
+  obs_builder.setPlayerBreath(m_player->getBreath());
+  obs_builder.setPlayerBreathMax(m_player->getCAO()->getProperties().breath_max);
+  obs_builder.setPlayerIsDead(m_player->isDead());
+
+  {
+    auto server_lock = std::lock_guard { gServer->getEnvMutex() };
+    auto remote_player = gServer->getEnv().getPlayer(m_player->getName());
+    assert(remote_player != nullptr);
+    const auto& player_meta = remote_player->getPlayerSAO()->getMeta().getStrings();
+    auto builder = obs_builder.initPlayerMetadata();
+    auto entries = builder.initEntries(player_meta.size());
+    auto entry_it = entries.begin();
+    for (const auto& [key, value] : player_meta) {
+      entry_it->setKey(key);
+      entry_it->setValue(value);
+      ++entry_it;
+    }
+  }
+
+  std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
+  m_chan.m_obs_cv.wait(lock, [this] { return m_chan.m_obs_msg_builder == nullptr; });
+  m_chan.m_obs_msg_builder.reset(builder_buffer);
+  m_chan.m_obs_cv.notify_one();
 }

@@ -13,8 +13,10 @@ import sys
 import time
 import uuid
 from collections import namedtuple
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import capnp
 import gymnasium as gym
@@ -108,6 +110,91 @@ def _free_port():
         return s.getsockname()[1]
 
 
+class Observation(TypedDict):
+    image: np.typing.NDArray[np.uint8]
+
+
+class HudElement(TypedDict):
+    name: str
+    text: str
+
+
+class Info(TypedDict):
+    hud_elements: list[HudElement]
+    player_health: int
+    player_health_max: int
+    player_breath: int
+    player_breath_max: int
+    player_is_dead: bool
+    player_metadata: dict[str, str]
+
+
+RewardFn = Callable[[Observation, Info], float]
+
+
+class RewardFnScoreDiff:
+    def __init__(self):
+        self.old = None
+
+    def __call__(self, _obs: Observation, info: Info):
+        new = float(info["player_metadata"]["score"])
+        if self.old is None:
+            self.old = new
+            return 0.0
+        else:
+            reward = new - self.old
+            self.old = new
+            return reward
+
+
+def reward_fn_zero(_obs: Observation, _info: Info):
+    return 0.0
+
+
+@dataclass
+class AdditionalObservationSpace:
+    """
+    Used to specify an additional observation space for the minetest environment based on game specific information.
+
+    Attributes:
+        space (gym.spaces.Space):
+            The Gym-compatible space object defining the shape, type, and boundaries of the observation.
+        value_fn (Callable[[Info], Any]):
+            A function that takes an environment `info` dictionary as input and returns the value for the defined observation space.
+            The output must conform to the constraints of the defined `space`.
+
+    Example:
+        Adding a custom observation for player health in a game environment:
+
+        ```python
+        from gymnasium import spaces
+        import numpy as np
+        from minetest.minetest_env import AdditionalObservationSpace
+
+        health_observation = AdditionalObservationSpace(
+            space=spaces.Box(0, 20, (1,), dtype=np.int32),
+            value_fn=lambda info: np.array(info["player_health"], dtype=np.int32)
+        )
+        ```
+    """
+
+    space: gym.spaces.Space
+    value_fn: Callable[[Info], Any]
+
+
+def _assert_additional_observation_spaces_valid(
+    additional_observation_spaces: dict[str, AdditionalObservationSpace],
+):
+    for key, value in additional_observation_spaces.items():
+        assert (
+            key not in Observation.__annotations__
+        ), "space name {key} is already in use"
+        assert isinstance(
+            value.space, gym.spaces.Space
+        ), "space is not a gym.spaces.Space"
+        assert isinstance(value.space.dtype, np.dtype), "space.dtype is not an np.dtype"
+
+
 class MinetestEnv(gym.Env):
     metadata = {"render_modes": ["rgb_array", "human"]}
 
@@ -129,11 +216,16 @@ class MinetestEnv(gym.Env):
         headless: bool = True,
         verbose_logging: bool = False,
         log_to_stderr: bool = False,
-        additional_observation_spaces: dict[str, gym.Space] | None = None,
         remote_input_handler_time_step: float = 0.125,
         hide_hud: bool = True,
+        reward_fn: RewardFn = reward_fn_zero,
+        additional_observation_spaces: dict[str, AdditionalObservationSpace]
+        | None = None,
     ):
-        self._prev_score = None
+        self._reward_fn = reward_fn
+        self._additional_observation_spaces = additional_observation_spaces or {}
+        _assert_additional_observation_spaces_valid(self._additional_observation_spaces)
+
         if config_dict is None:
             config_dict = {}
         self.unique_env_id = str(uuid.uuid4())
@@ -165,7 +257,34 @@ class MinetestEnv(gym.Env):
             self._start_pygame()
 
         # Define action and observation space
-        self._configure_spaces(additional_observation_spaces)
+        self.max_mouse_move_x = self.render_size[0] // 2
+        self.max_mouse_move_y = self.render_size[1] // 2
+        self.action_space = gym.spaces.Dict(
+            {
+                "keys": gym.spaces.MultiBinary(len(KEY_NAMES)),
+                "mouse": gym.spaces.Box(
+                    low=np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
+                    high=np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
+                    shape=(2,),
+                    dtype=np.int32,
+                ),
+            }
+        )
+
+        self.observation_space = gym.spaces.Dict(
+            {
+                "image": gym.spaces.Box(
+                    0,
+                    255,
+                    shape=(self.render_size.height, self.render_size.width, 3),
+                    dtype=np.uint8,
+                ),
+                **{
+                    key: value.space
+                    for key, value in self._additional_observation_spaces.items()
+                },
+            }
+        )
 
         # Define Minetest paths
         self._set_artifact_dirs(
@@ -247,39 +366,6 @@ class MinetestEnv(gym.Env):
         self.config_dict = config_dict
         self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
         self._kj_loop: contextlib.AbstractAsyncContextManager = None
-
-    def _configure_spaces(self, additional_observation_spaces):
-        # Define action and observation space
-        self.max_mouse_move_x = self.render_size[0] // 2
-        self.max_mouse_move_y = self.render_size[1] // 2
-        self.action_space = gym.spaces.Dict(
-            {
-                "keys": gym.spaces.MultiBinary(len(KEY_NAMES)),
-                "mouse": gym.spaces.Box(
-                    low=np.array([-self.max_mouse_move_x, -self.max_mouse_move_y]),
-                    high=np.array([self.max_mouse_move_x, self.max_mouse_move_y]),
-                    shape=(2,),
-                    dtype=np.int32,
-                ),
-            },
-        )
-        obs_d = {
-            "image": gym.spaces.Box(
-                0,
-                255,
-                shape=(self.render_size.height, self.render_size.width, 3),
-                dtype=np.uint8,
-            ),
-        }
-        if additional_observation_spaces:
-            assert isinstance(additional_observation_spaces, dict)
-            for key, space in additional_observation_spaces.items():
-                assert isinstance(key, str)
-                assert isinstance(space, gym.spaces.Box)
-                assert space.shape is None or space.shape == (1,)
-                obs_d[key] = space
-
-        self.observation_space = gym.spaces.Dict(obs_d)
 
     def _set_artifact_dirs(self, artifact_dir, world_dir, config_path):
         if artifact_dir is None:
@@ -502,7 +588,7 @@ class MinetestEnv(gym.Env):
         valid_obs_seen = 0
         self._logger.debug("Waiting for first obs...")
         for attempt in range(valid_obs_max_attempts):
-            step_promise = self.capnp_client.step(empty_request)
+            step_response_future = self.capnp_client.step(empty_request)
             if not attempt:
                 time.sleep(1)
                 # Check for crash triggered by first action
@@ -514,12 +600,7 @@ class MinetestEnv(gym.Env):
                         "Minetest terminated during handshake! Return code: "
                         f"{self.minetest_process.returncode}, logs in {self.log_dir}",
                     )
-            (
-                obs,
-                _,
-                _,
-                _,
-            ) = deserialize_obs(await step_promise, self.observation_space)
+            obs = _step_response_observation(await step_response_future)
             if _is_loading(obs["image"]):
                 valid_obs_seen = 0
                 self._logger.debug(
@@ -531,13 +612,12 @@ class MinetestEnv(gym.Env):
                 self._logger.debug(
                     f"Received first obs: {obs['image'].shape}, Disabling HUD"
                 )
-                obs, _, _, _, _ = await self._async_step(
+                (obs, _, _, _, info) = await self._async_step(
                     action_from_key_name("toggleHud")
                     if self._hide_hud
                     else action_noop()
                 )
-                self.last_obs = obs
-                return obs, {}
+                return obs, info
         raise RuntimeError(
             f"Failed to get a valid observation after {valid_obs_max_attempts} attempts"
         )
@@ -583,24 +663,42 @@ class MinetestEnv(gym.Env):
             action["mouse"] = action["mouse"].tolist()
         step_request = self.capnp_client.step_request()
         serialize_action(action, step_request.action)
-        step_response = step_request.send()
+        step_response_future = step_request.send()
 
         # TODO more robust check for whether minetest is alive while receiving observations
         if self.minetest_process and self.minetest_process.poll() is not None:
             return self.last_obs, 0.0, True, False, {}
 
-        next_obs, score, done, info = deserialize_obs(
-            await step_response, self.observation_space
-        )
-        self.last_obs = next_obs
+        step_response = await step_response_future
+        base_obs = _step_response_observation(step_response)
+        info = _step_response_info(step_response)
+        additional_obs = self._additional_obs(info)
+        obs = {**base_obs, **additional_obs}
+        reward = self._reward_fn(obs, info)
+
+        self.last_obs = obs
 
         if self.render_mode == "human":
             self._display_pygame()
 
-        reward = 0 if self._prev_score is None else score - self._prev_score
-        self._prev_score = score
+        return obs, reward, False, False, info
 
-        return next_obs, reward, done, False, info
+    def _additional_obs(self, info) -> dict[str, Any]:
+        additional_obs = {
+            key: additional_space.value_fn(info)
+            for key, additional_space in self._additional_observation_spaces.items()
+        }
+
+        for key, value in additional_obs.items():
+            expected_dtype = self._additional_observation_spaces[key].space.dtype
+            assert isinstance(
+                value, np.ndarray
+            ), f"Expected value to be ndarray but got {type(value)}"
+            assert np.issubdtype(
+                value.dtype, expected_dtype
+            ), f"Expected dtype {expected_dtype} but got {value.dtype}"
+
+        return additional_obs
 
     def step(self, action: dict[str, Any]):
         return self._run_on_event_loop(self._async_step(action))
@@ -696,37 +794,39 @@ class MinetestEnv(gym.Env):
         return minetest_process
 
 
-def deserialize_obs(
-    step_response, observation_space: gym.spaces.Dict
-) -> tuple[dict[str, Any], float, bool, dict[str, str]]:
+def _step_response_image(step_response) -> np.typing.NDArray[np.uint8]:
     img = step_response.observation.image
-    img_data = np.frombuffer(img.data, dtype=np.uint8).reshape(
-        (img.height, img.width, 3)
+    return np.frombuffer(img.data, dtype=np.uint8).reshape((img.height, img.width, 3))
+
+
+def _step_response_observation(step_response) -> Observation:
+    return Observation(image=_step_response_image(step_response))
+
+
+def _step_response_hud_elements(step_response) -> list[HudElement]:
+    return [
+        HudElement(name=item.key, text=item.value)
+        for item in step_response.observation.hudElements.entries
+    ]
+
+
+def _step_response_player_metadata(step_response) -> dict[str, str]:
+    return {
+        item.key: item.value
+        for item in step_response.observation.playerMetadata.entries
+    }
+
+
+def _step_response_info(step_response) -> Info:
+    return Info(
+        hud_elements=_step_response_hud_elements(step_response),
+        player_health=step_response.observation.playerHealth,
+        player_health_max=step_response.observation.playerHealthMax,
+        player_breath=step_response.observation.playerBreath,
+        player_breath_max=step_response.observation.playerBreathMax,
+        player_is_dead=step_response.observation.playerIsDead,
+        player_metadata=_step_response_player_metadata(step_response),
     )
-    obs = {
-        "image": img_data,
-    }
-    for aux_item in step_response.observation.aux.entries:
-        assert aux_item.key in observation_space.spaces, (
-            f"Unknown observation space: {aux_item.key}. "
-            "Please set additional_observation_spaces when constructing."
-        )
-        obs[aux_item.key] = np.array([aux_item.value], dtype=np.float32)
-
-    for key in observation_space.spaces:
-        if key not in obs:
-            obs[key] = np.zeros((1,), dtype=np.float32)
-
-    info = {
-        "player_metadata": {
-            item.key: item.value
-            for item in step_response.observation.playerMeta.entries
-        }
-    }
-
-    reward = step_response.observation.reward
-    done = step_response.observation.done
-    return obs, reward, done, info
 
 
 def _lazy_nonzero(arr):
