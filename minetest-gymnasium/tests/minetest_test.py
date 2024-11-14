@@ -10,9 +10,15 @@ from pathlib import Path
 import gymnasium as gym
 import numpy as np
 import pytest
-from minetest import minetest_env
-from minetest.minetest_env import KEY_NAME_TO_INDEX, action_noop
 from PIL import Image
+
+from minetest import minetest_env
+from minetest.minetest_env import (
+    KEY_NAME_TO_INDEX,
+    AdditionalObservationSpace,
+    HudElement,
+    action_noop,
+)
 
 
 @pytest.fixture
@@ -51,6 +57,20 @@ def minetest_executable():
     return executable
 
 
+def find_hud_el(items: list[HudElement], name: str):
+    for item in items:
+        if item["name"] == name:
+            return item["text"]
+    raise LookupError()
+
+
+def parse_hud_el_int(text: str) -> int:
+    pos = text.find(":")
+    if pos < 0:
+        raise ValueError()
+    return int(text[pos + 1 :].strip())
+
+
 @pytest.fixture
 def env(artifact_dir, world_dir, minetest_executable):
     render_size = (223, 111)
@@ -63,7 +83,15 @@ def env(artifact_dir, world_dir, minetest_executable):
         world_dir=world_dir,
         verbose_logging=True,
         additional_observation_spaces={
-            "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
+            "return": AdditionalObservationSpace(
+                space=gym.spaces.Box(
+                    low=-(2**20), high=2**20, shape=(1,), dtype=np.int32
+                ),
+                value_fn=lambda info: np.array(
+                    [parse_hud_el_int(find_hud_el(info["hud_elements"], "return"))],
+                    dtype=np.int32,
+                ),
+            )
         },
     )
     yield env
@@ -90,14 +118,25 @@ def test_new_env_after_exception(artifact_dir, world_dir, minetest_executable, c
             world_dir=world_dir,
             verbose_logging=True,
             additional_observation_spaces={
-                "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
+                "return": AdditionalObservationSpace(
+                    space=gym.spaces.Box(
+                        low=-(2**20), high=2**20, shape=(1,), dtype=np.int32
+                    ),
+                    value_fn=lambda info: np.array(
+                        [parse_hud_el_int(find_hud_el(info["hud_elements"], "return"))],
+                        dtype=np.int32,
+                    ),
+                )
             },
         )
 
     env = make_env()
-    with unittest.mock.patch.object(
-        env.unwrapped, "_poll_minetest_process", return_value=1
-    ), pytest.raises(RuntimeError):
+    with (
+        unittest.mock.patch.object(
+            env.unwrapped, "_poll_minetest_process", return_value=1
+        ),
+        pytest.raises(RuntimeError),
+    ):
         initial_obs, info = env.reset()
     with make_env() as env:
         initial_obs, info = env.reset()
@@ -127,8 +166,17 @@ def test_minetest_basic(artifact_dir, world_dir, minetest_executable, caplog):
         world_dir=world_dir,
         verbose_logging=True,
         additional_observation_spaces={
-            "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
+            "return": AdditionalObservationSpace(
+                space=gym.spaces.Box(
+                    low=-(2**20), high=2**20, shape=(1,), dtype=np.int32
+                ),
+                value_fn=lambda info: np.array(
+                    [parse_hud_el_int(find_hud_el(info["hud_elements"], "return"))],
+                    dtype=np.int32,
+                ),
+            )
         },
+        reward_fn=minetest_env.RewardFnScoreDiff(),
     )
 
     # Context manager to make sure close() is called even if test fails.
@@ -187,9 +235,7 @@ def test_minetest_game_dir(artifact_dir, minetest_executable, caplog):
         world_dir=None,
         game_dir=devetest_game_dir,
         verbose_logging=True,
-        additional_observation_spaces={
-            "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
-        },
+        additional_observation_spaces={},
     )
 
     # Context manager to make sure close() is called even if test fails.
@@ -220,7 +266,15 @@ def test_async_vector_env(artifact_dir, world_dir, minetest_executable, caplog):
             world_dir=world_dir,
             verbose_logging=True,
             additional_observation_spaces={
-                "return": gym.spaces.Box(low=-(2**20), high=2**20, shape=(1,))
+                "return": AdditionalObservationSpace(
+                    space=gym.spaces.Box(
+                        low=-(2**20), high=2**20, shape=(1,), dtype=np.int32
+                    ),
+                    value_fn=lambda info: np.array(
+                        [parse_hud_el_int(find_hud_el(info["hud_elements"], "return"))],
+                        dtype=np.int32,
+                    ),
+                )
             },
         )
         for _ in range(num_envs)
@@ -228,6 +282,7 @@ def test_async_vector_env(artifact_dir, world_dir, minetest_executable, caplog):
     env = gym.vector.AsyncVectorEnv(envs, context=async_env_context)
 
     initial_obs, info = env.reset()
+    print(info)
     assert len(initial_obs["image"]) == num_envs
     assert len(initial_obs["return"]) == num_envs
     for i in range(5):

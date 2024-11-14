@@ -242,6 +242,17 @@ public:
 	// Get actual usable number of hotbar items (clamped to size of "main" list)
 	u16 getMaxHotbarItemcount();
 
+	// NOTE(obelisk): We need this because getHud and friends release the lock too early.
+	[[nodiscard]] constexpr auto exposeTheHud() const & noexcept -> auto& {
+		return hud;
+	}
+	auto exposeTheHud() const && = delete;
+
+	// NOTE(obelisk): We need this because getHud and friends release the lock too early.
+	[[nodiscard]] constexpr auto exposeTheMutex() & -> auto& {
+		return m_mutex;
+	}
+
 protected:
 	std::string m_name;
 	v3f m_speed; // velocity; in BS-space
