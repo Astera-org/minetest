@@ -14,7 +14,7 @@ import time
 import uuid
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import capnp
 import gymnasium as gym
@@ -113,23 +113,23 @@ class MinetestEnv(gym.Env):
 
     def __init__(
         self,
-        executable: Optional[os.PathLike] = "minetest",
-        world_dir: Optional[os.PathLike] = None,
-        artifact_dir: Optional[os.PathLike] = None,
-        config_path: Optional[os.PathLike] = None,
-        server_addr: Optional[str] = None,
-        render_size: Tuple[int, int] = (600, 400),
-        display_size: Optional[Tuple[int, int]] = None,
+        executable: os.PathLike | None = "minetest",
+        world_dir: os.PathLike | None = None,
+        artifact_dir: os.PathLike | None = None,
+        config_path: os.PathLike | None = None,
+        server_addr: str | None = None,
+        render_size: tuple[int, int] = (600, 400),
+        display_size: tuple[int, int] | None = None,
         render_mode: str = "rgb_array",
-        game_dir: Optional[os.PathLike] = None,
+        game_dir: os.PathLike | None = None,
         fov: int = 72,
         base_seed: int = 0,
-        world_seed: Optional[int] = None,
-        config_dict: Dict[str, Any] = None,
+        world_seed: int | None = None,
+        config_dict: dict[str, Any] = None,
         headless: bool = True,
         verbose_logging: bool = False,
         log_to_stderr: bool = False,
-        additional_observation_spaces: Optional[Dict[str, gym.Space]] = None,
+        additional_observation_spaces: dict[str, gym.Space] | None = None,
         remote_input_handler_time_step: float = 0.125,
         hide_hud: bool = True,
     ):
@@ -226,8 +226,8 @@ class MinetestEnv(gym.Env):
         self.verbose_logging = verbose_logging
 
         self.capnp_client = None
-        self.minetest_process: Optional[subprocess.Popen] = None
-        self._minetest_stderr_path: Optional[os.PathLike] = None
+        self.minetest_process: subprocess.Popen | None = None
+        self._minetest_stderr_path: os.PathLike | None = None
 
         # Env objects
         self.last_obs = None
@@ -453,7 +453,7 @@ class MinetestEnv(gym.Env):
         self.screen.blit(pygame.transform.scale(img, self.display_size), (0, 0))
         pygame.display.update()
 
-    def seed(self, seed: Optional[int] = None):
+    def seed(self, seed: int | None = None):
         self._np_random = np.random.RandomState(seed or 0)
 
     def _increment_socket_addr(self):
@@ -481,7 +481,7 @@ class MinetestEnv(gym.Env):
                 self._logger.error(line.strip())
 
     async def _async_reset(
-        self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None
+        self, seed: int | None = None, options: dict[str, Any] | None = None
     ):
         self.seed(seed=seed)
         if self.reset_world:
@@ -563,9 +563,7 @@ class MinetestEnv(gym.Env):
                 f"minetest capnp error: {e}",
             ).with_traceback(e.__traceback__) from None
 
-    def reset(
-        self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None
-    ):
+    def reset(self, seed: int | None = None, options: dict[str, Any] | None = None):
         self.close()  # ensure processes, event loops are cleaned up.
         self._event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._event_loop)
@@ -573,7 +571,7 @@ class MinetestEnv(gym.Env):
             self._async_reset(seed=seed, options=options), timeout=10000
         )
 
-    async def _async_step(self, action: Dict[str, Any]):
+    async def _async_step(self, action: dict[str, Any]):
         if self.minetest_process and self.minetest_process.poll() is not None:
             raise RuntimeError(
                 "Minetest terminated! Return code: "
@@ -604,7 +602,7 @@ class MinetestEnv(gym.Env):
 
         return next_obs, reward, done, False, info
 
-    def step(self, action: Dict[str, Any]):
+    def step(self, action: dict[str, Any]):
         return self._run_on_event_loop(self._async_step(action))
 
     def render(self):
@@ -735,7 +733,7 @@ def _lazy_nonzero(arr):
     return [index for index, value in enumerate(arr) if value]
 
 
-def serialize_action(action: Dict[str, Any], action_msg) -> None:
+def serialize_action(action: dict[str, Any], action_msg) -> None:
     mouse = np.array(action["mouse"])
     action_msg.mouseDx = mouse[0].item()
     action_msg.mouseDy = mouse[1].item()
