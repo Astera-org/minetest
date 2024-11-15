@@ -51,7 +51,7 @@ void TestSettings::runTests(IGameDef *gamedef)
 ////////////////////////////////////////////////////////////////////////////////
 
 const char *TestSettings::config_text_before =
-	u8"leet = 1337\n"
+	reinterpret_cast<const char *>(u8"leet = 1337\n"
 	"leetleet = 13371337\n"
 	"leetleet_neg = -13371337\n"
 	"floaty_thing = 1.1\n"
@@ -74,10 +74,10 @@ const char *TestSettings::config_text_before =
 	"\"\"\"\n"
 	"np_terrain = 5, 40, (250, 250, 250), 12341, 5, 0.700012505, 2.40012503\n"
 	"zoop = true\n"
-	"[dummy_eof_end_tag]\n";
+	"[dummy_eof_end_tag]\n");
 
 const char *TestSettings::config_text_after =
-	u8"leet = 1337\n"
+	reinterpret_cast<const char *>(u8"leet = 1337\n"
 	"leetleet = 13371337\n"
 	"leetleet_neg = -13371337\n"
 	"floaty_thing = 1.1\n"
@@ -116,7 +116,7 @@ const char *TestSettings::config_text_after =
 	"	num_apples = 4\n"
 	"	num_oranges = 53\n"
 	"}\n"
-	"[dummy_eof_end_tag]";
+	"[dummy_eof_end_tag]");
 
 void compare_settings(const std::string &name, Settings *a, Settings *b)
 {
@@ -154,7 +154,7 @@ void TestSettings::testAllSettings()
 
 	// Not sure if 1.1 is an exact value as a float, but doesn't matter
 	UASSERT(fabs(s.getFloat("floaty_thing") - 1.1) < 0.001);
-	UASSERT(s.get("stringy_thing") == u8"asd /( ¤%&(/\" BLÖÄRP");
+	UASSERT(s.get("stringy_thing") == reinterpret_cast<const char *>(u8"asd /( ¤%&(/\" BLÖÄRP"));
 	UASSERT(fabs(s.getV3F("coord").X - 1.0) < 0.001);
 	UASSERT(fabs(s.getV3F("coord").Y - 2.0) < 0.001);
 	UASSERT(fabs(s.getV3F("coord").Z - 4.5) < 0.001);

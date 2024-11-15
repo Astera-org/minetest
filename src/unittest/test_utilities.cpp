@@ -186,9 +186,9 @@ void TestUtilities::testWrapDegrees_0_360_v3f()
 void TestUtilities::testLowercase()
 {
 	UASSERTEQ(auto, lowercase("Foo bAR"), "foo bar");
-	UASSERTEQ(auto, lowercase(u8"eeeeeeaaaaaaaaaaaààààà"), u8"eeeeeeaaaaaaaaaaaààààà");
+	UASSERTEQ(auto, lowercase(reinterpret_cast<const char *>(u8"eeeeeeaaaaaaaaaaaààààà")), reinterpret_cast<const char *>(u8"eeeeeeaaaaaaaaaaaààààà"));
 	// intentionally won't handle Unicode, regardless of locale
-	UASSERTEQ(auto, lowercase(u8"ÜÜ"), u8"ÜÜ");
+	UASSERTEQ(auto, lowercase(reinterpret_cast<const char *>(u8"ÜÜ")), reinterpret_cast<const char *>(u8"ÜÜ"));
 	UASSERTEQ(auto, lowercase("MINETEST-powa"), "minetest-powa");
 }
 
@@ -313,21 +313,21 @@ void TestUtilities::testAsciiPrintableHelper()
 
 void TestUtilities::testUTF8()
 {
-	UASSERT(utf8_to_wide(u8"¤") == L"¤");
+	UASSERT(utf8_to_wide(reinterpret_cast<const char *>(u8"¤")) == L"¤");
 
-	UASSERTEQ(std::string, wide_to_utf8(L"¤"), u8"¤");
+	UASSERTEQ(std::string, wide_to_utf8(L"¤"), reinterpret_cast<const char *>(u8"¤"));
 
 	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide("")), "");
 	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide("the shovel dug a crumbly node!")),
 		"the shovel dug a crumbly node!");
 
-	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide(u8"-ä-")),
-		u8"-ä-");
-	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide(u8"-\U0002000b-")),
-		u8"-\U0002000b-");
+	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide(reinterpret_cast<const char *>(u8"-ä-"))),
+		reinterpret_cast<const char *>(u8"-ä-"));
+	UASSERTEQ(std::string, wide_to_utf8(utf8_to_wide(reinterpret_cast<const char *>(u8"-\U0002000b-"))),
+		reinterpret_cast<const char *>(u8"-\U0002000b-"));
 	if constexpr (sizeof(wchar_t) == 4) {
 		const auto *literal = U"-\U0002000b-";
-		UASSERT(utf8_to_wide(u8"-\U0002000b-") == reinterpret_cast<const wchar_t*>(literal));
+		UASSERT(utf8_to_wide(reinterpret_cast<const char *>(u8"-\U0002000b-")) == reinterpret_cast<const wchar_t*>(literal));
 	}
 
 	// try to check that the conversion function does not accidentally keep
@@ -657,7 +657,7 @@ void TestUtilities::testSanitizeDirName()
 	UASSERTEQ(auto, sanitizeDirName(" a ", "~"), "_a_");
 	UASSERTEQ(auto, sanitizeDirName("COM1", "~"), "~COM1");
 	UASSERTEQ(auto, sanitizeDirName("COM1", ":"), "_COM1");
-	UASSERTEQ(auto, sanitizeDirName(u8"cOm\u00B2", "~"), u8"~cOm\u00B2");
+	UASSERTEQ(auto, sanitizeDirName(reinterpret_cast<const char *>(u8"cOm\u00B2"), "~"), reinterpret_cast<const char *>(u8"~cOm\u00B2"));
 	UASSERTEQ(auto, sanitizeDirName("cOnIn$", "~"), "~cOnIn$");
 	UASSERTEQ(auto, sanitizeDirName(" cOnIn$ ", "~"), "_cOnIn$_");
 }
@@ -738,7 +738,7 @@ void TestUtilities::testColorizeURL()
 	std::string result = colorize_url("http://example.com/");
 	UASSERTEQ(auto, result, (GREY "http://" WHITE "example.com" GREY "/"));
 
-	result = colorize_url(u8"https://u:p@wikipedi\u0430.org:1234/heIIoll?a=b#c");
+	result = colorize_url(reinterpret_cast<const char *>(u8"https://u:p@wikipedi\u0430.org:1234/heIIoll?a=b#c"));
 	UASSERTEQ(auto, result,
 		(GREY "https://u:p@" WHITE "wikipedi" RED "%d0%b0" WHITE ".org" GREY ":1234/heIIoll?a=b#c"));
 #else
@@ -748,7 +748,7 @@ void TestUtilities::testColorizeURL()
 
 void TestUtilities::testSanitizeUntrusted()
 {
-	std::string_view t1{u8"Anästhesieausrüstung"};
+	std::string_view t1{reinterpret_cast<const char *>(u8"Anästhesieausrüstung")};
 	UASSERTEQ(auto, sanitize_untrusted(t1), t1);
 
 	std::string_view t2{"stop\x00here", 9};
