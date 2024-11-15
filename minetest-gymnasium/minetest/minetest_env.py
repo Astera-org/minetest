@@ -31,7 +31,9 @@ except ImportError:
     pygame = None
 
 remoteclient_capnp = capnp.load(
-    os.path.join(os.path.dirname(__file__), "proto/remoteclient.capnp")
+    os.path.join(os.path.dirname(__file__), "proto/remoteclient.capnp"),
+    # Necessary to load `capnp/c++.capnp` for the cxx namespace declaration.
+    imports=[Path(p).parent.as_posix() for p in capnp.__path__]
 )
 
 # See `proto/remoteclient.capnp`. {'forward': 0, 'backward': 1, 'left': 2,

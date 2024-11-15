@@ -1,6 +1,9 @@
 # Cap'n Proto schema
 @0xa7829f89062090f7;
 
+using Cxx = import "/capnp/c++.capnp";
+$Cxx.namespace("proto");
+
 struct KeyPressType {
   # this enum should equal the KeyType enum in keys.h so we can use the int value
   enum Key {

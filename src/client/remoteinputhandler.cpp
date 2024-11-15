@@ -38,7 +38,7 @@ kj::Promise<void> MinetestImpl::init(InitContext) {
 }
 
 kj::Promise<void> MinetestImpl::step(StepContext context) {
-  Action::Reader action = context.getParams().getAction();
+  proto::Action::Reader action = context.getParams().getAction();
   {
     std::unique_lock<std::mutex> lock(m_chan->m_action_mutex);
     m_chan->m_action = &action;
@@ -48,7 +48,7 @@ kj::Promise<void> MinetestImpl::step(StepContext context) {
   {
     std::unique_lock<std::mutex> lock(m_chan->m_obs_mutex);
     m_chan->m_obs_cv.wait(lock, [this] { return m_chan->m_obs_msg_builder != nullptr; });
-    auto obs = m_chan->m_obs_msg_builder->getRoot<Observation>();
+    auto obs = m_chan->m_obs_msg_builder->getRoot<proto::Observation>();
     context.getResults().setObservation(obs.asReader());
     m_chan->m_obs_msg_builder.reset();
     m_chan->m_obs_cv.notify_one();
@@ -181,7 +181,7 @@ void RemoteInputHandler::step_post_render() {
   m_should_send_observation = false;
 
   auto builder_buffer = new capnp::MallocMessageBuilder();
-  auto obs_builder = builder_buffer->initRoot<Observation>();
+  auto obs_builder = builder_buffer->initRoot<proto::Observation>();
 
   {
     irr::video::IImage *image = m_rendering_engine->get_video_driver()->createScreenShot(video::ECF_R8G8B8);

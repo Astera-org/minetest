@@ -30,7 +30,7 @@ namespace detail {
 struct Channel {
   std::condition_variable m_action_cv;
   std::mutex m_action_mutex;
-  Action::Reader *m_action{nullptr}; // GUARDED_BY(m_action_mutex)
+  proto::Action::Reader *m_action{nullptr}; // GUARDED_BY(m_action_mutex)
   bool m_did_init{}; // GUARDED_BY(m_action_mutex)
 
   std::condition_variable m_obs_cv;
@@ -40,7 +40,7 @@ struct Channel {
   Channel() {}
 };
 
-class MinetestImpl final : public Minetest::Server {
+class MinetestImpl final : public proto::Minetest::Server {
 public:
   MinetestImpl(Channel *chan) : m_chan(chan) {}
   kj::Promise<void> init(InitContext context) override;
