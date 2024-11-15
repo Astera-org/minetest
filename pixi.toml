@@ -36,12 +36,6 @@ zlib = "*"
 zstd = "*"
 freetype = ">=2.12.1,<2.13"
 
-[feature.gym.dependencies]
-gymnasium = "*"
-numpy = "*"
-pycapnp = ">=2,<3"
-pygame = "*"
-
 [feature.gym.pypi-dependencies]
 minetest-gymnasium = { path = "./minetest-gymnasium", editable = true }
 
