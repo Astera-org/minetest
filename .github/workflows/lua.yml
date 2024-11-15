@@ -37,8 +37,8 @@ jobs:
       run: |
         pixi run ./util/ci/build.sh
       env:
-        CC: clang-14
-        CXX: clang++-14
+        CC: clang-18
+        CXX: clang++-18
         CMAKE_BUILD_SERVER: FALSE
         CMAKE_FLAGS: "-DENABLE_GETTEXT=0 -DBUILD_SERVER=0 -DBUILD_UNITTESTS=0"
 

@@ -44,7 +44,7 @@ jobs:
       - name: Install deps
         run: |
           source ./util/ci/common.sh
-          install_linux_deps clang-14
+          install_linux_deps clang-18
 
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
@@ -56,8 +56,8 @@ jobs:
         run: |
           pixi run ./util/ci/build.sh
         env:
-          CC: clang-14
-          CXX: clang++-14
+          CC: clang-18
+          CXX: clang++-18
           CMAKE_BUILD_SERVER: FALSE
           CMAKE_FLAGS: -DUSE_SDL2=ON -DSANITIZER=ubsan
 

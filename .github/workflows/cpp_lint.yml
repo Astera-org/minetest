@@ -30,7 +30,7 @@ on:
       - '.github/workflows/**.yml'
 
 env:
-  CLANG_TIDY: clang-tidy-15
+  CLANG_TIDY: clang-tidy-18
 
 jobs:
   clang_tidy:
@@ -40,7 +40,7 @@ jobs:
     - name: Install deps
       run: |
         source ./util/ci/common.sh
-        install_linux_deps $CLANG_TIDY
+        install_linux_deps $CLANG_TIDY g++-14
 
     - uses: prefix-dev/setup-pixi@v0.8.1
       with:
