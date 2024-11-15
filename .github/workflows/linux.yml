@@ -70,16 +70,16 @@ jobs:
           ./bin/minetest --run-unittests
 
   # Current gcc version
-  gcc_14:
-    runs-on: ubuntu-24.04
+  gcc_12:
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
           source ./util/ci/common.sh
-          install_linux_deps g++-14 libluajit-5.1-dev
+          install_linux_deps g++-12 libluajit-5.1-dev
 
-      - uses: prefix-dev/setup-pixi@v0.8.1
+      - uses: prefix-dev/setup-14pixi@v0.8.1
         with:
           manifest-path: pixi.toml
           cache: true
@@ -90,8 +90,8 @@ jobs:
         run: |
           ./util/ci/build.sh
         env:
-          CC: gcc-14
-          CXX: g++-14
+          CC: gcc-12
+          CXX: g++-12
 
       - name: Test
         run: |
@@ -139,14 +139,14 @@ jobs:
           ./util/test_error_cases.sh
 
   # Current clang version
-  clang_18:
-    runs-on: ubuntu-24.04
+  clang_15:
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
           source ./util/ci/common.sh
-          install_linux_deps clang-18 lldb
+          install_linux_deps clang-15 lldb
 
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
@@ -159,8 +159,8 @@ jobs:
         run: |
           ./util/ci/build.sh
         env:
-          CC: clang-18
-          CXX: clang++-18
+          CC: clang-15
+          CXX: clang++-15
 
       - name: Test
         run: |
