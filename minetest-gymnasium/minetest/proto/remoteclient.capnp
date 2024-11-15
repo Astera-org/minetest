@@ -119,6 +119,12 @@ struct MapTextText {
   }
 }
 
+struct ItemStack {
+  name @0 :Text;
+  count @1 :UInt16;
+  wear @2 :UInt16;
+}
+
 struct Observation {
   image @0 :Image;
   hudElements @1 :MapTextText;
@@ -128,6 +134,9 @@ struct Observation {
   playerBreathMax @5 :UInt16;
   playerIsDead @6 :Bool;
   playerMetadata @7 :MapTextText;
+  playerInventory @8 :List(ItemStack);
+  playerHotbarSize @9 :Int32;
+  playerHotbarActive @10 : Int32;
 }
 
 interface Minetest {

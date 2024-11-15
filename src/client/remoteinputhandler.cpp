@@ -245,6 +245,18 @@ void RemoteInputHandler::step_post_render() {
     }
   }
 
+  {
+    auto items = m_player->inventory.getList("main")->getItems();
+    auto entries = obs_builder.initPlayerInventory(static_cast<unsigned int>(items.size()));
+    auto entry_it = entries.begin();
+    for (const auto& item : items) {
+      entry_it->setName(item.name);
+      entry_it->setCount(item.count);
+      entry_it->setWear(item.wear);
+      ++entry_it;
+    }
+  }
+
   std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);
   m_chan.m_obs_cv.wait(lock, [this] { return m_chan.m_obs_msg_builder == nullptr; });
   m_chan.m_obs_msg_builder.reset(builder_buffer);
