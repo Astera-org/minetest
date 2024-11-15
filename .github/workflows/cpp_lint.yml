@@ -30,7 +30,7 @@ on:
       - '.github/workflows/**.yml'
 
 env:
-  CLANG_TIDY: clang-tidy-18
+  CLANG_TIDY: clang-tidy
 
 jobs:
   clang_tidy:
