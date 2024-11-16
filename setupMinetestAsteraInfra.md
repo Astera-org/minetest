@@ -26,6 +26,7 @@ cmake -B build -S . \
 	-DENABLE_GETTEXT=TRUE \
 	-GNinja \
 	-DUSE_SDL2=ON \
+	-DSANITIZER="none" \
 	-DCMAKE_CXX_LINK_FLAGS="-fuse-ld=mold" \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
