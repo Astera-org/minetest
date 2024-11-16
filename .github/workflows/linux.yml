@@ -79,7 +79,7 @@ jobs:
           source ./util/ci/common.sh
           install_linux_deps g++-12 libluajit-5.1-dev
 
-      - uses: prefix-dev/setup-14pixi@v0.8.1
+      - uses: prefix-dev/setup-pixi@v0.8.1
         with:
           manifest-path: pixi.toml
           cache: true
