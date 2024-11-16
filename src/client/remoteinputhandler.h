@@ -29,7 +29,7 @@ struct Channel {
   Channel() {}
 };
 
-class MinetestImpl : public Minetest::Server {
+class MinetestImpl final : public Minetest::Server {
 public:
   MinetestImpl(Channel *chan) : m_chan(chan) {}
   kj::Promise<void> init(InitContext context) override;
