@@ -634,7 +634,11 @@ class MinetestEnv(gym.Env):
                 # - the kj loop  stays associated with this thread, making
                 #   it impossible to create another MinetestEnv in this thread
                 if coro.__qualname__ != "MinetestEnv._async_close":
-                    self._event_loop.run_until_complete(self._async_close())
+                    # Ignore further exceptions, we're already in a bad state.
+                    try:
+                        self._event_loop.run_until_complete(self._async_close())
+                    except:
+                        pass
                 raise
         # catch KjException and raise as a different type since cannot be pickled,
         # which leads to horribly misleading error messages when using AsyncVectorEnv
@@ -647,9 +651,7 @@ class MinetestEnv(gym.Env):
         self.close()  # ensure processes, event loops are cleaned up.
         self._event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._event_loop)
-        return self._run_on_event_loop(
-            self._async_reset(seed=seed, options=options), timeout=10000
-        )
+        return self._run_on_event_loop(self._async_reset(seed=seed, options=options))
 
     async def _async_step(self, action: dict[str, Any]):
         if self.minetest_process and self.minetest_process.poll() is not None:
