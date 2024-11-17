@@ -16,7 +16,7 @@
 #include <capnp/serialize-packed.h>
 #include <kj/async-io.h>
 
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Weverything"
 #pragma GCC diagnostic ignored "-Wc++98-compat"
 #pragma GCC diagnostic ignored "-Wpadded"
