@@ -22,7 +22,9 @@
 #pragma GCC diagnostic error "-Weverything"
 #pragma GCC diagnostic ignored "-Wc++98-compat"
 #pragma GCC diagnostic ignored "-Wctad-maybe-unsupported"
+#if (__clang_major__ > 18) || (__clang_major__ == 18 && __clang_minor__ >= 1)
 #pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 #endif
 #pragma GCC diagnostic ignored "-Wpadded"
 
