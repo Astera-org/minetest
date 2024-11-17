@@ -868,6 +868,10 @@ else()
 	# GCC or compatible compilers such as Clang
 	set(WARNING_FLAGS "-Wall -Wextra -Werror")
 	set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-parameter")
+
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-error=unknown-warning-option")
+	endif()
 	if(WARN_ALL)
 		set(RELEASE_WARNING_FLAGS "${WARNING_FLAGS}")
 	else()
