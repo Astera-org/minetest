@@ -528,7 +528,9 @@ bool CopyFileContents(const std::string &source, const std::string &target)
 	sourcefile.reset(fopen(source.c_str(), "rb"));
 	targetfile.reset(fopen(target.c_str(), "wb"));
 
+#ifdef __linux__
 fallback:
+#endif
 
 	if (!sourcefile) {
 		errorstream << source << ": can't open for reading: "
