@@ -17,7 +17,7 @@
 #include <vector>
 #include <limits>
 
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Weverything"
 #pragma GCC diagnostic ignored "-Wc++98-compat"
 #pragma GCC diagnostic ignored "-Wpadded"
@@ -119,7 +119,7 @@ void RemoteInputHandler::step(float dtime) {
       new_key_is_down.set(key_code);
     }
     mouse_movement = v2f(
-      static_cast<float>(m_chan.m_action->getMouseDx()), 
+      static_cast<float>(m_chan.m_action->getMouseDx()),
       static_cast<float>(m_chan.m_action->getMouseDy())
     );
 
@@ -206,16 +206,32 @@ void RemoteInputHandler::step_post_render() {
   }
 
   obs_builder.setPlayerHealth(m_player->hp);
-  obs_builder.setPlayerHealthMax(m_player->getCAO()->getProperties().hp_max);
   obs_builder.setPlayerBreath(m_player->getBreath());
-  obs_builder.setPlayerBreathMax(m_player->getCAO()->getProperties().breath_max);
   obs_builder.setPlayerIsDead(m_player->isDead());
 
   {
     auto server_lock = std::lock_guard { gServer->getEnvMutex() };
+
     auto remote_player = gServer->getEnv().getPlayer(m_player->getName());
-    assert(remote_player != nullptr);
-    const auto& player_meta = remote_player->getPlayerSAO()->getMeta().getStrings();
+    if (remote_player == nullptr) {
+      throw std::runtime_error("remote_player is null");
+    }
+
+    auto remote_player_sao = remote_player->getPlayerSAO();
+    if (remote_player_sao == nullptr) {
+      throw std::runtime_error("remote_player sao is null");
+    }
+
+    auto remote_player_props = remote_player_sao->accessObjectProperties();
+    if (remote_player_props == nullptr) {
+      throw std::runtime_error("remote_player object properties is null");
+    }
+
+    // We are retrieving these from the server because `m_player-getCAO()` can return a null pointer.
+    obs_builder.setPlayerHealthMax(remote_player_props->hp_max);
+    obs_builder.setPlayerBreathMax(remote_player_props->breath_max);
+
+    const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();
     auto entries = builder.initEntries(static_cast<unsigned int>(player_meta.size()));
     auto entry_it = entries.begin();
