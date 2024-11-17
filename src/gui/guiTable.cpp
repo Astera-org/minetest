@@ -1121,8 +1121,13 @@ void GUITable::sendTableEvent(s32 column, bool doubleclick)
 	m_sel_column = column;
 	m_sel_doubleclick = doubleclick;
 	if (Parent) {
+#pragma GCC diagnostic push
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 		SEvent e;
 		memset(&e, 0, sizeof e);
+#pragma GCC diagnostic pop
 		e.EventType = EET_GUI_EVENT;
 		e.GUIEvent.Caller = this;
 		e.GUIEvent.Element = 0;

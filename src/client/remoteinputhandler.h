@@ -17,10 +17,12 @@
 #include <kj/async-io.h>
 
 #pragma GCC diagnostic push
+#if __clang__
 #pragma GCC diagnostic error "-Weverything"
 #pragma GCC diagnostic ignored "-Wc++98-compat"
-#pragma GCC diagnostic ignored "-Wpadded"
 #pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#pragma GCC diagnostic ignored "-Wpadded"
 
 namespace detail {
 struct Channel {

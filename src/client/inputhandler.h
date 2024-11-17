@@ -26,7 +26,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "keycode.h"
 
 #pragma GCC diagnostic push
+#if __clang__
 #pragma GCC diagnostic ignored "-Winconsistent-missing-override"
+#endif
 
 class InputHandler;
 
