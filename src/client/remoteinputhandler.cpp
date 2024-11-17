@@ -209,10 +209,6 @@ void RemoteInputHandler::step_post_render() {
     }
   }
 
-  obs_builder.setPlayerHealth(m_player->hp);
-  obs_builder.setPlayerBreath(m_player->getBreath());
-  obs_builder.setPlayerIsDead(m_player->isDead());
-
   {
     auto server_lock = std::lock_guard { gServer->getEnvMutex() };
 
@@ -232,8 +228,11 @@ void RemoteInputHandler::step_post_render() {
     }
 
     // We are retrieving these from the server because `m_player-getCAO()` can return a null pointer.
+    obs_builder.setPlayerHealth(remote_player_sao->getHP());
     obs_builder.setPlayerHealthMax(remote_player_props->hp_max);
+    obs_builder.setPlayerBreath(remote_player_sao->getBreath());
     obs_builder.setPlayerBreathMax(remote_player_props->breath_max);
+    obs_builder.setPlayerIsDead(remote_player_sao->isDead());
 
     const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();
