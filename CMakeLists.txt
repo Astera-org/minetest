@@ -78,6 +78,24 @@ message(STATUS "RUN_IN_PLACE: " ${RUN_IN_PLACE})
 
 set(WARN_ALL TRUE CACHE BOOL "Enable -Wall for Release build")
 
+# Define a variable to control sanitizers
+set(SANITIZER "none" CACHE STRING "Choose sanitizer: none, ubsan, asan")
+
+# Print the chosen sanitizer
+message(STATUS "SANITIZER: ${SANITIZER}")
+
+if(SANITIZER STREQUAL "ubsan")
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=undefined)
+elseif(SANITIZER STREQUAL "asan")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+elseif(SANITIZER STREQUAL "none")
+    message(STATUS "No sanitizer enabled")
+else()
+    message(FATAL_ERROR "Invalid SANITIZER value: ${SANITIZER}. Choose from: none, ubsan, asan")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
 	# Default to release
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug or Release" FORCE)

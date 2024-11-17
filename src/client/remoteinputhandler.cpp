@@ -7,17 +7,30 @@
 #include "client/content_cao.h"
 #include <cassert>
 #include <mutex>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <capnp/message.h>
 #include <capnp/serialize.h>
 #include <capnp/rpc.h>
 #include <kj/array.h>
 #include <vector>
+#include <limits>
 
+#pragma GCC diagnostic push
+#if __clang__
+#pragma GCC diagnostic error "-Weverything"
+#pragma GCC diagnostic ignored "-Wc++98-compat"
+#pragma GCC diagnostic ignored "-Wctad-maybe-unsupported"
+#if (__clang_major__ > 18) || (__clang_major__ == 18 && __clang_minor__ >= 1)
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+#pragma GCC diagnostic ignored "-Wpadded"
 
 namespace detail {
 
-kj::Promise<void> MinetestImpl::init(InitContext context) {
+kj::Promise<void> MinetestImpl::init(InitContext) {
   std::unique_lock<std::mutex> lock(m_chan->m_action_mutex);
   m_chan->m_did_init = true;
   m_chan->m_action_cv.notify_one();
@@ -50,6 +63,18 @@ kj::Promise<void> MinetestImpl::step(StepContext context) {
 
 } // namespace detail
 
+namespace {
+  s32 to_s32(u32 value) {
+    // TODO: when c++-20 use https://en.cppreference.com/w/cpp/utility/in_range
+    if (value > std::numeric_limits<s32>::max()) {
+      auto message = std::stringstream{};
+      message << "u32 " << value << " does not fit in s32";
+      throw std::range_error{message.str()};
+    }
+    return static_cast<s32>(value);
+  }
+}
+
 RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
                                        RenderingEngine *rendering_engine,
                                        MyEventReceiver *receiver)
@@ -74,7 +99,7 @@ RemoteInputHandler::RemoteInputHandler(const std::string &endpoint,
     server.listen(*listener).wait(capnp_io_context.waitScope);
   }).detach();
   m_chan.m_action_cv.wait(lock, [this] { return m_chan.m_did_init; });
-};
+}
 
 void RemoteInputHandler::step(float dtime) {
   // skip first loop, because we don't have an observation yet
@@ -97,7 +122,10 @@ void RemoteInputHandler::step(float dtime) {
       KeyPress key_code = keycache.key[static_cast<int>(keyEvent)];
       new_key_is_down.set(key_code);
     }
-    mouse_movement = v2f(m_chan.m_action->getMouseDx(), m_chan.m_action->getMouseDy());
+    mouse_movement = v2f(
+      static_cast<float>(m_chan.m_action->getMouseDx()),
+      static_cast<float>(m_chan.m_action->getMouseDy())
+    );
 
     m_chan.m_action = nullptr;
     m_chan.m_action_cv.notify_one();
@@ -143,7 +171,7 @@ void RemoteInputHandler::step(float dtime) {
   }
 
   m_should_send_observation = true;
-};
+}
 
 void RemoteInputHandler::step_post_render() {
   if (!m_should_send_observation) {
@@ -158,8 +186,8 @@ void RemoteInputHandler::step_post_render() {
   {
     irr::video::IImage *image = m_rendering_engine->get_video_driver()->createScreenShot(video::ECF_R8G8B8);
     auto builder = obs_builder.initImage();
-    builder.setWidth(image->getDimension().Width);
-    builder.setHeight(image->getDimension().Height);
+    builder.setWidth(to_s32(image->getDimension().Width));
+    builder.setHeight(to_s32(image->getDimension().Height));
     builder.setData(capnp::Data::Reader(reinterpret_cast<const uint8_t *>(image->getData()), image->getImageDataSizeInBytes()));
     image->drop();
   }
@@ -168,10 +196,10 @@ void RemoteInputHandler::step_post_render() {
     const auto lock_guard = std::lock_guard { m_player->exposeTheMutex() };
     const auto& hud_elements = m_player->exposeTheHud();
     constexpr auto is_text = [](const HudElement * element) noexcept { return element->type == HUD_ELEM_TEXT; };
-    const auto text_count = std::count_if(hud_elements.begin(), hud_elements.end(), is_text);
+    const auto text_count = std::count_if(hud_elements.cbegin(), hud_elements.cend(), is_text);
 
     auto builder = obs_builder.initHudElements();
-    auto entries = builder.initEntries(text_count);
+    auto entries = builder.initEntries(static_cast<unsigned int>(text_count));
     auto entry_it = entries.begin();
     for (const auto& hud_element : hud_elements) {
       if (!is_text(hud_element)) continue;
@@ -181,19 +209,34 @@ void RemoteInputHandler::step_post_render() {
     }
   }
 
-  obs_builder.setPlayerHealth(m_player->hp);
-  obs_builder.setPlayerHealthMax(m_player->getCAO()->getProperties().hp_max);
-  obs_builder.setPlayerBreath(m_player->getBreath());
-  obs_builder.setPlayerBreathMax(m_player->getCAO()->getProperties().breath_max);
-  obs_builder.setPlayerIsDead(m_player->isDead());
-
   {
     auto server_lock = std::lock_guard { gServer->getEnvMutex() };
+
     auto remote_player = gServer->getEnv().getPlayer(m_player->getName());
-    assert(remote_player != nullptr);
-    const auto& player_meta = remote_player->getPlayerSAO()->getMeta().getStrings();
+    if (remote_player == nullptr) {
+      throw std::runtime_error("remote_player is null");
+    }
+
+    auto remote_player_sao = remote_player->getPlayerSAO();
+    if (remote_player_sao == nullptr) {
+      throw std::runtime_error("remote_player sao is null");
+    }
+
+    auto remote_player_props = remote_player_sao->accessObjectProperties();
+    if (remote_player_props == nullptr) {
+      throw std::runtime_error("remote_player object properties is null");
+    }
+
+    // We are retrieving these from the server because `m_player-getCAO()` can return a null pointer.
+    obs_builder.setPlayerHealth(remote_player_sao->getHP());
+    obs_builder.setPlayerHealthMax(remote_player_props->hp_max);
+    obs_builder.setPlayerBreath(remote_player_sao->getBreath());
+    obs_builder.setPlayerBreathMax(remote_player_props->breath_max);
+    obs_builder.setPlayerIsDead(remote_player_sao->isDead());
+
+    const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();
-    auto entries = builder.initEntries(player_meta.size());
+    auto entries = builder.initEntries(static_cast<unsigned int>(player_meta.size()));
     auto entry_it = entries.begin();
     for (const auto& [key, value] : player_meta) {
       entry_it->setKey(key);
@@ -207,3 +250,5 @@ void RemoteInputHandler::step_post_render() {
   m_chan.m_obs_msg_builder.reset(builder_buffer);
   m_chan.m_obs_cv.notify_one();
 }
+
+#pragma GCC diagnostic pop

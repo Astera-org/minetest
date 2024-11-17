@@ -1,3 +1,4 @@
+
 /*
 Minetest
 Copyright (C) 2013 celeron55, Perttu Ahola <celeron55@gmail.com>
@@ -296,6 +297,7 @@ bool getCurrentWorkingDir(char *buf, size_t len)
 }
 
 
+#ifndef __APPLE__
 static bool getExecPathFromProcfs(char *buf, size_t buflen)
 {
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
@@ -313,6 +315,7 @@ static bool getExecPathFromProcfs(char *buf, size_t buflen)
 	return false;
 #endif
 }
+#endif
 
 //// Windows
 #if defined(_WIN32)

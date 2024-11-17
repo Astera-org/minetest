@@ -1,4 +1,5 @@
 #pragma once
+
 #include "client/renderingengine.h"
 #include "gui/mainmenumanager.h"
 #include "inputhandler.h"
@@ -15,6 +16,16 @@
 #include <capnp/serialize-packed.h>
 #include <kj/async-io.h>
 
+#pragma GCC diagnostic push
+#if __clang__
+#pragma GCC diagnostic error "-Weverything"
+#pragma GCC diagnostic ignored "-Wc++98-compat"
+#if (__clang_major__ > 18) || (__clang_major__ == 18 && __clang_minor__ >= 1)
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+#pragma GCC diagnostic ignored "-Wpadded"
+
 namespace detail {
 struct Channel {
   std::condition_variable m_action_cv;
@@ -29,7 +40,7 @@ struct Channel {
   Channel() {}
 };
 
-class MinetestImpl : public Minetest::Server {
+class MinetestImpl final : public Minetest::Server {
 public:
   MinetestImpl(Channel *chan) : m_chan(chan) {}
   kj::Promise<void> init(InitContext context) override;
@@ -73,7 +84,7 @@ public:
   }
   virtual float getJoystickDirection() override {
     auto axes = getJoystickAxes();
-    return (axes.X == 0 && axes.Y == 0) ? 0.0 : atan2((double) axes.X, (double) axes.Y);
+    return (axes.X == 0 && axes.Y == 0) ? 0.0 : std::atan2(static_cast<float>(axes.X), static_cast<float>(axes.Y));
   }
   virtual v2s32 getMousePos() override { return m_mouse_pos; }
   virtual void setMousePos(s32 x, s32 y) override { m_mouse_pos = v2s32(x, y); }
@@ -109,11 +120,11 @@ private:
   // Returns a vector with 2 elements in the set (-1, 0, 1) representing the joystick axes.
   virtual v2s32 getJoystickAxes() {
     return v2s32(
-      (int) m_key_is_down[keycache.key[KeyType::RIGHT]] -
-        (int) m_key_is_down[keycache.key[KeyType::LEFT]]
+      static_cast<int>(m_key_is_down[keycache.key[KeyType::RIGHT]]) -
+        static_cast<int>(m_key_is_down[keycache.key[KeyType::LEFT]])
       ,
-      (int) m_key_is_down[keycache.key[KeyType::FORWARD]] -
-        (int) m_key_is_down[keycache.key[KeyType::BACKWARD]]
+      static_cast<int>(m_key_is_down[keycache.key[KeyType::FORWARD]]) -
+        static_cast<int>(m_key_is_down[keycache.key[KeyType::BACKWARD]])
     );
   }
 
@@ -151,3 +162,5 @@ private:
 
   bool m_should_send_observation = false;
 };
+
+#pragma GCC diagnostic pop

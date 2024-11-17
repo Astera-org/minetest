@@ -713,7 +713,12 @@ bool CIrrDeviceSDL::run()
 
 	while (!Close && wrap_PollEvent(&SDL_event)) {
 		// os::Printer::log("event: ", core::stringc((int)SDL_event.type).c_str(),   ELL_INFORMATION);	// just for debugging
+#pragma GCC diagnostic push
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 		memset(&irrevent, 0, sizeof(irrevent));
+#pragma GCC diagnostic pop
 
 		switch (SDL_event.type) {
 		case SDL_MOUSEMOTION: {

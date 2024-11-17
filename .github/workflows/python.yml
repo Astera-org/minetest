@@ -59,7 +59,7 @@ jobs:
           CC: clang-14
           CXX: clang++-14
           CMAKE_BUILD_SERVER: FALSE
-          CMAKE_FLAGS: -DUSE_SDL2=ON
+          CMAKE_FLAGS: -DUSE_SDL2=ON -DSANITIZER=ubsan
 
       - name: Run pytest
         run: |

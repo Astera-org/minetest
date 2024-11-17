@@ -855,7 +855,7 @@ if(MSVC)
 	# Flags that cannot be shared between cl and clang-cl
 	# https://clang.llvm.org/docs/UsersManual.html#clang-cl
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld")
+		set(DCMAKE_CXX_LINK_FLAGS "${DCMAKE_CXX_LINK_FLAGS} -fuse-ld=lld")
 
 		# Disable pragma-pack warning
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-pragma-pack")
@@ -866,8 +866,9 @@ if(MSVC)
 	endif()
 else()
 	# GCC or compatible compilers such as Clang
-	set(WARNING_FLAGS "-Wall -Wextra")
+	set(WARNING_FLAGS "-Wall -Wextra -Werror")
 	set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-parameter")
+
 	if(WARN_ALL)
 		set(RELEASE_WARNING_FLAGS "${WARNING_FLAGS}")
 	else()

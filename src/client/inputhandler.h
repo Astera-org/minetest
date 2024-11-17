@@ -25,6 +25,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <list>
 #include "keycode.h"
 
+#pragma GCC diagnostic push
+#if __clang__
+#pragma GCC diagnostic ignored "-Winconsistent-missing-override"
+#endif
+
 class InputHandler;
 
 enum class PointerType {
@@ -413,3 +418,5 @@ private:
 	float joystickSpeed;
 	float joystickDirection;
 };
+
+#pragma GCC diagnostic pop
