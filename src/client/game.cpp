@@ -1271,7 +1271,7 @@ void Game::shutdown()
 	soundmaker = nullptr;
 	sound_manager.reset();
 
-	auto stop_thread = runInThread([=] {
+	auto stop_thread = runInThread([this] {
 		delete server;
 		server = nullptr;
 	}, "ServerStop");
@@ -1400,7 +1400,7 @@ bool Game::createSingleplayerServer(const std::string &map_dir,
 	server = new Server(map_dir, gamespec, simple_singleplayer_mode, bind_addr,
 			false, nullptr, error_message);
 
-	auto start_thread = runInThread([=] {
+	auto start_thread = runInThread([this] {
 		server->start();
 		copyServerClientCache();
 	}, "ServerStart");

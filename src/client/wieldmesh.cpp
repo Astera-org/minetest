@@ -300,7 +300,7 @@ void WieldMeshSceneNode::setExtruded(const std::string &imagename,
 		// Enable bi/trilinear filtering only for high resolution textures
 		bool bilinear_filter = dim.Width > 32 && m_bilinear_filter;
 		bool trilinear_filter = dim.Width > 32 && m_trilinear_filter;
-		material.forEachTexture([=] (auto &tex) {
+		material.forEachTexture([=,this] (auto &tex) {
 			setMaterialFilters(tex, bilinear_filter, trilinear_filter,
 					m_anisotropic_filter);
 		});

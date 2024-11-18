@@ -29,9 +29,10 @@ build_with_compiler() {
     cmake --build "$build_dir" -j "$(nproc)"
 }
 
-build_with_compiler gcc-14 g++-14 none
+# build_with_compiler gcc-12 g++-12 none
+# build_with_compiler gcc-14 g++-14 none
 # build_with_compiler gcc-14 g++-14 ubsan
 # build_with_compiler gcc-14 g++-14 asan
 build_with_compiler clang-18 clang++-18 none
-build_with_compiler clang-18 clang++-18 ubsan
-build_with_compiler clang-18 clang++-18 asan
+# build_with_compiler clang-18 clang++-18 ubsan
+# build_with_compiler clang-18 clang++-18 asan
