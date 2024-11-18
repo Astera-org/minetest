@@ -1,6 +1,9 @@
 # Cap'n Proto schema
 @0xa7829f89062090f7;
 
+using Cxx = import "/capnp/c++.capnp";
+$Cxx.namespace("proto");
+
 struct KeyPressType {
   # this enum should equal the KeyType enum in keys.h so we can use the int value
   enum Key {
@@ -116,6 +119,12 @@ struct MapTextText {
   }
 }
 
+struct ItemStack {
+  name @0 :Text;
+  count @1 :UInt16;
+  wear @2 :UInt16;
+}
+
 struct Observation {
   image @0 :Image;
   hudElements @1 :MapTextText;
@@ -125,6 +134,9 @@ struct Observation {
   playerBreathMax @5 :UInt16;
   playerIsDead @6 :Bool;
   playerMetadata @7 :MapTextText;
+  playerInventory @8 :List(ItemStack);
+  playerHotbarSize @9 :Int32;
+  playerHotbarActive @10 : Int32;
 }
 
 interface Minetest {

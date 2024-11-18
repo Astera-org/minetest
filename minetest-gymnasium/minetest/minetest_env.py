@@ -31,7 +31,9 @@ except ImportError:
     pygame = None
 
 remoteclient_capnp = capnp.load(
-    os.path.join(os.path.dirname(__file__), "proto/remoteclient.capnp")
+    os.path.join(os.path.dirname(__file__), "proto/remoteclient.capnp"),
+    # Necessary to load `capnp/c++.capnp` for the cxx namespace declaration.
+    imports=[Path(p).parent.as_posix() for p in capnp.__path__],
 )
 
 # See `proto/remoteclient.capnp`. {'forward': 0, 'backward': 1, 'left': 2,
@@ -826,6 +828,10 @@ def _step_response_info(step_response) -> Info:
         player_breath_max=step_response.observation.playerBreathMax,
         player_is_dead=step_response.observation.playerIsDead,
         player_metadata=_step_response_player_metadata(step_response),
+        player_inventory=[
+            {"name": item.name, "count": item.count, "wear": item.wear}
+            for item in step_response.observation.playerInventory
+        ],
     )
 
 
