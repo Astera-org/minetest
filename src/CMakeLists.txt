@@ -869,6 +869,13 @@ else()
 	set(WARNING_FLAGS "-Wall -Wextra -Werror")
 	set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-parameter")
 
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0.0")
+			# Suppress false positives, see: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108088.
+			set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-free-nonheap-object")
+		endif()
+	endif()
+
 	if(WARN_ALL)
 		set(RELEASE_WARNING_FLAGS "${WARNING_FLAGS}")
 	else()
