@@ -195,7 +195,10 @@ void RemoteInputHandler::step_post_render() {
   {
     const auto lock_guard = std::lock_guard { m_player->exposeTheMutex() };
     const auto& hud_elements = m_player->exposeTheHud();
-    constexpr auto is_text = [](const HudElement * element) noexcept { return element->type == HUD_ELEM_TEXT; };
+    constexpr auto is_text = [](const HudElement * element) noexcept {
+      // Hud elements can become nullptrs if disabled, for example through `player:set_hud_flags(...)`.
+      return element != nullptr && element->type == HUD_ELEM_TEXT;
+    };
     const auto text_count = std::count_if(hud_elements.cbegin(), hud_elements.cend(), is_text);
 
     auto builder = obs_builder.initHudElements();
