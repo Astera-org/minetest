@@ -258,6 +258,9 @@ void RemoteInputHandler::step_post_render() {
       entry_it->setWear(item.wear);
       ++entry_it;
     }
+
+    obs_builder.setPlayerHotbarSize(m_player->getMaxHotbarItemcount());
+    obs_builder.setPlayerHotbarSelectedIndex(m_player->getWieldIndex());
   }
 
   std::unique_lock<std::mutex> lock(m_chan.m_obs_mutex);

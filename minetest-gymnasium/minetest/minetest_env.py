@@ -121,6 +121,12 @@ class HudElement(TypedDict):
     text: str
 
 
+class InventorySlot(TypedDict):
+    name: str
+    count: int
+    wear: int
+
+
 class Info(TypedDict):
     hud_elements: list[HudElement]
     player_health: int
@@ -129,6 +135,9 @@ class Info(TypedDict):
     player_breath_max: int
     player_is_dead: bool
     player_metadata: dict[str, str]
+    player_inventory = list[InventorySlot]
+    player_hotbar_size = int
+    player_hotbar_selected_index = int
 
 
 RewardFn = Callable[[Observation, Info], float]
@@ -832,6 +841,8 @@ def _step_response_info(step_response) -> Info:
             {"name": item.name, "count": item.count, "wear": item.wear}
             for item in step_response.observation.playerInventory
         ],
+        player_hotbar_size=step_response.observation.playerHotbarSize,
+        player_hotbar_selected_index=step_response.observation.playerHotbarSelectedIndex,
     )
 
 
