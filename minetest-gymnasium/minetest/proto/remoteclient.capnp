@@ -135,8 +135,8 @@ struct Observation {
   playerIsDead @6 :Bool;
   playerMetadata @7 :MapTextText;
   playerInventory @8 :List(ItemStack);
-  playerHotbarSize @9 :Int32;
-  playerHotbarActive @10 : Int32;
+  playerHotbarSize @9 :UInt16;
+  playerHotbarSelectedIndex @10 : UInt16;
 }
 
 interface Minetest {
