@@ -135,9 +135,9 @@ class Info(TypedDict):
     player_breath_max: int
     player_is_dead: bool
     player_metadata: dict[str, str]
-    player_inventory = list[InventorySlot]
-    player_hotbar_size = int
-    player_hotbar_selected_index = int
+    player_inventory: list[InventorySlot]
+    player_hotbar_size: int
+    player_hotbar_selected_index: int
 
 
 RewardFn = Callable[[Observation, Info], float]
