@@ -136,7 +136,14 @@ struct Observation {
   playerMetadata @7 :MapTextText;
   playerInventory @8 :List(ItemStack);
   playerHotbarSize @9 :UInt16;
-  playerHotbarSelectedIndex @10 : UInt16;
+  playerHotbarSelectedIndex @10 : UInt16; 
+  playerPos @11 :Vector3;
+}
+
+struct Vector3 {
+  x @0 :Float32;
+  y @1 :Float32;
+  z @2 :Float32;
 }
 
 interface Minetest {
