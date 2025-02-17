@@ -173,6 +173,24 @@ void RemoteInputHandler::step(float dtime) {
   m_should_send_observation = true;
 }
 
+static auto set_vector3(::proto::Vector3::Builder builder, v3f value) {
+  builder.setX(value.X);
+  builder.setY(value.Y);
+  builder.setZ(value.Z);
+  return builder;
+}
+
+static auto get_player_view_direction(PlayerSAO const & remote_player_sao) {
+  // Rotation computations are a mess in minetest. Logic taken from
+  // src/serverenvironment.cpp:387
+  v3f camera_dir = v3f(0,0,1);
+  camera_dir.rotateYZBy(static_cast<f64>(remote_player_sao.getLookPitch()));
+  camera_dir.rotateXZBy(static_cast<f64>(remote_player_sao.getRotation().Y));
+  if (remote_player_sao.getCameraInverted())
+    camera_dir = -camera_dir;
+  return camera_dir;
+}
+
 void RemoteInputHandler::step_post_render() {
   if (!m_should_send_observation) {
     return;
@@ -236,6 +254,8 @@ void RemoteInputHandler::step_post_render() {
     obs_builder.setPlayerBreath(remote_player_sao->getBreath());
     obs_builder.setPlayerBreathMax(remote_player_props->breath_max);
     obs_builder.setPlayerIsDead(remote_player_sao->isDead());
+    set_vector3(obs_builder.initPlayerEyePosition(), remote_player_sao->getEyePosition());
+    set_vector3(obs_builder.initPlayerViewDirection(), get_player_view_direction(*remote_player_sao));
 
     const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();

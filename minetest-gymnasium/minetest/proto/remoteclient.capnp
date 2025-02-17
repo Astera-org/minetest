@@ -133,10 +133,18 @@ struct Observation {
   playerBreath @4 :UInt16;
   playerBreathMax @5 :UInt16;
   playerIsDead @6 :Bool;
+  playerEyePosition @11 :Vector3;
+  playerViewDirection @12 :Vector3;
   playerMetadata @7 :MapTextText;
   playerInventory @8 :List(ItemStack);
   playerHotbarSize @9 :UInt16;
   playerHotbarSelectedIndex @10 : UInt16;
+}
+
+struct Vector3 {
+  x @0 :Float32;
+  y @1 :Float32;
+  z @2 :Float32;
 }
 
 interface Minetest {
