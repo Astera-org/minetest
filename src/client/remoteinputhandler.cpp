@@ -236,14 +236,12 @@ void RemoteInputHandler::step_post_render() {
     obs_builder.setPlayerBreath(remote_player_sao->getBreath());
     obs_builder.setPlayerBreathMax(remote_player_props->breath_max);
     obs_builder.setPlayerIsDead(remote_player_sao->isDead());
-    
-    // Fix: Create a Vector3 builder and set components individually
+    // Set player position
     v3f pos = remote_player_sao->getEyePosition();
     auto pos_builder = obs_builder.initPlayerPos();
     pos_builder.setX(pos.X);
     pos_builder.setY(pos.Y);
     pos_builder.setZ(pos.Z);
-
     const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();
     auto entries = builder.initEntries(static_cast<unsigned int>(player_meta.size()));
