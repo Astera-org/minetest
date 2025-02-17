@@ -17,6 +17,8 @@
 #include <vector>
 #include <limits>
 
+#include <iostream>
+
 #pragma GCC diagnostic push
 #if __clang__
 #pragma GCC diagnostic error "-Weverything"
@@ -242,6 +244,19 @@ void RemoteInputHandler::step_post_render() {
     pos_builder.setX(pos.X);
     pos_builder.setY(pos.Y);
     pos_builder.setZ(pos.Z);
+    obs_builder.setPlayerPos(pos_builder);
+    // Set player view direction
+    v3f camera_dir = v3f(0,0,1);
+    camera_dir.rotateYZBy(remote_player_sao->getLookPitch());
+    camera_dir.rotateXZBy(remote_player_sao->getRotation().Y);
+    if (remote_player_sao->getCameraInverted())
+        camera_dir = -camera_dir;
+    auto view_dir_builder = obs_builder.initPlayerViewDir();
+    view_dir_builder.setX(camera_dir.X);
+    view_dir_builder.setY(camera_dir.Y); 
+    view_dir_builder.setZ(camera_dir.Z);
+    obs_builder.setPlayerViewDir(view_dir_builder);
+    // Set player metadata
     const auto& player_meta = remote_player_sao->getMeta().getStrings();
     auto builder = obs_builder.initPlayerMetadata();
     auto entries = builder.initEntries(static_cast<unsigned int>(player_meta.size()));

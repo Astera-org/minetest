@@ -138,6 +138,7 @@ struct Observation {
   playerHotbarSize @9 :UInt16;
   playerHotbarSelectedIndex @10 : UInt16; 
   playerPos @11 :Vector3;
+  playerViewDir @12 :Vector3;
 }
 
 struct Vector3 {
