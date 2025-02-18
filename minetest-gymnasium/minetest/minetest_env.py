@@ -197,12 +197,12 @@ def _assert_additional_observation_spaces_valid(
     additional_observation_spaces: dict[str, AdditionalObservationSpace],
 ):
     for key, value in additional_observation_spaces.items():
-        assert (
-            key not in Observation.__annotations__
-        ), "space name {key} is already in use"
-        assert isinstance(
-            value.space, gym.spaces.Space
-        ), "space is not a gym.spaces.Space"
+        assert key not in Observation.__annotations__, (
+            "space name {key} is already in use"
+        )
+        assert isinstance(value.space, gym.spaces.Space), (
+            "space is not a gym.spaces.Space"
+        )
         assert isinstance(value.space.dtype, np.dtype), "space.dtype is not an np.dtype"
 
 
@@ -514,6 +514,8 @@ class MinetestEnv(gym.Env):
             emergequeue_limit_total=1000000,
             emergequeue_limit_diskonly=1000000,
             emergequeue_limit_generate=1000000,
+            fps_max=100000,
+            fps_max_unfocused=100000,
         )
         if self.game_dir:
             config["game_dir"] = self.game_dir
@@ -559,7 +561,7 @@ class MinetestEnv(gym.Env):
         self._logger.debug("incrementing socket")
         addr, ext = self.socket_addr.rsplit("_", 1)
         num = int(ext.split(".")[0])
-        self.socket_addr = f"{addr}_{num+1}.sock"
+        self.socket_addr = f"{addr}_{num + 1}.sock"
 
     def _poll_minetest_process(self):
         # a function so we can override it in the unit test
@@ -702,12 +704,12 @@ class MinetestEnv(gym.Env):
 
         for key, value in additional_obs.items():
             expected_dtype = self._additional_observation_spaces[key].space.dtype
-            assert isinstance(
-                value, np.ndarray
-            ), f"Expected value to be ndarray but got {type(value)}"
-            assert np.issubdtype(
-                value.dtype, expected_dtype
-            ), f"Expected dtype {expected_dtype} but got {value.dtype}"
+            assert isinstance(value, np.ndarray), (
+                f"Expected value to be ndarray but got {type(value)}"
+            )
+            assert np.issubdtype(value.dtype, expected_dtype), (
+                f"Expected dtype {expected_dtype} but got {value.dtype}"
+            )
 
         return additional_obs
 
