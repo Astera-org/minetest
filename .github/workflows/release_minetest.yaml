@@ -27,7 +27,7 @@ jobs:
         with:
           submodules: true
       - name: build minetest
-        uses: prefix-dev/rattler-build-action@v0.2.9
+        uses: prefix-dev/rattler-build-action@v0.2.30
         with:
           recipe-path: ./rattler-build-recipe/minetest/recipe.yaml
           build-args: --channel=https://repo.prefix.dev/obelisk --channel=conda-forge
