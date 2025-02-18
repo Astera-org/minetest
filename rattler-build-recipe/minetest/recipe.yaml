@@ -17,6 +17,7 @@ requirements:
     - ${{ compiler("cxx") }}
     - cmake
     - ninja
+    - pkg-config
     # All of the below libraries (not compilers or build tools) seem
     # like they belong in host conceptually, but CMake can't
     # find them that way for some reason. I think it doesn't really
@@ -27,8 +28,7 @@ requirements:
         - ${{ cdt("mesa-libgl-devel") }}
         - ${{ cdt("xorg-x11-proto-devel") }}
   host:
-    # minetest deps
-    - capnproto >=1.0.2,<2
+    - capnproto >=1.0.2,<1.1 # pycapnp in minetest-gymnasium doesn't work with higher dependency version
     - freetype
     - gmp
     - jsoncpp
@@ -39,7 +39,6 @@ requirements:
     - libsqlite
     - luajit-openresty
     - ncurses
-    - pkg-config
     - sdl2
     - zlib
     - zstd
