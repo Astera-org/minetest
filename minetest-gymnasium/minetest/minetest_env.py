@@ -514,6 +514,8 @@ class MinetestEnv(gym.Env):
             emergequeue_limit_total=1000000,
             emergequeue_limit_diskonly=1000000,
             emergequeue_limit_generate=1000000,
+            fps_max=100000,
+            fps_max_unfocused=100000,
         )
         if self.game_dir:
             config["game_dir"] = self.game_dir
