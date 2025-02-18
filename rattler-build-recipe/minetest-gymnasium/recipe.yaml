@@ -3,7 +3,7 @@
 context: {}
 package:
   name: minetest-gymnasium
-  version: "0.31.2"
+  version: "0.31.3"
 
 source:
   path: ../../
@@ -19,7 +19,7 @@ requirements:
     - python
     - hatchling
   run:
-    - minetest >=0.24.2
+    - minetest >=0.24.4
     # repeated python dependencies from pyproject.toml
     - gymnasium>=0.29.1,<0.30.0
     - numpy>=1.26.0,<2.0.0
