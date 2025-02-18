@@ -2,11 +2,8 @@
 name: release_minetest_gymnasium
 on: # yamllint disable-line rule:truthy
   push:
-    branches:
-      - master
-    paths:
-      - 'rattler-build-recipe/minetest-gymnasium/recipe.yaml'
-  # Allows you to run this workflow manually from the Actions tab
+    tags:
+      - minetest-gymnasium/v*
   workflow_dispatch:
 jobs:
   rattler-build:
