@@ -138,6 +138,8 @@ class Info(TypedDict):
     player_inventory: list[InventorySlot]
     player_hotbar_size: int
     player_hotbar_selected_index: int
+    player_eye_position: tuple[float, float, float]
+    player_view_direction: tuple[float, float, float]
 
 
 RewardFn = Callable[[Observation, Info], float]
@@ -830,6 +832,10 @@ def _step_response_player_metadata(step_response) -> dict[str, str]:
     }
 
 
+def _step_response_vector3(value) -> tuple[float, float, float]:
+    return (value.x, value.y, value.z)
+
+
 def _step_response_info(step_response) -> Info:
     return Info(
         hud_elements=_step_response_hud_elements(step_response),
@@ -845,6 +851,12 @@ def _step_response_info(step_response) -> Info:
         ],
         player_hotbar_size=step_response.observation.playerHotbarSize,
         player_hotbar_selected_index=step_response.observation.playerHotbarSelectedIndex,
+        player_eye_position=_step_response_vector3(
+            step_response.observation.playerEyePosition
+        ),
+        player_view_direction=_step_response_vector3(
+            step_response.observation.playerViewDirection
+        ),
     )
 
 
