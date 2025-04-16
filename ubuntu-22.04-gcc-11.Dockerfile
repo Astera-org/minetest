@@ -23,7 +23,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libzstd-dev \
         libcapnp-dev \
         capnproto \
-        libcurl4-openssl-dev
+        libcurl4-openssl-dev \
+        libsdl2-dev
 
 WORKDIR /usr/src/
 
@@ -73,7 +74,7 @@ RUN cmake -B build -S . \
         -DBUILD_UNITTESTS=FALSE \
         -DBUILD_BENCHMARKS=FALSE \
         -DBUILD_DOCUMENTATION=FALSE \
-        -DBUILD_SERVER=ON \
+        -DUSE_SDL2=ON \
         -DENABLE_CURSES=OFF \
         -DENABLE_GETTEXT=ON \
         -DENABLE_LEVELDB=OFF \
