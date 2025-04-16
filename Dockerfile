@@ -14,23 +14,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 		ninja-build \
 		pkg-config \
 		build-essential \
-		mold \
 		git \
 		gettext \
-		# postgresql POSTGRES \
 		libpng-dev \
 		libjpeg-dev \
 		libgl1-mesa-dev \
 		libxi-dev \
 		libfreetype-dev \
 		libsqlite3-dev \
-		# libhiredis-dev REDIS \
-		# libogg-dev SOUND \
 		libgmp-dev \
-		# libvorbis-dev SOUND \
-		# libopenal-dev SOUND \
-		# libpq-dev POSTGRES \
-		libleveldb-dev \
+		# libleveldb-dev \
 		libzstd-dev \
 		libcapnp-dev \
 		capnproto \
@@ -44,22 +37,32 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 WORKDIR /usr/src/
 
+RUN git clone --branch stable https://github.com/rui314/mold.git \
+	&& cd mold \
+	&& ./install-build-deps.sh \
+	&& cmake -B build \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_CXX_COMPILER=clang-18 \
+	&& cmake --build build -j$(nproc) \
+	&& cmake --build build --target install
+
 RUN git clone --recursive https://github.com/libspatialindex/libspatialindex \
 	&& cd libspatialindex \
 	&& git checkout -b build 2.1.0 \
 	&& cmake -B build \
 		-DCMAKE_C_COMPILER=clang-18 \
 		-DCMAKE_CXX_COMPILER=clang++-18 \
+        -DCMAKE_CXX_LINK_FLAGS="-fuse-ld=mold" \
 		-DCMAKE_INSTALL_PREFIX=/usr/local \
 	&& cmake --build build -j "$(nproc)" \
 	&& cmake --install build
 
-# ARG LUAJIT_VERSION=v2.1
+ARG LUAJIT_VERSION=v2.1
 
-# RUN git clone --recursive https://github.com/LuaJIT/LuaJIT.git luajit -b $LUAJIT_VERSION \
-# 	&& cd luajit \
-# 	&& make amalg CC=clang-18 -j "$(nproc)" \
-# 	&& make install
+RUN git clone --recursive https://github.com/LuaJIT/LuaJIT.git luajit -b $LUAJIT_VERSION \
+	&& cd luajit \
+	&& make amalg CC=clang-18 -j "$(nproc)" \
+	&& make install
 
 FROM dev AS build
 
@@ -85,39 +88,29 @@ RUN cmake -B build -S . \
         -DCMAKE_C_COMPILER=clang-18 \
         -DCMAKE_CXX_COMPILER=clang++-18 \
         -DCMAKE_FIND_FRAMEWORK=LAST \
-		# -DCMAKE_INSTALL_PREFIX=/usr/local \
 		-DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_LINK_FLAGS="-fuse-ld=mold" \
+		-DCMAKE_CXX_FLAGS="-stdlib=libc++" \
         -DCMAKE_BUILD_TYPE=Debug \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         -DCMAKE_COLOR_DIAGNOSTICS=TRUE \
-        -GNinja \
         -DSANITIZER=ubsan \
 		-DRUN_IN_PLACE=TRUE \
 		-DBUILD_UNITTESTS=FALSE \
 		-DBUILD_BENCHMARKS=FALSE \
 		-DBUILD_DOCUMENTATION=FALSE \
 		-DBUILD_SERVER=ON \
-		# Build with (n)curses; Enables a server side terminal (command line option: --terminal)
-		-DENABLE_CURSES=FALSE \
-		# Build with Gettext; Allows using translations
+		-DENABLE_CURSES=OFF \
 		-DENABLE_GETTEXT=ON \
-		# Build with LevelDB; Enables use of LevelDB map backend
-		-DENABLE_LEVELDB=ON \
-		# Build with libpq; Enables use of PostgreSQL map backend (PostgreSQL 9.5 or greater recommended)
-		-DENABLE_POSTGRESQL=FALSE \
-		# Build with libhiredis; Enables use of Redis map backend
-		-DENABLE_REDIS=FALSE \
-		# Build with LibSpatial; Speeds up AreaStores
+		-DENABLE_LEVELDB=OFF \
+		-DENABLE_POSTGRESQL=OFF \
+		-DENABLE_REDIS=OFF \
 		-DENABLE_SPATIAL=ON \
-		# Build with OpenAL, libogg & libvorbis; in-game sounds
-		-DENABLE_SOUND=FALSE \
-		# Build with LuaJIT (much faster than non-JIT Lua)
+		-DENABLE_SOUND=OFF \
 		-DENABLE_LUAJIT=ON \
-		# Build with Prometheus metrics exporter (listens on tcp/30000 by default)
-		-DENABLE_PROMETHEUS=FALSE \
-		# Use GMP from system (much faster than bundled mini-gmp)
+		-DENABLE_PROMETHEUS=OFF \
 		-DENABLE_SYSTEM_GMP=ON \
+        -GNinja \
     && cmake --build build -j "$(nproc)"
 
 FROM $DOCKER_IMAGE AS runtime
