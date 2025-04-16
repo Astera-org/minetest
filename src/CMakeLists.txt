@@ -869,7 +869,7 @@ if(MSVC)
 else()
 	# GCC or compatible compilers such as Clang
 	set(WARNING_FLAGS "-Wall -Wextra -Werror")
-	set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-parameter")
+	set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-parameter -Wno-error=deprecated-declarations")
 
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0.0")
