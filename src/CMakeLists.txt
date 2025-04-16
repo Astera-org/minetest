@@ -564,8 +564,6 @@ include_directories(SYSTEM
 	# on other platforms, only IrrlichtMt depends on SDL2
 	"$<$<PLATFORM_ID:Android>:${SDL2_INCLUDE_DIRS}>"
 )
-message(STATUS "C++ system include dirs: ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
-include_directories(SYSTEM ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
 if(USE_GETTEXT)
 	include_directories(${GETTEXT_INCLUDE_DIR})
