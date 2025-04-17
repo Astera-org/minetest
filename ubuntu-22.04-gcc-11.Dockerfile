@@ -23,11 +23,18 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libzstd-dev \
         libcapnp-dev \
         capnproto \
-        libcurl4-openssl-dev \
-        libsdl2-dev
+        libcurl4-openssl-dev
+
+# Install virtualgl for vglrun
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    wget https://sourceforge.net/projects/virtualgl/files/3.1/virtualgl_3.1_amd64.deb \
+    && apt install -y --no-install-recommends ./virtualgl_3.1_amd64.deb \
+    && rm virtualgl_3.1_amd64.deb
 
 WORKDIR /usr/src/
 
+# There is no apt package.
 RUN git clone --recursive https://github.com/libspatialindex/libspatialindex \
     && cd libspatialindex \
     && git checkout -b build 2.1.0 \
@@ -38,10 +45,18 @@ RUN git clone --recursive https://github.com/libspatialindex/libspatialindex \
 
 ARG LUAJIT_VERSION=v2.1
 
+# The apt package is old, so build from source.
 RUN git clone --recursive https://github.com/LuaJIT/LuaJIT.git luajit -b $LUAJIT_VERSION \
     && cd luajit \
     && make amalg -j "$(nproc)" \
     && make install
+
+# The apt package libsdl2-dev is not compiled with SDL_OFFSCREEN=TRUE, so build from source.
+RUN git clone https://github.com/libsdl-org/SDL sdl \
+    && cd sdl \
+    && cmake -B build -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build -j "$(nproc)" \
+    && cmake --install build
 
 FROM dev AS build
 
@@ -144,4 +159,3 @@ COPY textures textures
 COPY mods mods
 COPY games games
 COPY worlds worlds
-
