@@ -25,19 +25,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         capnproto \
         libcurl4-openssl-dev
 
-# Install virtualgl for vglrun
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    wget https://sourceforge.net/projects/virtualgl/files/3.1/virtualgl_3.1_amd64.deb \
-    && apt install -y --no-install-recommends ./virtualgl_3.1_amd64.deb \
-    && rm virtualgl_3.1_amd64.deb
-
 WORKDIR /usr/src/
 
 # There is no apt package.
-RUN git clone --recursive https://github.com/libspatialindex/libspatialindex \
+RUN git clone --recursive https://github.com/libspatialindex/libspatialindex libspatialindex --branch 2.1.0 --single-branch --depth 1 \
     && cd libspatialindex \
-    && git checkout -b build 2.1.0 \
     && cmake -B build \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
     && cmake --build build -j "$(nproc)" \
@@ -46,13 +38,13 @@ RUN git clone --recursive https://github.com/libspatialindex/libspatialindex \
 ARG LUAJIT_VERSION=v2.1
 
 # The apt package is old, so build from source.
-RUN git clone --recursive https://github.com/LuaJIT/LuaJIT.git luajit -b $LUAJIT_VERSION \
+RUN git clone --recursive https://github.com/LuaJIT/LuaJIT.git luajit --branch $LUAJIT_VERSION --single-branch --depth 1 \
     && cd luajit \
     && make amalg -j "$(nproc)" \
     && make install
 
 # The apt package libsdl2-dev is not compiled with SDL_OFFSCREEN=TRUE, so build from source.
-RUN git clone https://github.com/libsdl-org/SDL sdl \
+RUN git clone https://github.com/libsdl-org/SDL sdl --branch release-2.32.4 --single-branch --depth 1 \
     && cd sdl \
     && cmake -B build -DCMAKE_BUILD_TYPE=Release \
     && cmake --build build -j "$(nproc)" \
@@ -110,6 +102,7 @@ FROM $DOCKER_IMAGE AS runtime
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt update && apt-get install -y --no-install-recommends \
+        wget \
         ca-certificates \
         gettext \
         build-essential \
@@ -126,6 +119,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libcurl4-openssl-dev \
         libatomic1
 
+# Install virtualgl for vglrun
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    wget https://sourceforge.net/projects/virtualgl/files/3.1/virtualgl_3.1_amd64.deb \
+    && apt install -y --no-install-recommends ./virtualgl_3.1_amd64.deb \
+    && rm virtualgl_3.1_amd64.deb
+
 # COPY doesn't preserve symlinks
 COPY --from=build /usr/local/lib/libspatialindex.so.8.0.0 /usr/local/lib/
 COPY --from=build /usr/local/lib/libspatialindex_c.so.8.0.0 /usr/local/lib/
@@ -137,9 +137,14 @@ COPY --from=build /usr/local/lib/libluajit-5.1.so.2.1* /usr/local/lib/libluajit-
 RUN ln -s ./libluajit-5.1.so.2 /usr/local/lib/libluajit-5.1.so \
     && ln -s ./libluajit-5.1.so.2.1 /usr/local/lib/libluajit-5.1.so.2
 
+COPY --from=build /usr/local/lib/libSDL2-2.0.so.0.* /usr/local/lib/libSDL2-2.0.so.0
+RUN ln -s ./libSDK2-2.0.so.0 /usr/local/lib/libSDL2-2.0.so \
+    && ln -s ./libSDK2-2.0.so /usr/local/lib/libSDL2.so
+
 WORKDIR /usr/src/minetest
 
 COPY --from=build /usr/src/minetest/bin bin
+COPY --from=build /usr/src/minetest/locale locale
 
 # COPY .git .git
 # COPY CMakeLists.txt CMakeLists.txt
@@ -159,3 +164,4 @@ COPY textures textures
 COPY mods mods
 COPY games games
 COPY worlds worlds
+COPY client client
