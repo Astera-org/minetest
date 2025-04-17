@@ -18,6 +18,7 @@ cmake -B build \
 	-DENABLE_GETTEXT=TRUE \
     -DENABLE_SOUND=FALSE \
     -DUSE_SDL2=ON \
+    -DSANITIZER="ubsan" \
     -DBUILD_UNITTESTS=FALSE
 
 cmake --build build
